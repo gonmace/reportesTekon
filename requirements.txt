@@ -13,3 +13,4 @@ django-simple-history==3.10.1
 
 django-import-export==4.3.8
 tablib==3.7.0
+djangorestframework==3.16.0

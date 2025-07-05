@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'theme',
     'simple_history',
     'import_export',
+    'rest_framework',
 
     'core',
 ]
@@ -115,3 +116,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 from import_export.formats.base_formats import XLSX, CSV
 EXPORT_FORMATS = [XLSX, CSV]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}

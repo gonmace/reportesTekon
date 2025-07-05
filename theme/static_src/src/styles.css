@@ -3,6 +3,7 @@
 /* @import "tailwindcss-animated"; */
 
 @source "../../../**/*.{html,py,js,ts}";
+@source "../../../core/src/alerts.js";
 /* @source "../../../pozosscz/maps/src/utils/SliderControl.js"; */
 /* @source "../../main/src/index-main.ts";
 @source "../../maps/src/index-maps-admin.ts"; */
@@ -52,7 +53,7 @@
   --color-accent: #EF233C;
   --color-accent-content: oklch(98% 0.003 247.858);
   --color-neutral: #fff;
-  --color-neutral-content: oklch(92% 0.004 286.32);
+  --color-neutral-content: #000;
   --color-info: oklch(74% 0.16 232.661);
   --color-info-content: #fff;
   --color-success: oklch(76% 0.177 163.223);
@@ -94,7 +95,7 @@
     @apply btn-sm btn-accent;
   }
   #sitios-table_info {
-    @apply text-neutral-content;
+    @apply text-neutral;
   }
   .dt-input {
     @apply select select-sm mr-1 select-ghost;

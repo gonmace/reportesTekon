@@ -4,6 +4,8 @@
 <html lang="es" data-theme="light">
     <head>
         {% include 'base_head.html' %}
+        {% csrf_token %}
+        <meta name="csrf-token" content="{{ csrf_token }}">
 
         {% block css %}
         {% endblock css %}

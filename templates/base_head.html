@@ -26,7 +26,10 @@
     <script>
         $(document).ready(function () {
             {% for message in messages %}
-                Toast.show('{{ message }}', '{{ message.tags }}');
+                // Usar el nuevo componente de alertas
+                if (typeof Alert !== 'undefined') {
+                    Alert.show('{{ message }}', '{{ message.tags }}', { autoHide: 5000 });
+                }
             {% endfor %}
         });
     </script>

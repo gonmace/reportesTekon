@@ -12,9 +12,10 @@ class Site(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nombre", unique=True)
     lat_base = models.FloatField(null=True, blank=True, verbose_name="Lat. Base", unique=True)
     lon_base = models.FloatField(null=True, blank=True, verbose_name="Lon. Base", unique=True)
-    alt = models.CharField(max_length=100,null=True, blank=True, verbose_name="Alt. (m)")
+    alt = models.CharField(max_length=100, null=True, blank=True, verbose_name="Alt. (m)")
     region = models.CharField(max_length=100, blank=True, null=True, verbose_name="Region")
     comuna = models.CharField(max_length=100, blank=True, null=True, verbose_name="Comuna")
+    is_deleted = models.BooleanField(default=False)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -23,9 +24,6 @@ class Site(models.Model):
     class Meta:
         verbose_name = 'Sitio'
         verbose_name_plural = 'Sitios'
-
-    def get_full_location(self):
-        return f"{self.region}, {self.comuna}"
 
     @staticmethod
     def get_table():
