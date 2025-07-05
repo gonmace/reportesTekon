@@ -4,15 +4,28 @@
 {% block css %}    
 {% endblock css %}
 
+{% block title %}Sitios{% endblock %}
+
+{% block pre_content %}
+            <!-- Breadcrumbs -->
+            <div class="flex justify-between items-baseline">
+                {% include 'components/common/breadcrumbs.html' %}
+                <div class="flex items-center gap-2">
+                    <input type="text" id="buscadorPersonalizado" class="input input-primary w-full" placeholder="Buscar..." autocomplete="off" />
+                </div>
+            </div>
+{% endblock pre_content %}
+
+
 {% block content %}
 
 <div class="overflow-x-auto w-full">
     <table id="sitios-table" class="table table-sm table-zebra w-full">
         <thead class="uppercase">
             <tr>
-                <th class="text-center whitespace-nowrap">Operador</th>
                 <th class="text-center whitespace-nowrap">PTI ID</th>
-                <th class="text-center">Nombre</th>
+                <th class="text-center whitespace-nowrap">Operador ID</th>
+                <th class="text-center">Nombre Sitio</th>
                 <th class="text-center whitespace-nowrap">Región</th>
                 <th class="text-center whitespace-nowrap">Comuna</th>
                 {% if user.is_superuser %}

@@ -27,6 +27,10 @@ class SitiosView(LoginRequiredMixin, BreadcrumbsMixin, TemplateView):
     template_name = 'pages/sitios.html'
     context_object_name = 'sitios'
 
+    class Meta:
+        title = 'Sitios'
+        header_title = 'Registro de Sitios'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_superuser'] = self.request.user.is_superuser

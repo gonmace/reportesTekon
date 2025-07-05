@@ -13,6 +13,15 @@ class BreadcrumbsMixin:
 
         return capfirst(self.__class__.__name__.replace('View', ''))
 
+    def get_header_title(self):
+        """Get the header title for the page. Can be overridden in views."""
+        meta = getattr(self, 'Meta', None)
+        if meta and hasattr(meta, 'header_title'):
+            return meta.header_title
+        
+        # Default to page title if no specific header title is set
+        return self.get_page_title()
+
     def get_breadcrumbs(self):
         meta = getattr(self, 'Meta', None)
         if meta and hasattr(meta, 'breadcrumb'):
@@ -35,5 +44,6 @@ class BreadcrumbsMixin:
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = self.get_page_title()
+        context['header_title'] = self.get_header_title()
         context['breadcrumbs'] = self.get_breadcrumbs()
         return context

@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 dataSrc: ''  // DRF retorna lista directamente
             },
             columns: [
-                { data: 'operator_id', className: 'text-center' },
                 { data: 'pti_cell_id', className: 'whitespace-nowrap text-center' },
+                { data: 'operator_id', className: 'text-center' },
                 { data: 'name', className: 'text-left w-fit max-w-40' },
                 { data: 'region', className: 'text-left w-fit max-w-40' },
                 { data: 'comuna', className: 'text-left w-fit max-w-40' },
@@ -24,9 +24,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     className: 'text-center',
                     render: function (data, type, row) {
                         return `
+
                             <button 
                                 type="button"
-                                class="btn btn-ghost text-info m-1 editar-btn"
+                                class="text-info editar-btn m-1 cursor-pointer"
                                 data-id="${row.id}" 
                                 data-nombre="${row.name}"
                                 title="Editar sitio"
@@ -35,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             </button>
                             <button 
                                 type="button"
-                                class="btn btn-ghost text-error m-1 eliminar-btn"
+                                class="text-error eliminar-btn m-1 cursor-pointer"
                                 data-id="${row.id}" 
                                 data-nombre="${row.name}"
                                 title="Eliminar sitio"
@@ -57,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 lengthMenu: "_MENU_ Registros",
                 info: "_START_ al _END_ de _TOTAL_ ",
                 infoEmpty: "0 al 0 de 0",
-                infoFiltered: "(filtrado de _MAX_ )",
+                infoFiltered: "(filtrado de _MAX_ registros)",
                 paginate: {
                     first: "<<",
                     previous: "<",

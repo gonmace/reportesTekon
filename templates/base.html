@@ -1,8 +1,11 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="es" data-theme="light">
+<html lang="es">
     <head>
+
+        <script src="{% static 'js/theme-navigation.js' %}"></script>
+        
         {% include 'base_head.html' %}
         {% csrf_token %}
         <meta name="csrf-token" content="{{ csrf_token }}">
@@ -29,13 +32,7 @@
 
         <!-- Page Content -->
         <main class="flex-1 overflow-y-auto p-4 ">
-            <!-- Breadcrumbs -->
-            <div class="flex justify-between items-baseline">
-                {% include 'components/common/breadcrumbs.html' %}
-                <div class="flex items-center gap-2">
-                    <input type="text" id="buscadorPersonalizado" class="input input-bordered w-full" placeholder="Buscar..." autocomplete="off" />
-                </div>
-            </div>
+
 
             {% block pre_content %}{% endblock %}
             {% block content %}{% endblock %}

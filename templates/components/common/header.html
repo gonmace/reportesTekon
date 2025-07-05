@@ -192,21 +192,11 @@
         // Get the theme controller checkbox
         const themeController = document.querySelector('.theme-controller');
         
-        // Check if there's a saved theme preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            // Set the checkbox state based on saved theme
-            themeController.checked = savedTheme === 'dark';
-            // Set the data-theme attribute on html element
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        } else {
-            // Check system preference for dark mode
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const defaultTheme = prefersDark ? 'dark' : 'light';
-            themeController.checked = prefersDark;
-            document.documentElement.setAttribute('data-theme', defaultTheme);
-            localStorage.setItem('theme', defaultTheme);
-        }
+        // Get current theme from HTML element (already set by base.html)
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        
+        // Set the checkbox state based on current theme
+        themeController.checked = currentTheme === 'dark';
         
         // Listen for changes to the theme controller
         themeController.addEventListener('change', function() {
@@ -214,6 +204,11 @@
             localStorage.setItem('theme', newTheme);
             document.documentElement.setAttribute('data-theme', newTheme);
         });
+        
+        // Add theme-loaded class after a short delay to enable smooth transitions
+        setTimeout(function() {
+            document.documentElement.classList.add('theme-loaded');
+        }, 100);
     });
 </script><script src="{% static 'js/components/header.js' %}"></script>
 <script src="{% static 'js/components/notifications.js' %}"></script>
