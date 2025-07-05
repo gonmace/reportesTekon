@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}    
+{% endblock css %}
+
+{% block content %}
+
+<div class="overflow-x-auto w-full">
+    <table id="sitios-table" class="table table-sm table-zebra w-full">
+        <thead class="uppercase">
+            <tr>
+                <th class="text-center whitespace-nowrap">Operador</th>
+                <th class="text-center whitespace-nowrap">PTI ID</th>
+                <th class="text-center">Nombre</th>
+                <th class="text-center whitespace-nowrap">Región</th>
+                <th class="text-center whitespace-nowrap">Comuna</th>
+                {% if user.is_superuser %}
+                <th class="text-center whitespace-nowrap">Acciones</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Los datos se cargarán dinámicamente con JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li {% if message.tags %} class="text-red-600 {{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% comment %} {% if user.is_authenticated %}
+Esta autenticado
+{% endif %} {% endcomment %}
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// Pasar variables del template al JavaScript
+window.isSuperuser = {{ user.is_superuser|yesno:"true,false" }};
+</script>
+<script src="{% static 'js/core.js' %}"></script>
+{% endblock extra_js %}

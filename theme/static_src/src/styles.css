@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/* @import "tailwindcss-animated"; */
+
+@source "../../../**/*.{html,py,js,ts}";
+/* @source "../../../pozosscz/maps/src/utils/SliderControl.js"; */
+/* @source "../../main/src/index-main.ts";
+@source "../../maps/src/index-maps-admin.ts"; */
+
+@plugin "daisyui";
+
+/* Tema claro */
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  color-scheme: "light";
+  --color-base-100: #ffffff;
+  --color-base-200: #f2f2f2;
+  --color-base-300: #e5e5e5;
+  --color-base-content: #1f2937;
+  --color-primary: #EF233C;
+  --color-primary-content: #ffffff;
+  --color-secondary: #8D99AE;
+  --color-secondary-content: #000000;
+  --color-accent: #FFB703;
+  --color-accent-content: #1f2937;
+  --color-neutral: #f3f4f6;
+  --color-neutral-content: #1f2937;
+  --color-info: #3ABFF8;
+  --color-info-content: #ffffff;
+  --color-success: #36D399;
+  --color-success-content: #ffffff;
+  --color-warning: #FBBD23;
+  --color-warning-content: #1f2937;
+  --color-error: #F87272;
+  --color-error-content: #ffffff;
+} 
+
+/* Tema oscuro */
+@plugin "daisyui/theme" {
+  name: "dark";
+  default: false;
+  color-scheme: "dark";
+  --color-base-100: oklch(25.33% 0.016 252.42);
+  --color-base-200: oklch(23.26% 0.014 253.1);
+  --color-base-300: oklch(21.15% 0.012 254.09);
+  --color-base-content: oklch(97.807% 0.029 256.847);
+  --color-primary: #FF0000;
+  --color-primary-content: #ffffff;
+  --color-secondary: #2B2D42;
+  --color-secondary-content: #8D99AE;
+  --color-accent: #EF233C;
+  --color-accent-content: oklch(98% 0.003 247.858);
+  --color-neutral: #fff;
+  --color-neutral-content: oklch(92% 0.004 286.32);
+  --color-info: oklch(74% 0.16 232.661);
+  --color-info-content: #fff;
+  --color-success: oklch(76% 0.177 163.223);
+  --color-success-content: #fff;
+  --color-warning: oklch(82% 0.189 84.429);
+  --color-warning-content: #000;
+  --color-error: oklch(71% 0.194 13.428);
+  --color-error-content: #fff;
+}
+
+@layer base {
+  body {
+    font-family: "Nunito Variable", sans-serif;
+  }
+}
+
+@layer components {
+  .centrear-w-absolute {
+    @apply left-1/2 transform -translate-x-1/2;
+  }
+  .centrearXY {
+    @apply top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
+  }
+  .sombra {
+    -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+    filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+  }
+
+/* PAGINACION */
+  nav[aria-label="pagination"] {
+    @apply my-2;
+  }
+  
+  nav[aria-label="pagination"] button {
+    @apply btn btn-sm mx-0.5;
+  }
+  
+  [aria-label="pagination"] .current {
+    @apply btn-sm btn-accent;
+  }
+  #sitios-table_info {
+    @apply text-neutral-content;
+  }
+  .dt-input {
+    @apply select select-sm mr-1 select-ghost;
+  }
+  .dt-length {
+    @apply flex items-center;
+  }
+
+}

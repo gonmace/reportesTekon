@@ -1,0 +1,15 @@
+{% if breadcrumbs %}
+<nav class="text-sm breadcrumbs mb-4">
+  <ul>
+    {% for item in breadcrumbs %}
+      <li>
+        {% if item.url %}
+          <a href="{{ item.url }}" class="text-primary hover:underline">{{ item.label }}</a>
+        {% else %}
+          <span class="text-gray-500">{{ item.label }}</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
