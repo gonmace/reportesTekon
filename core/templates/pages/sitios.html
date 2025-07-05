@@ -26,6 +26,16 @@
     </table>
 </div>
 
+<!-- Modal para editar sitio -->
+<dialog id="edit_site_modal" class="modal">
+    <div class="modal-box w-11/12 max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">Editar Sitio</h3>
+        <div id="modal-content">
+            <!-- El contenido del formulario se cargará aquí -->
+        </div>
+    </div>
+</dialog>
+
 {% if messages %}
 <ul class="messages">
     {% for message in messages %}

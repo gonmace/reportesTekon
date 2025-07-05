@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     'simple_history',
     'import_export',
     'rest_framework',
+    'crispy_forms',
+    'crispy_tailwind',
 
     'core',
 ]
@@ -122,3 +124,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+# Crispy Forms Configuration
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+CRISPY_TEMPLATE_PACK = "tailwind"

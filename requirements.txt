@@ -10,7 +10,8 @@ python-dotenv==1.1.1
 sqlparse==0.5.3
 djangorestframework==3.16.0
 django-simple-history==3.10.1
-
 django-import-export==4.3.8
 tablib==3.7.0
-djangorestframework==3.16.0
+
+django-crispy-forms==2.4
+crispy-tailwind==1.0.3
