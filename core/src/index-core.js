@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     className: 'text-center',
                     render: function (data, type, row) {
                         return `
-
                             <button 
                                 type="button"
                                 class="text-info editar-btn m-1 cursor-pointer"

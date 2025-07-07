@@ -50,6 +50,23 @@ class Site(models.Model):
     def __str__(self):
         return self.name
 
+    def tiene_registro_inicial(self):
+        """Verifica si el sitio tiene un registro inicial"""
+        try:
+            from registrosWOM.models import Registros0
+            return Registros0.objects.filter(sitio=self).exists()
+        except ImportError:
+            return False
+    
+    def get_registro_inicial_id(self):
+        """Obtiene el ID del registro inicial si existe"""
+        try:
+            from registrosWOM.models import Registros0
+            registro = Registros0.objects.get(sitio=self)
+            return registro.id
+        except (ImportError, Registros0.DoesNotExist):
+            return None
+
     class Meta:
         verbose_name = 'Sitio'
         verbose_name_plural = 'Sitios'

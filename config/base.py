@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     
     'users',
     'core',
-    'registro_inicial',
+    'registrosWOM',
 ]
 
 MIDDLEWARE = [

@@ -1,25 +1,19 @@
 from django.views.generic import TemplateView
-from django.views.generic.edit import UpdateView, DeleteView
 from rest_framework import viewsets
 from core.models.sites import Site
 from core.serializers import SiteSerializer
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.views.generic.edit import UpdateView
-from django.urls import reverse_lazy
 from core.utils.breadcrumbs import BreadcrumbsMixin
 from django.http import JsonResponse
-from django.http import HttpResponseRedirect
-from django.contrib import messages
 from django.views import View
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from core.forms import SiteForm
 from django.template.loader import render_to_string
-from django.template import RequestContext
 import json
 
 # views.py
@@ -105,9 +99,6 @@ class SiteEditModalView(LoginRequiredMixin, UserPassesTestMixin, View):
             # Parsear el JSON del body
             data = json.loads(request.body.decode('utf-8'))
             
-            # Debug: imprimir los datos recibidos
-            print(f"Data received: {data}")
-            
             # Convertir valores vacíos a None para campos numéricos
             if data.get('lat_base') == '':
                 data['lat_base'] = None
@@ -127,14 +118,12 @@ class SiteEditModalView(LoginRequiredMixin, UserPassesTestMixin, View):
                         from users.models import User
                         user = User.objects.get(id=user_id)
                         data['user'] = user_id
-                        print(f"User found: {user.username} (ID: {user_id})")
+                        
                     except (ValueError, TypeError, User.DoesNotExist) as e:
-                        print(f"User error: {e}")
+                        
                         # Si no se puede convertir o el usuario no existe, eliminar el campo
                         del data['user']
-            
-            print(f"Processed data: {data}")
-            
+                        
             form = SiteForm(data, instance=site)
             
             if form.is_valid():

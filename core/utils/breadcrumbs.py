@@ -60,16 +60,16 @@ class BreadcrumbsMixin:
         # Common patterns for parent-child relationships
         parent_patterns = {
             'NuevoRegistroView': {
-                'parent_url': 'registro_inicial:list',
-                'parent_label': 'Registros Iniciales'
+                'parent_url': 'registrosWOM:list',
+                'parent_label': 'Registros WOM'
             },
             'EditRegistroView': {
-                'parent_url': 'registro_inicial:list',
-                'parent_label': 'Registros Iniciales'
+                'parent_url': 'registrosWOM:list',
+                'parent_label': 'Registros WOM'
             },
             'DetailRegistroView': {
-                'parent_url': 'registro_inicial:list',
-                'parent_label': 'Registros Iniciales'
+                'parent_url': 'registrosWOM:list',
+                'parent_label': 'Registros WOM'
             },
             # Add more patterns as needed
         }

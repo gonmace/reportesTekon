@@ -23,9 +23,11 @@ class SiteResource(resources.ModelResource):
 
 class SiteAdmin(ImportExportModelAdmin, SimpleHistoryAdmin):
     resource_class = SiteResource
-    list_display = ('pti_cell_id', 'operator_id', 'name', 'lat_base', 'lon_base', 'alt', 'region', 'comuna')
+    list_display = ('pti_cell_id', 'operator_id', 'name', 'alt', 'region', 'comuna', 'is_deleted', 'user')
+    list_editable = ('is_deleted', 'user')
     ordering = ('pti_cell_id',)
     list_display_links = ('name',)
     list_per_page = 100
+    
 
 admin.site.register(Site, SiteAdmin)
