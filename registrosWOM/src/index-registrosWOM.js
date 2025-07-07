@@ -16,8 +16,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 { data: 'operator_id', className: 'text-center' },
                 { data: 'name', className: 'text-left w-fit max-w-40' },
                 { data: 'user', className: 'text-left w-fit max-w-40' },
+                { 
+                    data: null,
+                    className: 'text-center',
+                    render: function(data, type, row) {
+                        return '<button class="btn btn-primary btn-sm crear-registro-btn" data-id="' + row.id + '">Crear</button>';
+                    }
+                },
             ],
             responsive: true,
+            // scrollX: true,
             pageLength: 20,
             order: [[2, 'asc']],
             pagingType: 'simple_numbers',
@@ -213,6 +221,59 @@ document.addEventListener("DOMContentLoaded", function () {
             );
         });
 
+        // Delegar evento para botón crear registro
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".crear-registro-btn");
+            if (!btn) return;
+
+            e.preventDefault();
+
+            const siteId = btn.dataset.id;
+            
+            // Aquí puedes agregar la lógica para crear el registro
+            // Por ejemplo, abrir un modal o redirigir a una página
+            console.log('Crear registro para sitio ID:', siteId);
+            
+            // Ejemplo: redirigir a una página de creación
+            // window.location.href = `/registros/crear/${siteId}/`;
+            
+            // O mostrar un modal de confirmación
+            Alert.confirm(
+                `¿Deseas crear un nuevo registro WOM para este sitio?`,
+                () => {
+                    // Usuario confirmó, proceder con la creación
+                    fetch(`/api/v1/registros/crear/${siteId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            'sitio_id': siteId
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Alert.success(data.message || 'Registro creado exitosamente', { autoHide: 3000 });
+                            tabla.ajax.reload(null, false);
+                        } else {
+                            Alert.error(data.message || 'Error al crear el registro.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al crear registro:', error);
+                        Alert.error('Error de red o del servidor.');
+                    });
+                },
+                () => {
+                    // Usuario canceló, no hacer nada
+                    console.log('Creación de registro cancelada por el usuario');
+                }
+            );
+        });
+
         // Función para obtener el CSRF Token desde cookies
         function getCookie(name) {
             let cookieValue = null;
@@ -228,5 +289,21 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             return cookieValue;
         }
+
+        // Agregar CSS para scroll horizontal
+        const style = document.createElement('style');
+        style.textContent = `
+            .dataTables_wrapper {
+                overflow-x: auto;
+                max-width: 100%;
+            }
+            .dataTables_wrapper .dataTables_scroll {
+                overflow-x: auto;
+            }
+            #sitios-table {
+                min-width: 800px;
+            }
+        `;
+        document.head.appendChild(style);
     }
 });
