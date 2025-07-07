@@ -4,6 +4,7 @@
 
 @source "../../../**/*.{html,py,js,ts}";
 @source "../../../core/src/alerts.js";
+@source "../../../registro_inicial/forms.py";
 /* @source "../../../pozosscz/maps/src/utils/SliderControl.js"; */
 /* @source "../../main/src/index-main.ts";
 @source "../../maps/src/index-maps-admin.ts"; */
@@ -16,24 +17,24 @@
   default: true;
   color-scheme: "light";
   --color-base-100: #ffffff;
-  --color-base-200: #f2f2f2;
-  --color-base-300: #e5e5e5;
-  --color-base-content: #1f2937;
-  --color-primary: #EF233C;
+  --color-base-200: #f5f6fa;
+  --color-base-300: #e0e0e0;
+  --color-base-content: #00132f;
+  --color-primary: #e60000;
   --color-primary-content: #ffffff;
-  --color-secondary: #8D99AE;
-  --color-secondary-content: #000000;
-  --color-accent: #FFB703;
-  --color-accent-content: #1f2937;
-  --color-neutral: #f3f4f6;
-  --color-neutral-content: #1f2937;
-  --color-info: #3ABFF8;
+  --color-secondary: #d0d4dc;
+  --color-secondary-content: #00132f;
+  --color-accent: #D7263D;
+  --color-accent-content: #ffffff;
+  --color-neutral: #00132f;
+  --color-neutral-content: #e0e0e0;
+  --color-info: #1976D2;
   --color-info-content: #ffffff;
-  --color-success: #36D399;
+  --color-success: #388E3C;
   --color-success-content: #ffffff;
-  --color-warning: #FBBD23;
-  --color-warning-content: #1f2937;
-  --color-error: #F87272;
+  --color-warning: #F57C00;
+  --color-warning-content: #ffffff;
+  --color-error: #D32F2F;
   --color-error-content: #ffffff;
 } 
 
@@ -42,26 +43,28 @@
   name: "dark";
   default: false;
   color-scheme: "dark";
-  --color-base-100: oklch(25.33% 0.016 252.42);
-  --color-base-200: oklch(23.26% 0.014 253.1);
-  --color-base-300: oklch(21.15% 0.012 254.09);
-  --color-base-content: #ffffff;
-  --color-primary: #FF0000;
+  --color-base-100: #00132f;
+  --color-base-200: #0a1d3f;
+  --color-base-300: #14284e;
+  --color-base-content: #e0e6f0;
+  --color-primary: #e60000;
   --color-primary-content: #ffffff;
-  --color-secondary: #2B2D42;
-  --color-secondary-content: #8D99AE;
-  --color-accent: #EF233C;
-  --color-accent-content: oklch(98% 0.003 247.858);
-  --color-neutral: #fff;
-  --color-neutral-content: #000;
-  --color-info: oklch(74% 0.16 232.661);
-  --color-info-content: #fff;
-  --color-success: oklch(76% 0.177 163.223);
-  --color-success-content: #fff;
-  --color-warning: oklch(82% 0.189 84.429);
-  --color-warning-content: #000;
-  --color-error: oklch(71% 0.194 13.428);
-  --color-error-content: #fff;
+  --color-secondary: #3b3f50;
+  --color-secondary-content: #e0e6f0;
+  --color-accent: #D7263D;
+  --color-accent-content: #ffffff;
+  --color-neutral: #00132f;
+  --color-neutral-content: #e0e0e0;
+  --color-info: #2196F3;
+  --color-info-content: #ffffff;
+  --color-success: #43A047;
+  --color-success-content: #ffffff;
+  --color-warning: #FFA000;
+  --color-warning-content: #ffffff;
+  --color-error: #E53935;
+  --color-error-content: #ffffff;
+
+
 }
 
 @layer base {
@@ -95,10 +98,10 @@
     @apply btn-sm btn-accent;
   }
   #sitios-table_info {
-    @apply text-neutral;
+    @apply text-neutral-content;
   }
   .dt-input {
-    @apply select select-sm mr-1 select-ghost;
+    @apply select select-sm mr-1 select-neutral;
   }
   .dt-length {
     @apply flex items-center;

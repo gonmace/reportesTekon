@@ -7,13 +7,13 @@
 {% block title %}Sitios{% endblock %}
 
 {% block pre_content %}
-            <!-- Breadcrumbs -->
-            <div class="flex justify-between items-baseline">
-                {% include 'components/common/breadcrumbs.html' %}
-                <div class="flex items-center gap-2">
-                    <input type="text" id="buscadorPersonalizado" class="input input-primary w-full" placeholder="Buscar..." autocomplete="off" />
-                </div>
-            </div>
+    <!-- Breadcrumbs -->
+    <div class="flex justify-between items-baseline">
+        {% include 'components/common/breadcrumbs.html' %}
+        <div class="flex items-center gap-2">
+            <input type="text" id="buscadorPersonalizado" class="input input-primary w-full" placeholder="Buscar..." autocomplete="off" />
+        </div>
+    </div>
 {% endblock pre_content %}
 
 
@@ -22,13 +22,14 @@
 <div class="overflow-x-auto w-full">
     <table id="sitios-table" class="table table-sm table-zebra w-full">
         <thead class="uppercase">
-            <tr>
+            <tr class="bg-base-200 text-base-content">
                 <th class="text-center whitespace-nowrap">PTI ID</th>
                 <th class="text-center whitespace-nowrap">Operador ID</th>
                 <th class="text-center">Nombre Sitio</th>
                 <th class="text-center whitespace-nowrap">Región</th>
                 <th class="text-center whitespace-nowrap">Comuna</th>
                 {% if user.is_superuser %}
+                <th class="text-center whitespace-nowrap">ITO</th>
                 <th class="text-center whitespace-nowrap">Acciones</th>
                 {% endif %}
             </tr>
@@ -41,7 +42,7 @@
 
 <!-- Modal para editar sitio -->
 <dialog id="edit_site_modal" class="modal">
-    <div class="modal-box w-11/12 max-w-2xl">
+    <div class="modal-box w-full sm:w-11/12 max-w-2xl">
         <h3 class="font-bold text-lg mb-4">Editar Sitio</h3>
         <div id="modal-content">
             <!-- El contenido del formulario se cargará aquí -->

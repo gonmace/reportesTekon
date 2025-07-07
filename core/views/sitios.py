@@ -36,38 +36,6 @@ class SitiosView(LoginRequiredMixin, BreadcrumbsMixin, TemplateView):
         context['is_superuser'] = self.request.user.is_superuser
         return context
 
-class SitiosAPIView(LoginRequiredMixin, TemplateView):
-    def get(self, request, *args, **kwargs):
-        sites = Site.get_actives()
-        
-        # Serializar los datos
-        data = []
-        for site in sites:
-            site_data = {
-                'id': site.id,
-                'operator_id': site.operator_id or '',
-                'pti_cell_id': site.pti_cell_id or '',
-                'name': site.name,
-                'region': site.region or '',
-                'comuna': site.comuna or '',
-                'lat_base': site.lat_base,
-                'lon_base': site.lon_base,
-                'alt': site.alt or '',
-            }
-            data.append(site_data)
-        
-        return JsonResponse({'data': data})
-
-
-class SiteEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Site
-    fields = ['pti_cell_id', 'operator_id', 'name', 'lat_base', 'lon_base', 'alt', 'region', 'comuna']
-    template_name = 'sites/site_form.html'
-    success_url = reverse_lazy('sitios')
-
-    def test_func(self):
-        return self.request.user.is_superuser  # Solo superusuarios pueden editar
-
 class SiteViewSet(viewsets.ModelViewSet):
     serializer_class = SiteSerializer
     
@@ -109,7 +77,7 @@ class SiteEditModalView(LoginRequiredMixin, UserPassesTestMixin, View):
         form = SiteForm(instance=site)
         
         # Renderizar el formulario usando Crispy Forms
-        form_html = render_to_string('sites/site_form_modal_crispy.html', {
+        form_html = render_to_string('sites/update_site_form.html', {
             'form': form,
             'site': site
         }, request=request)
@@ -137,11 +105,35 @@ class SiteEditModalView(LoginRequiredMixin, UserPassesTestMixin, View):
             # Parsear el JSON del body
             data = json.loads(request.body.decode('utf-8'))
             
+            # Debug: imprimir los datos recibidos
+            print(f"Data received: {data}")
+            
             # Convertir valores vacíos a None para campos numéricos
             if data.get('lat_base') == '':
                 data['lat_base'] = None
             if data.get('lon_base') == '':
                 data['lon_base'] = None
+            
+            # Manejar el campo user correctamente
+            if 'user' in data:
+                if data['user'] == '' or data['user'] is None:
+                    # Si el campo está vacío, establecer como None
+                    data['user'] = None
+                else:
+                    try:
+                        # Convertir a entero si es string
+                        user_id = int(data['user'])
+                        # Verificar que el usuario existe
+                        from users.models import User
+                        user = User.objects.get(id=user_id)
+                        data['user'] = user_id
+                        print(f"User found: {user.username} (ID: {user_id})")
+                    except (ValueError, TypeError, User.DoesNotExist) as e:
+                        print(f"User error: {e}")
+                        # Si no se puede convertir o el usuario no existe, eliminar el campo
+                        del data['user']
+            
+            print(f"Processed data: {data}")
             
             form = SiteForm(data, instance=site)
             
@@ -152,6 +144,7 @@ class SiteEditModalView(LoginRequiredMixin, UserPassesTestMixin, View):
                     'message': f'Sitio "{site.name}" actualizado correctamente.'
                 })
             else:
+                print(f"Form errors: {form.errors}")
                 return JsonResponse({
                     'success': False,
                     'message': 'Error en el formulario.',
@@ -165,6 +158,9 @@ class SiteEditModalView(LoginRequiredMixin, UserPassesTestMixin, View):
                 'error': str(e)
             }, status=400)
         except Exception as e:
+            print(f"Exception: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return JsonResponse({
                 'success': False,
                 'message': 'Error interno del servidor.',

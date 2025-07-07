@@ -1,10 +1,11 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 from .core_models import BaseModel
 from simple_history.models import HistoricalRecords
+from users.models import User
 
-User = get_user_model()
 
 class Site(models.Model):
     pti_cell_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="PTI ID", unique=True)
@@ -16,7 +17,35 @@ class Site(models.Model):
     region = models.CharField(max_length=100, blank=True, null=True, verbose_name="Region")
     comuna = models.CharField(max_length=100, blank=True, null=True, verbose_name="Comuna")
     is_deleted = models.BooleanField(default=False)
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        verbose_name="Usuario",
+        null=True,
+        blank=True,
+    )
     history = HistoricalRecords()
+
+    def clean(self):
+        """Validación adicional para asegurar que el usuario sea ITO"""
+        super().clean()
+        if self.user:
+            # Si user es un ID (entero), obtener el objeto User
+            if isinstance(self.user, int):
+                try:
+                    user_obj = User.objects.get(id=self.user)
+                except User.DoesNotExist:
+                    raise ValidationError({'user': 'Usuario no encontrado.'})
+            else:
+                user_obj = self.user
+            
+            if user_obj.user_type != User.ITO:
+                raise ValidationError({'user': 'Solo se permiten usuarios de tipo ITO para este campo.'})
+
+    def save(self, *args, **kwargs):
+        """Valida antes de guardar"""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

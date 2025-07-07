@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from core.views.sitios import SitiosView, SitiosAPIView, SiteEditView, SiteViewSet, SiteEditModalView
+from core.views.sitios import SitiosView, SiteViewSet, SiteEditModalView
 
 app_name = "sitios"
 
