@@ -2,13 +2,10 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Button, Div, Field
 from .models.sites import Site
-from users.models import User
 
 class SiteForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-                # Solo usuarios ITO
-        self.fields["user"].queryset = User.objects.filter(user_type=User.ITO, is_active=True, is_deleted=False)
 
         self.helper = FormHelper()
         self.helper.form_tag = True
@@ -21,7 +18,6 @@ class SiteForm(forms.ModelForm):
     Div(
         Div(Field('pti_cell_id', css_class='input input-info w-full'), css_class='w-1/2  md:w-1/3 px-2'),
         Div(Field('operator_id', css_class='input input-info w-full'), css_class='w-1/2 md:w-1/3 px-2'),
-        Div(Field('user', css_class='select select-info w-full'), css_class='w-full sm:w-1/2 md:w-1/3 px-2'),
         css_class='flex flex-wrap -mx-2 mb-4',
     ),
 
@@ -54,7 +50,7 @@ class SiteForm(forms.ModelForm):
 
     class Meta:
         model = Site
-        fields = ['pti_cell_id', 'operator_id', 'name', 'lat_base', 'lon_base', 'alt', 'region', 'comuna', 'user']
+        fields = ['pti_cell_id', 'operator_id', 'name', 'lat_base', 'lon_base', 'alt', 'region', 'comuna']
         labels = {
             'lat_base': 'Latitud Mandato',
             'lon_base': 'Longitud Mandato',
@@ -64,7 +60,6 @@ class SiteForm(forms.ModelForm):
             'pti_cell_id': 'PTI ID',
             'operator_id': 'Operador ID',
             'name': 'Nombre Sitio',
-            'user': 'Usuario',
         }
         widgets = {
             'pti_cell_id': forms.TextInput(attrs={'class': 'input input-success w-full text-base-content'}),
@@ -75,5 +70,4 @@ class SiteForm(forms.ModelForm):
             'alt': forms.TextInput(attrs={'class': 'input input-success w-full text-base-content'}),
             'region': forms.TextInput(attrs={'class': 'input input-success w-full text-base-content'}),
             'comuna': forms.TextInput(attrs={'class': 'input input-success w-full text-base-content'}),
-            'user': forms.Select(attrs={'class': 'select select-accent w-full text-base-content'}),
         }

@@ -2,7 +2,7 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field
 from crispy_tailwind.layout import Submit, Reset
-from .models import Registros0
+from .models.registro import Registros
 
 
 class RegistroInicialForm(forms.ModelForm):
@@ -22,6 +22,6 @@ class RegistroInicialForm(forms.ModelForm):
         )
     
     class Meta:
-        model = Registros0
-        fields = ['sitio', 'fecha', 'descripcion']
+        model = Registros
+        fields = ['sitio', 'registro0', 'registro1', 'registro2']
 

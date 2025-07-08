@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 { data: 'name', className: 'text-left w-fit max-w-40' },
                 { data: 'region', className: 'text-left w-fit max-w-40' },
                 { data: 'comuna', className: 'text-left w-fit max-w-40' },
-                { data: 'user', className: 'text-left w-fit max-w-40' },
                 ...(isSuperuser ? [{
                     data: null,
                     orderable: false,
