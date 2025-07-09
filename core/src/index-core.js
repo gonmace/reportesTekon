@@ -1,5 +1,12 @@
 import DataTable from 'datatables.net-dt';
-import Alert from './alerts.js';
+
+// Configuración de clases CSS para Tailwind
+DataTable.ext.classes.container = "dt-container table table-sm !table-zebra w-full";
+DataTable.ext.classes.thead = {
+    row: "bg-accent text-white uppercase",
+};
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
     const sitiosTable = document.querySelector('#sitios-table');
@@ -47,9 +54,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }] : [])
             ],
             responsive: true,
-            pageLength: 20,
-            order: [[2, 'asc']],
-            pagingType: 'simple_numbers',
+            pageLength: 10,
+            order: [[1, 'asc']],
             dom: 'rt<"flex justify-between items-center"<"info"i><"length"l><"pagination"p>>',
             language: {
                 search: "_INPUT_",
@@ -58,12 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 info: "_START_ al _END_ de _TOTAL_ ",
                 infoEmpty: "0 al 0 de 0",
                 infoFiltered: "(filtrado de _MAX_ registros)",
-                paginate: {
-                    first: "<<",
-                    previous: "<",
-                    next: ">",
-                    last: ">>"
-                }
+
             },
             autoWidth: false,
             bStateSave: true

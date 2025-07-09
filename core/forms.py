@@ -18,6 +18,7 @@ class SiteForm(forms.ModelForm):
     Div(
         Div(Field('pti_cell_id', css_class='input input-info w-full'), css_class='w-1/2  md:w-1/3 px-2'),
         Div(Field('operator_id', css_class='input input-info w-full'), css_class='w-1/2 md:w-1/3 px-2'),
+        Div(Field('alt', css_class='input input-info w-full'), css_class='w-1/2 md:w-1/3 px-2'),
         css_class='flex flex-wrap -mx-2 mb-4',
     ),
 
@@ -33,7 +34,6 @@ class SiteForm(forms.ModelForm):
     Div(
         Div(Field('lat_base', css_class='input input-info w-full'), css_class='w-1/2 md:w-1/3 px-2'),
         Div(Field('lon_base', css_class='input input-info w-full'), css_class='w-1/2 md:w-1/3 px-2'),
-        Div(Field('alt', css_class='input input-info w-full'), css_class='w-1/2 md:w-1/3 px-2'),
         css_class='flex flex-wrap -mx-2 mb-4',
     ),
 

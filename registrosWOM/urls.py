@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views.views import ListRegistrosView, RegistrosViewSet
+from .views.list import ListRegistrosView, RegistrosViewSet
 
 app_name = "registrosWOM"
 

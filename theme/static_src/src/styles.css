@@ -3,7 +3,7 @@
 /* @import "tailwindcss-animated"; */
 
 @source "../../../**/*.{html,py,js,ts}";
-@source "../../../core/src/alerts.js";
+@source "../../../static/js/components/alert-component.js";
 @source "../../../registrosWOM/forms.py";
 /* @source "../../../pozosscz/maps/src/utils/SliderControl.js"; */
 /* @source "../../main/src/index-main.ts";
@@ -26,8 +26,8 @@
   --color-secondary-content: #00132f;
   --color-accent: #D7263D;
   --color-accent-content: #ffffff;
-  --color-neutral: #00132f;
-  --color-neutral-content: #e0e0e0;
+  --color-neutral: #e0e0e0;
+  --color-neutral-content: #00132f;
   --color-info: #1976D2;
   --color-info-content: #ffffff;
   --color-success: #388E3C;
@@ -86,7 +86,7 @@
   }
 
 /* PAGINACION */
-  nav[aria-label="pagination"] {
+  /* nav[aria-label="pagination"] {
     @apply my-2;
   }
   
@@ -94,9 +94,7 @@
     @apply btn btn-sm mx-0.5;
   }
   
-  [aria-label="pagination"] .current {
-    @apply btn-sm btn-accent;
-  }
+
   #sitios-table_info {
     @apply text-base-content;
   }
@@ -105,6 +103,19 @@
   }
   .dt-length {
     @apply flex items-center;
+  } */
+  /* [aria-label="pagination"] .current {
+    @apply btn-sm btn-accent;
+  } */
+
+  button[aria-current="page"] {
+    @apply !btn !btn-sm !btn-accent;
+  }
+  option {
+    @apply text-base-content bg-base-100;
+  }
+  .textinput, .numberinput {
+    @apply text-black;
   }
 
 }

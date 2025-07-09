@@ -56,6 +56,6 @@ Esta autenticado
 // Pasar variables del template al JavaScript
 window.isSuperuser = {{ user.is_superuser|yesno:"true,false" }};
 </script>
-<script src="{% static 'js/components/alerts.js' %}"></script>
+<script src="{% static 'js/components/alert-component.js' %}"></script>
 <script src="{% static 'js/registrosWOM.js' %}"></script>
 {% endblock extra_js %}

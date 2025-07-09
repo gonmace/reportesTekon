@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block css %}    
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
 {% endblock css %}
 
 {% block title %}Sitios{% endblock %}
@@ -20,16 +21,16 @@
 {% block content %}
 
 <div class="overflow-x-auto w-full">
-    <table id="sitios-table" class="table table-sm table-zebra w-full">
-        <thead class="uppercase">
-            <tr class="bg-base-200 text-base-content">
-                <th class="text-center whitespace-nowrap">PTI ID</th>
-                <th class="text-center whitespace-nowrap">Operador ID</th>
-                <th class="text-center">Nombre Sitio</th>
-                <th class="text-center whitespace-nowrap">Región</th>
-                <th class="text-center whitespace-nowrap">Comuna</th>
+    <table id="sitios-table">
+        <thead>
+            <tr>
+                <th class="!text-center">PTI ID</th>
+                <th class="!text-center">Operador ID</th>
+                <th>Nombre Sitio</th>
+                <th>Región</th>
+                <th>Comuna</th>
                 {% if user.is_superuser %}
-                <th class="text-center whitespace-nowrap">Acciones</th>
+                <th class="!text-center">Acciones</th>
                 {% endif %}
             </tr>
         </thead>
@@ -68,5 +69,6 @@ Esta autenticado
 // Pasar variables del template al JavaScript
 window.isSuperuser = {{ user.is_superuser|yesno:"true,false" }};
 </script>
-<script src="{% static 'js/core.js' %}"></script>
+<script src="{% static 'js/components/alert-component.js' %}"></script>
+<script type="module" src="{% static 'js/core.js' %}"></script>
 {% endblock extra_js %}

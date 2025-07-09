@@ -24,12 +24,13 @@ class Site(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return f"{self.pti_cell_id if self.pti_cell_id else '__________'} - {self.operator_id if self.operator_id else '__________'} - {self.name}"
 
 
     class Meta:
         verbose_name = 'Sitio'
         verbose_name_plural = 'Sitios'
+        ordering = ['pti_cell_id']
 
     @staticmethod
     def get_table():

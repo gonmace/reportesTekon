@@ -1,73 +1,37 @@
-# Componentes JavaScript Reutilizables
+# Componentes Reutilizables
 
-## Alertas (alerts.js)
+Este directorio contiene componentes JavaScript y CSS reutilizables que pueden ser utilizados en múltiples aplicaciones del proyecto.
 
-Componente reutilizable para mostrar alertas usando DaisyUI que puede ser usado en todas las apps del proyecto.
+## Componentes Disponibles
 
-### Inclusión del Componente
+### 1. Alert Component (`alert-component.js`)
 
-Para usar el componente de alertas, incluye el archivo en tu template:
+Componente para mostrar alertas y confirmaciones usando DaisyUI.
+
+#### Uso
 
 ```html
-<script src="{% static 'js/components/alerts.js' %}"></script>
+<!-- Incluir en el HTML -->
+<script src="{% static 'js/components/alert-component.js' %}"></script>
 ```
 
-### Uso Básico
+#### API
 
 ```javascript
-// Mostrar alerta de éxito
-Alert.success('Operación completada exitosamente');
-
-// Mostrar alerta de error
+// Alertas simples
+Alert.success('Operación exitosa');
 Alert.error('Ha ocurrido un error');
+Alert.warning('Advertencia importante');
+Alert.info('Información relevante');
 
-// Mostrar alerta de advertencia
-Alert.warning('Ten cuidado con esta acción');
-
-// Mostrar alerta informativa
-Alert.info('Información importante');
-```
-
-### Métodos Disponibles
-
-#### `Alert.show(message, type, options)`
-Muestra una alerta con opciones personalizadas.
-
-**Parámetros:**
-- `message` (string): Mensaje a mostrar
-- `type` (string): Tipo de alerta ('success', 'error', 'warning', 'info')
-- `options` (object): Opciones adicionales
-  - `autoHide` (number): Tiempo en ms para auto-ocultar (0 = no auto-ocultar)
-  - `id` (string): ID personalizado para la alerta
-  - `dismissible` (boolean): Si la alerta se puede cerrar
-  - `icon` (string): Clase del icono (FontAwesome)
-
-**Ejemplo:**
-```javascript
-Alert.show('Mensaje personalizado', 'success', {
-    autoHide: 5000,
-    dismissible: true,
-    icon: 'fa-solid fa-star'
+// Alertas con opciones
+Alert.success('Mensaje', {
+    autoHide: 3000,  // Auto-ocultar en 3 segundos
+    dismissible: false,  // No se puede cerrar manualmente
+    icon: 'fa-solid fa-check'  // Icono personalizado
 });
-```
 
-#### `Alert.success(message, options)`
-Muestra una alerta de éxito.
-
-#### `Alert.error(message, options)`
-Muestra una alerta de error.
-
-#### `Alert.warning(message, options)`
-Muestra una alerta de advertencia.
-
-#### `Alert.info(message, options)`
-Muestra una alerta informativa.
-
-#### `Alert.confirm(message, onConfirm, onCancel, options)`
-Muestra una alerta de confirmación con botones Sí/No.
-
-**Ejemplo:**
-```javascript
+// Confirmaciones
 Alert.confirm(
     '¿Estás seguro de que quieres eliminar este elemento?',
     () => {
@@ -77,92 +41,122 @@ Alert.confirm(
     () => {
         // Código a ejecutar si se cancela
         console.log('Cancelado');
+    },
+    {
+        title: 'Confirmar eliminación',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
     }
 );
+
+// Ocultar alertas
+Alert.hide('alert-id');  // Ocultar alerta específica
+Alert.hideAll();  // Ocultar todas las alertas
 ```
 
-#### `Alert.hide(id)`
-Oculta una alerta específica por su ID.
+### 2. DataTables CSS (`../css/datatables.css`)
 
-#### `Alert.hideAll()`
-Oculta todas las alertas activas.
+Estilos CSS para DataTables que incluyen soporte para tema claro y oscuro.
 
-### Ejemplos de Uso en Diferentes Contextos
+#### Uso
 
-#### 1. Después de una operación AJAX exitosa:
+```html
+<!-- Incluir en el HTML -->
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
+```
+
+#### Características
+
+- Estilos responsivos para DataTables
+- Soporte para tema claro y oscuro
+- Animaciones suaves
+- Compatible con DaisyUI
+- Estilos personalizados para paginación, búsqueda y filtros
+
+## Integración con Django
+
+### 1. Configuración en settings.py
+
+Asegúrate de que los archivos estáticos estén configurados correctamente:
+
+```python
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+```
+
+### 2. Uso en templates
+
+```html
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/components/alert-component.js' %}"></script>
+<script type="module" src="{% static 'js/core.js' %}"></script>
+{% endblock %}
+```
+
+### 3. Uso en JavaScript
+
 ```javascript
-fetch('/api/endpoint/', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-    },
-    body: JSON.stringify(data)
-})
-.then(response => response.json())
-.then(data => {
-    if (data.success) {
-        Alert.success('Datos guardados correctamente', { autoHide: 3000 });
-    } else {
-        Alert.error(data.message || 'Error al guardar los datos');
-    }
-})
-.catch(error => {
-    Alert.error('Error de conexión');
+// El componente Alert estará disponible globalmente
+document.addEventListener('DOMContentLoaded', function() {
+    // Tu código aquí
+    Alert.success('Página cargada correctamente');
 });
 ```
 
-#### 2. Validación de formularios:
+## Personalización
+
+### Alert Component
+
+Puedes personalizar los estilos de las alertas modificando las clases CSS en el archivo `alert-component.js`:
+
 ```javascript
-function validateForm() {
-    const email = document.getElementById('email').value;
-    
-    if (!email) {
-        Alert.error('El campo email es requerido');
-        return false;
-    }
-    
-    if (!email.includes('@')) {
-        Alert.warning('Por favor ingresa un email válido');
-        return false;
-    }
-    
-    return true;
+const alertClasses = {
+    success: 'bg-green-50 border-l-4 border-green-400 text-green-800',
+    error: 'bg-red-50 border-l-4 border-red-400 text-red-800',
+    warning: 'bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800',
+    info: 'bg-blue-50 border-l-4 border-blue-400 text-blue-800'
+};
+```
+
+### DataTables CSS
+
+Puedes personalizar los estilos de DataTables modificando las variables CSS en `datatables.css`:
+
+```css
+:root {
+    --dt-row-selected: 13, 110, 253;
+    --dt-row-selected-text: 255, 255, 255;
+    --dt-row-hover: 0, 0, 0;
+    /* ... más variables */
 }
 ```
 
-#### 3. Confirmación antes de eliminar:
-```javascript
-function deleteItem(itemId, itemName) {
-    Alert.confirm(
-        `¿Estás seguro de que quieres eliminar "${itemName}"?`,
-        () => {
-            // Proceder con la eliminación
-            performDelete(itemId);
-        },
-        () => {
-            // Cancelar eliminación
-            console.log('Eliminación cancelada');
-        }
-    );
-}
-```
+## Dependencias
 
-### Personalización
+- **Font Awesome**: Para los iconos de las alertas
+- **DaisyUI**: Para los estilos de los botones y componentes
+- **Tailwind CSS**: Para las clases de utilidad
 
-El componente usa las clases de DaisyUI para los estilos. Puedes personalizar los colores y estilos modificando las clases CSS en tu tema de DaisyUI.
+## Compatibilidad
 
-### Posicionamiento
+- Navegadores modernos (Chrome, Firefox, Safari, Edge)
+- Soporte para tema oscuro/claro
+- Responsive design
+- Accesibilidad básica
 
-Las alertas aparecen en la esquina superior derecha de la pantalla. Si necesitas cambiar la posición, modifica las clases CSS en el método `init()` del componente:
+## Contribución
 
-```javascript
-this.alertContainer.className = 'fixed top-4 right-4 z-50 space-y-2 max-w-sm';
-```
+Para agregar nuevos componentes:
 
-### Compatibilidad
-
-- Requiere DaisyUI
-- Requiere FontAwesome para los iconos
-- Compatible con todos los navegadores modernos
-- No requiere dependencias adicionales 
+1. Crea el archivo en el directorio apropiado
+2. Documenta su uso en este README
+3. Incluye ejemplos de uso
+4. Mantén la consistencia con el estilo existente 

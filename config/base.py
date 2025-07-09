@@ -26,7 +26,8 @@ INSTALLED_APPS = [
     
     'users',
     'core',
-    'registrosWOM',
+    # 'registrosWOM',
+    'registrostxtss',
 ]
 
 MIDDLEWARE = [

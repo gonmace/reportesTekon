@@ -9,7 +9,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls.dashboard')),
     path('', include('core.urls.sitios')),
-    path('', include('registrosWOM.urls')),
+    # path('', include('registrosWOM.urls')),
+    path('', include('registrostxtss.urls')),
 ]
 
 if settings.DEBUG:
