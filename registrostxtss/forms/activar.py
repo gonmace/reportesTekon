@@ -1,6 +1,6 @@
 from django import forms
 from users.models import User
-from registrostxtss.models.registros import RegistrosTxTss
+from registrostxtss.models.status_registros_model import RegistrosTxTss
 from crispy_forms.layout import Layout, Submit, Button, Div, Field
 from crispy_forms.helper import FormHelper
 from core.models.sites import Site
@@ -22,7 +22,7 @@ class ActivarRegistroForm(forms.ModelForm):
             ),
             Div(
                 Button('cancel', 'Cancelar', css_class='btn btn-error mt-6', type='button', onclick='closeModal()'),
-                Submit('submit', 'Guardar Registro', css_class='btn btn-success flex-grow mt-6', css_id='activar-registro-btn'),
+                Submit('submit', 'Activar Registro', css_class='btn btn-success flex-grow mt-6', css_id='activar-registro-btn'),
                 css_class='flex gap-2 justify-center',
             ),
         )

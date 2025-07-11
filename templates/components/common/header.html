@@ -12,7 +12,7 @@
         <div class="flex justify-between items-center">
             <div class="flex items-center ml-4">
                 <h2 class="text-xl font-semibold text-primary hidden md:block">
-                    {{ header_title|default:"Dashboard" }}
+                    {% block header_title %}{{ header_title|default:"Dashboard" }}{% endblock header_title %}
                 </h2>
             </div>
             <div class="flex items-center space-x-4 justify-end">

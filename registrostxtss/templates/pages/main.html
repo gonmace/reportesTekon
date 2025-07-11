@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block css %}    
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dataTables.dataTables.min.css' %}">
 {% endblock css %}
 
-{% block title %}Sitios{% endblock %}
+{% block title %}TX/TSS{% endblock %}
 
 {% block pre_content %}
     <!-- Breadcrumbs -->
@@ -26,15 +27,19 @@
 
 {% block content %}
 
+<!-- Token CSRF para las actualizaciones AJAX -->
+{% csrf_token %}
+
 <div class="overflow-x-auto w-full">
-    <table id="sitios-table" class="table table-sm table-zebra w-full">
-        <thead class="uppercase">
-            <tr class="bg-base-200 text-base-content">
-                <th class="text-center whitespace-nowrap">PTI ID</th>
-                <th class="text-center whitespace-nowrap">Operador ID</th>
-                <th class="text-center">Nombre Sitio</th>
+    <table id="registros-table" class="display">
+        <thead>
+            <tr>
+                <th class="!text-center">PTI ID</th>
+                <th class="!text-center">Operador ID</th>
+                <th>Nombre Sitio</th>
                 {% if user.is_superuser %}
-                <th class="text-center whitespace-nowrap">ITO</th>
+                <th class="!text-center whitespace-nowrap">ITO</th>
+                <th class="!text-center whitespace-nowrap">Registro</th>
                 {% endif %}
             </tr>
         </thead>
@@ -68,5 +73,5 @@ Esta autenticado
 window.isSuperuser = {{ user.is_superuser|yesno:"true,false" }};
 </script>
 <script src="{% static 'js/components/alert-component.js' %}"></script>
-<script src="{% static 'js/registrostxtss.js' %}"></script>
+<script type="module" src="{% static 'js/registrostxtss.js' %}"></script>
 {% endblock extra_js %}

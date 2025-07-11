@@ -1,12 +1,9 @@
 import DataTable from 'datatables.net-dt';
 
-// Configuración de clases CSS para Tailwind
 DataTable.ext.classes.container = "dt-container table table-sm !table-zebra w-full";
 DataTable.ext.classes.thead = {
     row: "bg-accent text-white uppercase",
 };
-
-
 
 document.addEventListener("DOMContentLoaded", function () {
     const sitiosTable = document.querySelector('#sitios-table');
@@ -17,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const tabla = new DataTable('#sitios-table', {
             ajax: {
                 url: '/api/v1/sitios/',
-                dataSrc: ''  // DRF retorna lista directamente
+                dataSrc: ''
             },
             columns: [
                 { data: 'pti_cell_id', className: 'whitespace-nowrap text-center' },
@@ -64,7 +61,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 info: "_START_ al _END_ de _TOTAL_ ",
                 infoEmpty: "0 al 0 de 0",
                 infoFiltered: "(filtrado de _MAX_ registros)",
-
             },
             autoWidth: false,
             bStateSave: true

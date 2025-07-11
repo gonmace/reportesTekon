@@ -4,8 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.shortcuts import get_object_or_404
-from ..models.registros import RegistrosTxTss
-from ..serializers import RegistrosTxTssSerializer
+from registrostxtss.models.status_registros_model import RegistrosTxTss
+from registrostxtss.models.registros_model import Registros0
+from registrostxtss.serializers.registros import Registros0Serializer
+from registrostxtss.serializers.create import RegistrosTxTssSerializer
+from users.models import User
+
 
 
 class RegistrosTxTssViewSet(viewsets.ModelViewSet):
@@ -99,3 +103,16 @@ class RegistrosTxTssViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(registros, many=True)
             return Response(serializer.data)
         return Response({'error': 'user_id es requerido'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def usuarios_ito(self, request):
+        """
+        Endpoint para obtener lista de usuarios ITO disponibles
+        """
+        usuarios_ito = User.objects.filter(
+            user_type=User.ITO,
+            is_active=True,
+            is_deleted=False
+        ).values('id', 'username', 'first_name', 'last_name')
+        
+        return Response(list(usuarios_ito))

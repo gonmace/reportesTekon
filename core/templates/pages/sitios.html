@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/datatables.css' %}">
+<link rel="stylesheet" href="{% static 'css/dataTables.dataTables.min.css' %}">
 {% endblock css %}
 
 {% block title %}Sitios{% endblock %}
@@ -21,7 +21,7 @@
 {% block content %}
 
 <div class="overflow-x-auto w-full">
-    <table id="sitios-table">
+    <table id="sitios-table" >
         <thead>
             <tr>
                 <th class="!text-center">PTI ID</th>

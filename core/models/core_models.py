@@ -17,20 +17,15 @@ class BaseModel(models.Model, metaclass=BaseModelMeta):
     class Meta:
         abstract = True
 
-    @staticmethod
-    @abstractmethod
-    def get_table():
-        pass
-
     def soft_delete(self):
         self.is_deleted = True
         self.deleted_at = timezone.now()
         self.save()
 
-    @staticmethod
-    @abstractmethod
-    def get_actives():
-        pass
+    @classmethod
+    def get_actives(cls):
+        """Retorna solo los registros no eliminados (soft delete)"""
+        return cls.objects.filter(is_deleted=False)
 
 
 class CoordinatesMixinModel(models.Model):

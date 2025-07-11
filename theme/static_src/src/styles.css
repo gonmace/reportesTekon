@@ -84,29 +84,13 @@
     -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
     filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
   }
-
-/* PAGINACION */
-  /* nav[aria-label="pagination"] {
-    @apply my-2;
-  }
   
-  nav[aria-label="pagination"] button {
-    @apply btn btn-sm mx-0.5;
+  /* Sombra adaptativa para tema oscuro */
+  [data-theme="dark"] .sombra {
+    -webkit-filter: drop-shadow(3px 3px 2px rgba(255, 255, 255, 0.3));
+    filter: drop-shadow(3px 3px 2px rgba(255, 255, 255, 0.3));
   }
-  
 
-  #sitios-table_info {
-    @apply text-base-content;
-  }
-  .dt-input {
-    @apply select select-sm mr-1 select-neutral;
-  }
-  .dt-length {
-    @apply flex items-center;
-  } */
-  /* [aria-label="pagination"] .current {
-    @apply btn-sm btn-accent;
-  } */
 
   button[aria-current="page"] {
     @apply !btn !btn-sm !btn-accent;
@@ -114,8 +98,28 @@
   option {
     @apply text-base-content bg-base-100;
   }
+  select {
+    @apply !bg-neutral !text-neutral-content;
+  }
+  .ito-text {
+    @apply hover:bg-warning/40;
+  }
   .textinput, .numberinput {
     @apply text-black;
   }
+
+  /* .ito-cell-container {
+  @apply relative min-h-[2rem];
+}
+
+.ito-text {
+  @apply inline-block px-2 py-1 rounded-md transition-all duration-200 hover:bg-blue-500/10;
+} */
+/* En tu CSS global */
+
+:where(.modal[open], .modal-open, .modal-toggle:checked + .modal):not(.modal-start, .modal-end) {
+  scrollbar-gutter: unset !important;
+}
+
 
 }

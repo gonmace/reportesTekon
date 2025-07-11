@@ -24,7 +24,7 @@ class Alert {
         if (!document.getElementById('alerts-container')) {
             this.alertContainer = document.createElement('div');
             this.alertContainer.id = 'alerts-container';
-            this.alertContainer.className = 'fixed top-4 right-4 z-50 space-y-2 max-w-sm';
+            this.alertContainer.className = 'fixed top-4 right-4 z-[9999] space-y-2 max-w-sm';
             document.body.appendChild(this.alertContainer);
         } else {
             this.alertContainer = document.getElementById('alerts-container');
