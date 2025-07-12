@@ -1,6 +1,7 @@
 import DataTable from 'datatables.net-dt';
 import "./changeIto.js"
 import "./ubicarMap.js"
+import "./convertCoords.js"
 // Importar el componente Alert desde el script global
 const Alert = window.Alert;
 

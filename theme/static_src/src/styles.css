@@ -46,15 +46,15 @@
   --color-base-100: #00132f;
   --color-base-200: #0a1d3f;
   --color-base-300: #14284e;
-  --color-base-content: #e0e6f0;
+  --color-base-content: #ffffff;
   --color-primary: #e60000;
   --color-primary-content: #ffffff;
   --color-secondary: #3b3f50;
   --color-secondary-content: #e0e6f0;
   --color-accent: #D7263D;
   --color-accent-content: #ffffff;
-  --color-neutral: #00132f;
-  --color-neutral-content: #e0e0e0;
+  --color-neutral: #e0e0e0;
+  --color-neutral-content: #00132f;
   --color-info: #2196F3;
   --color-info-content: #ffffff;
   --color-success: #43A047;
