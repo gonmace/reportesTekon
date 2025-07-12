@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'import_export',
     'rest_framework',
     'crispy_forms',
-    'crispy_tailwind',
+    'crispy_daisyui',
     
     'users',
     'core',
@@ -129,5 +129,5 @@ REST_FRAMEWORK = {
 }
 
 # Crispy Forms Configuration
-CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
-CRISPY_TEMPLATE_PACK = "tailwind"
+CRISPY_ALLOWED_TEMPLATE_PACKS = "daisyui"
+CRISPY_TEMPLATE_PACK = "daisyui"

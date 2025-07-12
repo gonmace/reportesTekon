@@ -5,7 +5,7 @@ const state = {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-  document.querySelectorAll("input[data-target]").forEach((button) => {
+  document.querySelectorAll("button[data-target]").forEach((button) => {
     button.addEventListener("click", () => {
       state.coordType = button.dataset.target;
       if (state.coordType === "lat") {
@@ -242,6 +242,11 @@ function calculateAndCloseModal(modal) {
   const field_coord = document.getElementById(id_field_coord);
   field_coord.value = state.signedDegrees.toFixed(6);
   field_coord.dispatchEvent(new Event("input"));
+
+  const help_text = document.getElementById(`help-text-${state.coordType}`);
+  if (help_text) {
+    help_text.textContent = `${degrees}° ${minutes}' ${seconds}" ${direction}`;
+  }
 
   state.coordType = "";
   state.signedDegrees = 0;

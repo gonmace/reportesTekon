@@ -4,10 +4,7 @@
 
 @source "../../../**/*.{html,py,js,ts}";
 @source "../../../static/js/components/alert-component.js";
-@source "../../../registrosWOM/forms.py";
-/* @source "../../../pozosscz/maps/src/utils/SliderControl.js"; */
-/* @source "../../main/src/index-main.ts";
-@source "../../maps/src/index-maps-admin.ts"; */
+@source "../../../registrostxtss/forms/registros0_form.py";
 
 @plugin "daisyui";
 
@@ -24,47 +21,45 @@
   --color-primary-content: #ffffff;
   --color-secondary: #d0d4dc;
   --color-secondary-content: #00132f;
-  --color-accent: #D7263D;
+  --color-accent: #d7263d;
   --color-accent-content: #ffffff;
   --color-neutral: #e0e0e0;
   --color-neutral-content: #00132f;
-  --color-info: #1976D2;
+  --color-info: #1976d2;
   --color-info-content: #ffffff;
-  --color-success: #388E3C;
+  --color-success: #388e3c;
   --color-success-content: #ffffff;
-  --color-warning: #F57C00;
+  --color-warning: #f57c00;
   --color-warning-content: #ffffff;
-  --color-error: #D32F2F;
+  --color-error: #d32f2f;
   --color-error-content: #ffffff;
-} 
+}
 
 /* Tema oscuro */
 @plugin "daisyui/theme" {
   name: "dark";
   default: false;
   color-scheme: "dark";
-  --color-base-100: #00132f;
+  --color-base-100: #14284e;
   --color-base-200: #0a1d3f;
-  --color-base-300: #14284e;
+  --color-base-300: #00132f;
   --color-base-content: #ffffff;
   --color-primary: #e60000;
   --color-primary-content: #ffffff;
   --color-secondary: #3b3f50;
   --color-secondary-content: #e0e6f0;
-  --color-accent: #D7263D;
+  --color-accent: #d7263d;
   --color-accent-content: #ffffff;
   --color-neutral: #e0e0e0;
   --color-neutral-content: #00132f;
-  --color-info: #2196F3;
+  --color-info: #2196f3;
   --color-info-content: #ffffff;
-  --color-success: #43A047;
+  --color-success: #43a047;
   --color-success-content: #ffffff;
-  --color-warning: #FFA000;
+  --color-warning: #ffa000;
   --color-warning-content: #ffffff;
-  --color-error: #E53935;
+  --color-error: #e53935;
   --color-error-content: #ffffff;
-
-
 }
 
 @layer base {
@@ -84,12 +79,14 @@
     -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
     filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
   }
-  
+
   /* Sombra adaptativa para tema oscuro */
   [data-theme="dark"] .sombra {
-    -webkit-filter: drop-shadow(3px 3px 2px rgba(255, 255, 255, 0.3));
-    filter: drop-shadow(3px 3px 2px rgba(255, 255, 255, 0.3));
+    @apply !border-white/30;
+    -webkit-filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.8));
+    filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.8));
   }
+
 
 
   button[aria-current="page"] {
@@ -104,8 +101,18 @@
   .ito-text {
     @apply hover:bg-warning/40;
   }
-  .textinput, .numberinput {
-    @apply text-black;
+
+
+  input[type="text"],
+  input[type="number"] {
+    @apply !border-white/20;
+    -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+    filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+  }
+
+  [data-theme="dark"] input[type="text"],
+  [data-theme="dark"] input[type="number"] {
+  box-shadow: 3px 3px 5px rgba(90, 90, 90, 0.5) inset, -3px -3px 5px rgba(255, 255, 255, 0.5) inset;
   }
 
   /* .ito-cell-container {
@@ -115,11 +122,12 @@
 .ito-text {
   @apply inline-block px-2 py-1 rounded-md transition-all duration-200 hover:bg-blue-500/10;
 } */
-/* En tu CSS global */
+  /* En tu CSS global */
 
-:where(.modal[open], .modal-open, .modal-toggle:checked + .modal):not(.modal-start, .modal-end) {
-  scrollbar-gutter: unset !important;
-}
-
-
+  :where(.modal[open], .modal-open, .modal-toggle:checked + .modal):not(
+      .modal-start,
+      .modal-end
+    ) {
+    scrollbar-gutter: unset !important;
+  }
 }

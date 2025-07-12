@@ -15,4 +15,4 @@ tablib==3.7.0
 django-filter==24.1
 
 django-crispy-forms==2.4
-crispy-tailwind==1.0.3
+crispy-daisyui==0.7.0

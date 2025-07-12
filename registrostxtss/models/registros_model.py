@@ -10,9 +10,10 @@ class Registros0(BaseModel):
     registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE, verbose_name='Registro')
     lat = models.FloatField(validators=[validar_latitud], verbose_name='Latitud Inspeccion')
     lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Inspeccion')
-    altura = models.CharField(max_length=100, blank=True, null=True, verbose_name='Altura (m)')
-    dimensiones = models.CharField(max_length=100, null=True, blank=True)
-    deslindes = models.CharField(max_length=100, null=True, blank=True)
+    altura = models.CharField(max_length=100, verbose_name='Altura Torre')
+    dimensiones = models.CharField(max_length=100)
+    deslindes = models.CharField(max_length=100)
+    comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
     
     class Meta:
         verbose_name = 'Registro 0'

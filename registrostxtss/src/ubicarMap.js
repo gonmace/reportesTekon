@@ -176,6 +176,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const btnUbicarMapa = document.getElementById("btn-ubicar-mapa");
   btnUbicarMapa.addEventListener("click", function () {
+    // Verificar si los campos de latitud y longitud tienen valores
+    const latInput = document.getElementById('id_lat');
+    const lngInput = document.getElementById('id_lon');
+    const help_text_lat = document.getElementById(`help-text-lat`);
+    const help_text_lon = document.getElementById(`help-text-lon`);
+
+    if (help_text_lat) {
+        help_text_lat.textContent = "Grados decimales.";
+    }
+    if (help_text_lon) {
+        help_text_lon.textContent = "Grados decimales.";
+    }
+
+    if (latInput && lngInput && latInput.value && lngInput.value) {
+      // Convertir los valores a números
+      const lat = parseFloat(latInput.value);
+      const lng = parseFloat(lngInput.value);
+      
+      // Verificar que los valores son números válidos
+      if (!isNaN(lat) && !isNaN(lng)) {
+        // Ir a la ubicación especificada
+        map.setView([lat, lng], isMobile ? 15 : 16);
+        
+        // Colocar el marcador en esa ubicación
+        actualizarMarker(lat, lng, "Ubicación guardada");
+      }
+    }
+    
     modal.showModal();
   });
 });
