@@ -3,6 +3,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources, fields
 from .models.sites import Site
+from .models.registros import Registro
 
 class SiteResource(resources.ModelResource):
     pti_cell_id = fields.Field(attribute='pti_cell_id', column_name='PTI ID')
@@ -29,5 +30,11 @@ class SiteAdmin(ImportExportModelAdmin, SimpleHistoryAdmin):
     list_display_links = ('name',)
     list_per_page = 100
     
-
 admin.site.register(Site, SiteAdmin)
+
+class RegistroAdmin(admin.ModelAdmin):
+    list_display = ('id', 'sitio', 'created_at', 'is_deleted')
+    ordering = ('sitio',)
+    list_per_page = 100
+
+admin.site.register(Registro, RegistroAdmin)

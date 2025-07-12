@@ -1,0 +1,507 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Gestión de
+Imágenes{% endblock %} {% block css %}
+<style>
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+
+  .upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .upload-area.dragover {
+    border-color: #007bff;
+    background: #e3f2fd;
+  }
+
+  #uploadProgress {
+    margin: 1rem 0;
+  }
+
+  .sortable-ghost {
+    opacity: 0.3;
+  }
+
+  .sorting-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #007bff;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    z-index: 1000;
+    display: none;
+  }
+</style>
+{% endblock %} {% block pre_content %}
+<div class="flex flex-col items-center w-full">
+  <!-- Upload Section -->
+  <div class="bg-base-100 rounded-lg p-6 mb-2 hidden lg:block w-full">
+    <div class="upload-area bg-base-200 hover:bg-base-100" id="uploadArea">
+      <div class="upload-content">
+        <i class="fas fa-cloud-upload-alt text-4xl mb-2"></i>
+        <h3 class="text-lg font-medium">Arrastra y suelta imágenes aquí</h3>
+      </div>
+
+      <input
+        type="file"
+        id="fileInput"
+        class="file-input hidden"
+        multiple
+        accept="image/*"
+      />
+    </div>
+  </div>
+
+  <div class="w-full" id="uploadProgress" style="display: none">
+    <progress
+      class="progress progress-success w-full"
+      id="progressFill"
+      value="0"
+      max="100"
+    ></progress>
+  </div>
+
+  <div
+    class="flex justify-between items-center gap-1 md:gap-6 w-full mx-auto my-2 md:mt-0 md:mb-2"
+  >
+    <label for="descripcionGlobal" class="block text-sm font-medium w-full">
+      <input
+        type="text"
+        id="descripcionGlobal"
+        class="input input-success w-full"
+        placeholder="Escribe una descripción que se aplicará a todas las imágenes subidas..."
+      />
+    </label>
+
+    <button
+      type="button"
+      class="btn btn-primary sombra"
+      onclick="document.getElementById('fileInput').click()"
+    >
+      Seleccionar Imágenes
+    </button>
+  </div>
+
+  {% comment %}
+
+  <button class="btn btn-primary btn-sm ml-2" id="activar-registro-btn">
+    <i class="fa-solid fa-check"></i>
+    Activar Registro
+  </button>
+  {% endcomment %}
+</div>
+{% endblock pre_content %} {% block content %}
+<div class="container max-w-6xl mx-auto md:p-4">
+  <!-- Images Grid -->
+    <div class="image-grid" id="imageGrid">
+      {% for imagen in imagenes %}
+      <div
+        class="card bg-white shadow-sm sombra"
+        data-id="{{ imagen.id }}"
+        draggable="true">
+          <figure class="relative overflow-hidden cursor-move">
+            <img
+              src="{{ imagen.imagen.url }}"
+              alt="Imagen {{ imagen.id }}"
+              loading="lazy"
+            />
+            <button
+              class="delete-btn btn btn-circle btn-error absolute top-2 right-2"
+              onclick="deleteImagen({{ imagen.id }})"
+              title="Eliminar imagen">
+              <i class="fas fa-times"></i>
+            </button>
+          </figure>
+        
+        <div class="p-2">
+          <input
+            class="input input-success bg-white text-black"
+            placeholder="Escribe una descripción..."
+            data-imagen-id="{{ imagen.id }}"
+          />
+          {{ imagen.descripcion|default:'' }}
+
+          <div class="flex justify-between items-center">
+            <div class="text-xs text-gray-500 mt-2">
+              {{ imagen.created_at|date:"d/m/Y H:i" }}
+            </div>
+            <button
+              class="btn btn-circle btn-success"
+              onclick="saveDescription({{ imagen.id }})">
+              <i class="fas fa-save"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {% empty %}
+      <div class="col-span-full text-center py-8 text-gray-500">
+        <i class="fas fa-images text-4xl mb-4"></i>
+        <p>No hay imágenes subidas aún</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Sorting indicator -->
+<div id="sortingIndicator" class="sorting-indicator">
+  <i class="fas fa-spinner fa-spin"></i> Guardando orden...
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script>
+  let sortable;
+  let isSorting = false;
+  let sortTimeout;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    initializeUpload();
+    initializeSortable();
+    initializeEventListeners();
+  });
+
+  function initializeUpload() {
+    const uploadArea = document.getElementById("uploadArea");
+    const fileInput = document.getElementById("fileInput");
+
+    // Drag and drop events
+    uploadArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadArea.classList.add("dragover");
+    });
+
+    uploadArea.addEventListener("dragleave", () => {
+      uploadArea.classList.remove("dragover");
+    });
+
+    uploadArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove("dragover");
+      const files = e.dataTransfer.files;
+      handleFileUpload(files);
+    });
+
+    // File input change
+    fileInput.addEventListener("change", (e) => {
+      handleFileUpload(e.target.files);
+    });
+  }
+
+  function handleFileUpload(files) {
+    if (files.length === 0) return;
+
+    const formData = new FormData();
+    const descripcion = document.getElementById("descripcionGlobal").value;
+
+    // Add files
+    for (let file of files) {
+      if (file.type.startsWith("image/")) {
+        formData.append("imagenes", file);
+      }
+    }
+
+    if (formData.getAll("imagenes").length === 0) {
+      alert("Por favor selecciona solo archivos de imagen.");
+      return;
+    }
+
+    formData.append("descripcion", descripcion);
+    formData.append("registro_id", "{{ request.GET.registro_id|default:1 }}");
+
+    // Show progress elements
+    const progressDiv = document.getElementById("uploadProgress");
+    const progressFill = document.getElementById("progressFill");
+
+    progressDiv.style.display = "block";
+    progressFill.value = 0;
+
+    // Create XMLHttpRequest for real progress tracking
+    const xhr = new XMLHttpRequest();
+
+    // Track upload progress
+    xhr.upload.addEventListener("progress", function (e) {
+      if (e.lengthComputable) {
+        const percentComplete = (e.loaded / e.total) * 100;
+        progressFill.value = Math.round(percentComplete);
+      }
+    });
+
+    // Handle upload completion
+    xhr.addEventListener("load", function () {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.success) {
+            progressFill.value = 100;
+
+            // Add new images to grid
+            data.imagenes.forEach((imagen) => {
+              addImageToGrid(imagen);
+            });
+
+            // Clear form
+            document.getElementById("fileInput").value = "";
+            document.getElementById("descripcionGlobal").value = "";
+
+            setTimeout(() => {
+              progressDiv.style.display = "none";
+            }, 2000);
+          } else {
+            setTimeout(() => {
+              progressDiv.style.display = "none";
+            }, 3000);
+          }
+        } catch (e) {
+          setTimeout(() => {
+            progressDiv.style.display = "none";
+          }, 3000);
+        }
+      } else {
+        setTimeout(() => {
+          progressDiv.style.display = "none";
+        }, 3000);
+      }
+    });
+
+    // Handle upload errors
+    xhr.addEventListener("error", function () {
+      setTimeout(() => {
+        progressDiv.style.display = "none";
+      }, 3000);
+    });
+
+    // Handle upload abort
+    xhr.addEventListener("abort", function () {
+      setTimeout(() => {
+        progressDiv.style.display = "none";
+      }, 2000);
+    });
+
+    // Start the upload
+    xhr.open("POST", "/imagenes/upload/");
+    xhr.setRequestHeader(
+      "X-CSRFToken",
+      document.querySelector("[name=csrfmiddlewaretoken]").value
+    );
+    xhr.send(formData);
+  }
+
+  function addImageToGrid(imagen) {
+    const grid = document.getElementById("imageGrid");
+    const emptyMessage = grid.querySelector(".col-span-full");
+    if (emptyMessage) {
+      emptyMessage.remove();
+    }
+
+    const imageCard = document.createElement("div");
+    imageCard.className = "image-card";
+    imageCard.setAttribute("data-id", imagen.id);
+    imageCard.draggable = true;
+
+    imageCard.innerHTML = `
+        <div 
+            class="card bg-white shadow-sm sombra
+            data-id="${imagen.id}"
+            draggable="true">
+                <figure class="relative overflow-hidden cursor-move">
+                    <img src="${imagen.url}" 
+                    alt="Imagen ${imagen.id}" 
+                    loading="lazy">
+                    <button
+                        class="delete-btn btn btn-circle btn-error absolute top-2 right-2"
+                        onclick="deleteImagen(${imagen.id})"
+                        title="Eliminar imagen">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </figure>
+        
+        
+        <div class="p-2">
+          <input
+            class="input input-success bg-white text-black"
+            placeholder="Escribe una descripción..."
+            data-imagen-id="${imagen.id}"
+            />
+            ${imagen.descripcion || ""}
+            <div class="flex justify-between items-center">
+                <div class="text-xs text-gray-500 mt-2">
+                    ${imagen.created_at}
+                </div>
+                <button
+                    class="btn btn-circle btn-success"
+                    onclick="saveDescription(${imagen.id})">
+                    <i class="fas fa-save"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    `;
+
+    grid.appendChild(imageCard);
+  }
+
+  function saveDescription(imagenId) {
+    const textarea = document.querySelector(
+      `textarea[data-imagen-id="${imagenId}"]`
+    );
+    const descripcion = textarea.value;
+
+    fetch("/imagenes/update/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+          .value,
+      },
+      body: JSON.stringify({
+        imagen_id: imagenId,
+        descripcion: descripcion,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showNotification("Descripción guardada correctamente", "success");
+        } else {
+          showNotification("Error al guardar: " + data.message, "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        showNotification("Error al guardar la descripción", "error");
+      });
+  }
+
+  function deleteImagen(imagenId) {
+    if (!confirm("¿Estás seguro de que quieres eliminar esta imagen?")) {
+      return;
+    }
+
+    fetch(`/imagenes/delete/${imagenId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+          .value,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          const imageCard = document.querySelector(`[data-id="${imagenId}"]`);
+          imageCard.remove();
+
+          // Check if grid is empty
+          const grid = document.getElementById("imageGrid");
+          if (grid.children.length === 0) {
+            grid.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        <i class="fas fa-images text-4xl mb-4"></i>
+                        <p>No hay imágenes subidas aún</p>
+                    </div>
+                `;
+          }
+
+          showNotification("Imagen eliminada correctamente", "success");
+        } else {
+          showNotification("Error al eliminar: " + data.message, "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        showNotification("Error al eliminar la imagen", "error");
+      });
+  }
+
+  function initializeSortable() {
+    const grid = document.getElementById("imageGrid");
+
+    sortable = Sortable.create(grid, {
+      animation: 150,
+      ghostClass: "sortable-ghost",
+      chosenClass: "sortable-chosen",
+      onStart: function () {
+        isSorting = true;
+      },
+      onEnd: function () {
+        isSorting = false;
+        // Auto-save order after drag ends
+        saveOrder();
+      },
+    });
+  }
+
+  function saveOrder() {
+    const imageCards = document.querySelectorAll(".image-card");
+    const orden = Array.from(imageCards).map((card) =>
+      card.getAttribute("data-id")
+    );
+
+    // Show sorting indicator
+    const indicator = document.getElementById("sortingIndicator");
+    indicator.style.display = "block";
+
+    // Clear previous timeout
+    if (sortTimeout) {
+      clearTimeout(sortTimeout);
+    }
+
+    // Debounce the save operation
+    sortTimeout = setTimeout(() => {
+      fetch("/imagenes/reorder/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+            .value,
+        },
+        body: JSON.stringify({ orden: orden }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          indicator.style.display = "none";
+          if (data.success) {
+            showNotification("Orden actualizado automáticamente", "success");
+          } else {
+            showNotification(
+              "Error al guardar el orden: " + data.message,
+              "error"
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          indicator.style.display = "none";
+          showNotification("Error al guardar el orden", "error");
+        });
+    }, 500); // Wait 500ms after last drag operation
+  }
+
+  function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement("div");
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+      type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+    }`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
+  }
+</script>
+{% endblock %}

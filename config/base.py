@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     
     'users',
     'core',
+    'imagenes',
     # 'registrosWOM',
     'registrostxtss',
 ]
