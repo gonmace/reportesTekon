@@ -71,22 +71,13 @@ document.addEventListener("DOMContentLoaded", function () {
                             return `
                                 <a 
                                     type="button"
-                                    href="/createReg.html?registroId=${data.id}"
-                                    class="text-info editar-btn m-1 cursor-pointer"
-                                    data-id="${row.registro.id}" 
+                                    href="/registrostxtss/${data.id}"
+                                    class="btn btn-lg btn-info btn-circle text-lg"
+                                    data-id="${row.is_deleted.id}" 
                                     title="${row.sitio.name}"
                                 >
-                                    <i class="fa-solid fa-plus"></i>
+                                    <i class="fa-regular fa-pen-to-square"></i>
                                 </a>
-                                <button 
-                                    type="button"
-                                    class="text-error eliminar-btn m-1 cursor-pointer"
-                                    data-id="${row.id}" 
-                                    data-nombre="${row.name}"
-                                    title="Eliminar sitio"
-                                >
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
                             `;
                         }
                     }] : [])
@@ -156,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             body: JSON.stringify({
                                 sitio_id: rowData.sitio.id,
                                 user_id: newUserId,
-                                registro0: rowData.registro0
+                                is_deleted: rowData.is_deleted
                             })
                         })
                         .then(response => {
@@ -293,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = {
                 sitio_id: formData.get('sitio'),
                 user_id: formData.get('user'),
-                registro0: false
+                is_deleted: false
             };
 
             // Obtener el token CSRF

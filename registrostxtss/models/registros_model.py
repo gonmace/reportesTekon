@@ -4,7 +4,7 @@ from users.models import User
 from core.models.sites import Site
 from core.models import BaseModel
 from registrostxtss.models.validators import validar_latitud, validar_longitud
-from registrostxtss.models.status_registros_model import RegistrosTxTss
+from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 
 class Registros0(BaseModel):
     registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE, verbose_name='Registro')

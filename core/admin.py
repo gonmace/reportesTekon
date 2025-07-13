@@ -4,6 +4,7 @@ from import_export.admin import ImportExportModelAdmin
 from import_export import resources, fields
 from .models.sites import Site
 from .models.registros import Registro
+from import_export.formats.base_formats import CSV, XLSX
 
 class SiteResource(resources.ModelResource):
     pti_cell_id = fields.Field(attribute='pti_cell_id', column_name='PTI ID')
@@ -29,6 +30,9 @@ class SiteAdmin(ImportExportModelAdmin, SimpleHistoryAdmin):
     ordering = ('pti_cell_id',)
     list_display_links = ('name',)
     list_per_page = 100
+    
+    def get_export_formats(self):
+        return [CSV(), XLSX()]
     
 admin.site.register(Site, SiteAdmin)
 

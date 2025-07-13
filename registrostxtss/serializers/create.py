@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from registrostxtss.models.status_registros_model import RegistrosTxTss
+from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 from registrostxtss.models.registros_model import Registros0
 from core.models.sites import Site
 from users.models import User
@@ -23,12 +23,12 @@ class RegistrosTxTssSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = RegistrosTxTss
-        fields = ['id', 'sitio', 'sitio_id', 'user', 'user_id', 'registro', 'created_at', 'updated_at']
+        fields = ['id', 'sitio', 'sitio_id', 'user', 'user_id', 'is_deleted', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def create(self, validated_data):
         # Asegurar que registro sea un booleano
-        validated_data['registro'] = bool(validated_data.get('registro', False))
+        validated_data['is_deleted'] = bool(validated_data.get('is_deleted', False))
         try:
             return super().create(validated_data)
         except Exception as e:

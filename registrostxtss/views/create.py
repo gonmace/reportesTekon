@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from core.utils.breadcrumbs import BreadcrumbsMixin
 from registrostxtss.forms.registros0_form import Registros0Form
 from core.models.sites import Site
-from registrostxtss.models.status_registros_model import RegistrosTxTss
+from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from rest_framework import viewsets
@@ -25,23 +25,25 @@ class CreateRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
     
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        # Obtener los parámetros de la URL
-        registro_id = self.request.GET.get('registroId')
+        # Obtener el registro_id de la URL
+        registro_id = self.kwargs.get('registro_id')
         if registro_id:
             kwargs['registro_id'] = registro_id
         return kwargs
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Obtener los parámetros de la URL
-        registro_id = self.request.GET.get('registroId')
-        # Si se proporciona registroId, usar ese registro
-        try:
-            registro_txtss = get_object_or_404(RegistrosTxTss, id=registro_id)
-            sitio = registro_txtss.sitio
-            context['sitio'] = sitio
-        except RegistrosTxTss.DoesNotExist:
-            context['error'] = 'Registro Tx/Tss no encontrado'
+        # Obtener el registro_id de la URL
+        registro_id = self.kwargs.get('registro_id')
+        # Si se proporciona registro_id, usar ese registro
+        if registro_id:
+            try:
+                registro_txtss = get_object_or_404(RegistrosTxTss, id=registro_id)
+                sitio = registro_txtss.sitio
+                context['sitio'] = sitio
+                context['registro_txtss'] = registro_txtss
+            except RegistrosTxTss.DoesNotExist:
+                context['error'] = 'Registro Tx/Tss no encontrado'
         
         return context
     

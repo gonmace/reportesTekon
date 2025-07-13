@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load static %} 
+
+{% block content %} 
+
+<ul class="timeline timeline-vertical">
+
+    {% include 'components/step&photo.html' with title="Sitio" photo_count=0 color_form="primary"  color_photo="primary" first=True %}
+
+    {% include 'components/step.html' with title="Acceso" color_form="primary" %}
+
+    {% include 'components/step&photo.html' with title="Empalme" photo_count=0 color_form="primary"  color_photo="primary" last=True %}
+
+</ul>
+
+{% endblock %}

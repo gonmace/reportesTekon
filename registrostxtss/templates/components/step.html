@@ -1,0 +1,15 @@
+{% load static %}
+<li>
+    {% if not first %}
+        <hr class="bg-white sombra" />
+    {% endif %}
+    <div class="timeline-middle">
+      <button class="btn btn-{{color_form}} btn-circle p-1 sombra">
+        {% include 'svgs/doc.svg' %}
+      </button>
+    </div>
+    <div class="timeline-end timeline-box text-lg ml-4 sombra">{{title}}</div>
+    {% if not last %}
+        <hr class="bg-white sombra" />
+    {% endif %}
+  </li>
