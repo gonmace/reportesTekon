@@ -1,5 +1,5 @@
 # Crear un registro
-registro = Registros0.objects.create(
+registro = RSitio.objects.create(
     sitio=site,
     lat=-33.4567,
     lon=-70.6483,
@@ -10,7 +10,7 @@ registro = Registros0.objects.create(
 # created_at se establece automáticamente
 
 # Obtener solo registros activos
-registros_activos = Registros0.get_actives()
+registros_activos = RSitio.get_actives()
 
 # Soft delete
 registro.soft_delete()

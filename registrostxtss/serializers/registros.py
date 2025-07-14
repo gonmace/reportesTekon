@@ -1,15 +1,10 @@
 from rest_framework import serializers
-from core.models.sites import Site
-from core.serializers import SiteSerializer
-from users.models import User
-from users.serializers import UserSerializer
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
-from registrostxtss.models.r_sitio import Registros0
+from registrostxtss.models.r_sitio import RSitio
 
-class Registros0Serializer(serializers.ModelSerializer):
+class RSitioSerializer(serializers.ModelSerializer):
     
     class Meta:
-        model = Registros0
+        model = RSitio
         fields = ['id', 'sitio', 'sitio_id', 'lat', 'lon', 'altura', 'dimensiones', 'deslindes', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
     

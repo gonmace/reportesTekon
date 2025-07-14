@@ -6,7 +6,7 @@ from core.models import BaseModel
 from registrostxtss.models.validators import validar_latitud, validar_longitud
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 
-class Registros0(BaseModel):
+class RSitio(BaseModel):
     registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE, verbose_name='Registro')
     lat = models.FloatField(validators=[validar_latitud], verbose_name='Latitud Inspeccion')
     lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Inspeccion')
@@ -29,7 +29,7 @@ class Registros0(BaseModel):
     
     @staticmethod
     def get_actives():
-        return Registros0.objects.filter(is_deleted=False)
+        return RSitio.objects.filter(is_deleted=False)
 
 
 class Registros1(BaseModel):

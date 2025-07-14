@@ -1,23 +1,15 @@
 from django.views.generic import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from core.utils.breadcrumbs import BreadcrumbsMixin
-from registrostxtss.forms.registros0_form import Registros0Form
-from core.models.sites import Site
+from registrostxtss.forms.r_sitio_form import RSitioForm
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.decorators import action
-from rest_framework import status
-from registrostxtss.models.r_sitio import Registros0
-from registrostxtss.serializers.registros import Registros0Serializer
 
-class CreateRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
+
+
+class RSitioView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
     template_name = 'pages/createReg.html'
-    form_class = Registros0Form
+    form_class = RSitioForm
     
     class Meta:
         title = 'Crear Registro Tx/Tss'
@@ -59,12 +51,12 @@ class CreateRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
         # Si el formulario es inválido, volver a mostrar la página con errores
         return self.render_to_response(self.get_context_data(form=form))
 
-# class Registros0ViewSet(viewsets.ModelViewSet):
+# class RSitioViewSet(viewsets.ModelViewSet):
 #     """
-#     ViewSet para manejar las operaciones de Registros0
+#     ViewSet para manejar las operaciones de RSitio
 #     """
-#     queryset = Registros0.objects.all()
-#     serializer_class = Registros0Serializer
+#     queryset = RSitio.objects.all()
+#     serializer_class = RSitioSerializer
 #     permission_classes = [IsAuthenticated]
 #     filter_backends = [SearchFilter, OrderingFilter]
 #     search_fields = ['sitio__name', 'sitio__pti_cell_id', 'sitio__operator_id']

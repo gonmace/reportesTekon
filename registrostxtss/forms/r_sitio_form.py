@@ -1,5 +1,5 @@
 from django import forms
-from registrostxtss.models.r_sitio import Registros0
+from registrostxtss.models.r_sitio import RSitio
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
@@ -11,7 +11,7 @@ if settings.DEBUG:
     console = Console()
 
 
-class Registros0Form(forms.ModelForm):
+class RSitioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         # Extraer registroId de los argumentos si está presente
         self.registro_id = kwargs.pop('registro_id', None)
@@ -103,7 +103,7 @@ class Registros0Form(forms.ModelForm):
 
     
     class Meta:
-        model = Registros0
+        model = RSitio
         fields = ['registro', 'lat', 'lon', 'altura', 'dimensiones', 'deslindes', 'comentarios']
         labels = {
             'registro': 'Registro Tx/Tss',

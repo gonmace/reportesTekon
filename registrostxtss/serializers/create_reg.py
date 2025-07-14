@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
-from registrostxtss.models.r_sitio import Registros0
+from registrostxtss.models.r_sitio import RSitio
 from core.models.sites import Site
 from users.models import User
 from core.serializers import SiteSerializer
