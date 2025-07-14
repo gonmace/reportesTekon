@@ -17,12 +17,12 @@ class StepsRegistroView(View):
             rsitio_id = None
 
         # SITIO
+        min_photo_count = 4
         completeness_info = RSitio.check_completeness(rsitio_id)
         etapa = RSitio.get_etapa()
         try:
             photo_count = Photos.get_photo_count_and_color(registro_id, etapa=etapa)
-            color = 'success' if photo_count >= 4 else 'warning'
-            
+            color = 'success' if photo_count >= min_photo_count else 'warning'
         except Photos.DoesNotExist:
             photo_count = 0
             color = 'error'

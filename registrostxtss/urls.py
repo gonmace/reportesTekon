@@ -5,7 +5,7 @@ from .views.registros import RegistrosTxTssViewSet
 from .views.steps import StepsRegistroView
 
 from .r_sitio.views import RSitioView
-
+from .r_acceso.views import RAccesoView
 app_name = "registrostxtss"
 
 # Configurar el router para los ViewSets
@@ -18,6 +18,8 @@ urlpatterns = [
     
     path("registrostxtss/<int:registro_id>/", StepsRegistroView.as_view(), name="steps"),
     path("registrostxtss/<int:registro_id>/<str:title>", RSitioView.as_view(), name="sitio"),
+    
+    path("registrostxtss/<int:registro_id>/acceso", RAccesoView.as_view(), name="acceso"),
     
     path("registrostxtss/", include("photos.urls"), name="photos"),
     

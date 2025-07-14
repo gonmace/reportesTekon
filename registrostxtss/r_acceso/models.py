@@ -1,20 +1,20 @@
 from django.db import models
 from core.models import BaseModel
-from registrostxtss.models.validators import validar_latitud, validar_longitud
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 
-class RSitio(BaseModel):
+class RAcceso(BaseModel):
     registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE, verbose_name='Registro')
-    lat = models.FloatField(validators=[validar_latitud], verbose_name='Latitud Inspeccion')
-    lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Inspeccion')
-    altura = models.CharField(max_length=100, verbose_name='Altura Torre')
-    dimensiones = models.CharField(max_length=100)
-    deslindes = models.CharField(max_length=100)
-    comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
-    
+    acceso_sitio = models.TextField(max_length=100, verbose_name='Acceso al sitio')
+    acceso_sitio_construccion = models.TextField(max_length=100, verbose_name='Acceso al sitio para construcción')
+    longitud_acceso_sitio = models.IntegerField(verbose_name='Longitud acceso al Sitio')
+    longitud_acceso_construccion = models.IntegerField(verbose_name='Longitud acceso al Sitio para construcción')
+    tipo_suelo = models.CharField(max_length=100, verbose_name='Tipo de suelo de sitio y huella')
+    obstaculos = models.TextField(max_length=100, verbose_name='Edificaciones cercanas / obstáculos')
+    adicionales = models.TextField(max_length=100, verbose_name='Trabajos adicionales a considerar')
+
     class Meta:
-        verbose_name = 'Registro Sitio'
-        verbose_name_plural = 'Registros Sitio'
+        verbose_name = 'Registro Acceso'
+        verbose_name_plural = 'Registros Acceso'
         ordering = ['-created_at']
     
     def __str__(self):
@@ -22,20 +22,20 @@ class RSitio(BaseModel):
     
     @staticmethod
     def get_etapa():
-        return 'sitio'
+        return 'acceso'
     
     @staticmethod
     def get_actives():
-        return RSitio.objects.filter(is_deleted=False)
+        return RAcceso.objects.filter(is_deleted=False)
 
     @staticmethod
-    def check_completeness(rsitio_id):
+    def check_completeness(racceso_id):
         """
-        Verifica si un registro RSitio tiene todos los campos obligatorios llenos.
+        Verifica si un registro RAcceso tiene todos los campos obligatorios llenos.
         Solo verifica campos que no tienen blank=True y null=True.
         
         Args:
-            rsitio_id: ID del registro RSitio
+            racceso_id: ID del registro RAcceso
             
         Returns:
             dict: Diccionario con información sobre la completitud del registro
@@ -47,14 +47,15 @@ class RSitio(BaseModel):
                     'filled_fields': int
                 }
         """
-        # Obtener la instancia de RSitio por ID
+        # TODO: Verificar si el registro de acceso está relacionado con el registro de sitio
+        # Obtener la instancia de RAcceso por ID
         try:
-            instance = RSitio.objects.get(id=rsitio_id)
-        except RSitio.DoesNotExist:
+            instance = RAcceso.objects.get(id=racceso_id)
+        except RAcceso.DoesNotExist:
             return {
                 'color': 'error',
                 'is_complete': None,
-                'missing_fields': ['rsitio_no_encontrado'],
+                'missing_fields': ['racceso_no_encontrado'],
                 'total_fields': 0,
                 'filled_fields': 0
             }
