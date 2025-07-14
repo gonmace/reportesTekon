@@ -5,6 +5,7 @@
 @source "../../../**/*.{html,py,js,ts}";
 @source "../../../static/js/components/alert-component.js";
 @source "../../../registrostxtss/forms/registros0_form.py";
+@source "../../../templates/svgs/*.svg";
 
 @plugin "daisyui";
 

@@ -1,0 +1,25 @@
+<svg class="p-0.5" viewBox="0 0 24 24" id="notes" data-name="notes" xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor">
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+    <g id="SVGRepo_iconCarrier">
+        <defs>
+            <style>
+                .cls-1 {
+                    fill: none;
+                    stroke: currentColor;
+                    stroke-miterlimit: 10;
+                    stroke-width: 1.3px;
+                }
+            </style>
+        </defs>
+        <rect class="cls-1" x="3.39" y="2.41" width="17.22" height="20.09"></rect>
+        <line class="cls-1" x1="7.22" y1="0.5" x2="7.22" y2="4.33"></line>
+        <line class="cls-1" x1="12" y1="0.5" x2="12" y2="4.33"></line>
+        <line class="cls-1" x1="16.78" y1="0.5" x2="16.78" y2="4.33"></line>
+        <line class="cls-1" x1="6.26" y1="11.02" x2="17.74" y2="11.02"></line>
+        <line class="cls-1" x1="6.26" y1="7.2" x2="17.74" y2="7.2"></line>
+        <line class="cls-1" x1="6.26" y1="14.85" x2="17.74" y2="14.85"></line>
+        <line class="cls-1" x1="6.26" y1="18.67" x2="12" y2="18.67"></line>
+    </g>
+</svg>

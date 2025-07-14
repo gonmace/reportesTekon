@@ -4,7 +4,7 @@ from core.serializers import SiteSerializer
 from users.models import User
 from users.serializers import UserSerializer
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
-from registrostxtss.models.registros_model import Registros0
+from registrostxtss.models.r_sitio import Registros0
 
 class Registros0Serializer(serializers.ModelSerializer):
     

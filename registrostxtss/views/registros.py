@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.shortcuts import get_object_or_404
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
-from registrostxtss.models.registros_model import Registros0
+from registrostxtss.models.r_sitio import Registros0
 from registrostxtss.serializers.registros import Registros0Serializer
 from registrostxtss.serializers.create import RegistrosTxTssSerializer
 from users.models import User

@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
 from rest_framework import status
-from registrostxtss.models.registros_model import Registros0
+from registrostxtss.models.r_sitio import Registros0
 from registrostxtss.serializers.registros import Registros0Serializer
 
 class CreateRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
