@@ -26,10 +26,6 @@ Imágenes{% endblock %} {% block css %}
     margin: 1rem 0;
   }
 
-  .sortable-ghost {
-    opacity: 0.3;
-  }
-
   .sorting-indicator {
     position: fixed;
     top: 20px;
@@ -87,19 +83,18 @@ Imágenes{% endblock %} {% block css %}
     <button
       type="button"
       class="btn btn-primary sombra"
-      onclick="document.getElementById('fileInput').click()"
-    >
+      onclick="document.getElementById('fileInput').click()">
       Seleccionar Imágenes
+    </button>
+
+    <button
+    onclick="history.back()"
+    class="btn btn-outline btn-circle ml-auto">
+    <i class="fa-solid fa-arrow-left"></i>
     </button>
   </div>
 
-  {% comment %}
 
-  <button class="btn btn-primary btn-sm ml-2" id="activar-registro-btn">
-    <i class="fa-solid fa-check"></i>
-    Activar Registro
-  </button>
-  {% endcomment %}
 </div>
 {% endblock pre_content %} {% block content %}
 <div class="container max-w-6xl mx-auto md:p-4">

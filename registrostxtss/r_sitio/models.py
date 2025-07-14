@@ -24,8 +24,8 @@ class RSitio(BaseModel):
         return f"{self.registro} - {self.created_at.strftime('%d/%m/%Y %H:%M')}"
     
     @staticmethod
-    def get_table():
-        return 'registros0'
+    def get_etapa():
+        return 'sitio'
     
     @staticmethod
     def get_actives():
