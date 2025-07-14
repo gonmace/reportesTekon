@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <a 
                                     type="button"
                                     href="/registrostxtss/${data.id}"
-                                    class="btn btn-lg btn-info btn-circle text-lg"
+                                    class="btn btn-lg btn-info btn-circle text-lg sombra"
                                     data-id="${row.is_deleted.id}" 
                                     title="${row.sitio.name}"
                                 >

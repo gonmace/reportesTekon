@@ -2,15 +2,15 @@
 
 {% load static %} 
 
-{% block content %} 
+{% block content %}
 
 <ul class="timeline timeline-vertical">
 
-    {% include 'components/step&photo.html' with title="Sitio" photo_count=0 color_form="primary"  color_photo="primary" first=True %}
+    {% include 'components/step&photo.html' with registro_id=registro_id title="sitio" photo_count=0 color_form=completeness_info.color  color_photo="primary" first=True %}
 
-    {% include 'components/step.html' with title="Acceso" color_form="primary" %}
+    {% include 'components/step.html' with registro_id=registro_id title="acceso" color_form="primary" %}
 
-    {% include 'components/step&photo.html' with title="Empalme" photo_count=0 color_form="primary"  color_photo="primary" last=True %}
+    {% include 'components/step&photo.html' with registro_id=registro_id title="empalme" photo_count=0 color_form="primary"  color_photo="primary" last=True %}
 
 </ul>
 

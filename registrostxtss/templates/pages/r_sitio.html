@@ -22,7 +22,30 @@
     {% endif %}
 
     <!-- Formulario -->
-    <div class="bg-base-200 p-1 md:p-4 rounded-lg">
+    <div class="bg-base-200 p-1 md:p-4 rounded-lg relative">
+      <div class="absolute top-2 right-2">
+        <div class="flex flex-col gap-2">
+
+        
+
+
+        <!-- Botón de regreso -->
+      
+            <button onclick="history.back()" class="btn btn-outline btn-circle ml-auto">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+
+
+                    <!-- Indicador de modo edición -->
+        {% if is_editing %}
+        <div class="badge badge-dash badge-warning">Editando</div>
+        {% else %}
+        <div class="badge badge-dash badge-success">Nuevo</div>
+        {% endif %}
+
+          </div>
+        </div>
+        
         {% crispy form %}
     </div>
 </div>

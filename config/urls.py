@@ -11,7 +11,7 @@ urlpatterns = [
     path('', include('core.urls.sitios')),
     # path('', include('registrosWOM.urls')),
     path('', include('registrostxtss.urls')),
-    path('', include('imagenes.urls')),
+    path('', include('photos.urls')),
 ]
 
 if settings.DEBUG:

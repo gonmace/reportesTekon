@@ -2,8 +2,9 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views.main import ListRegistrosView
 from .views.registros import RegistrosTxTssViewSet
-from .views.r_sitio_view import RSitioView
 from .views.steps import StepsRegistroView
+
+from .r_sitio.views import RSitioView
 
 app_name = "registrostxtss"
 
@@ -14,8 +15,11 @@ router.register(r'api/v1/registros', RegistrosTxTssViewSet, basename='registros'
 
 urlpatterns = [
     path("registrostxtss/", ListRegistrosView.as_view(), name="list"),
-    path("a/<int:registro_id>/", RSitioView.as_view(), name="create"),
-    path("registrostxtss/<int:registro_id>/", StepsRegistroView.as_view(), name="create"),
+    
+    path("registrostxtss/<int:registro_id>/", StepsRegistroView.as_view(), name="steps"),
+    path("registrostxtss/<int:registro_id>/<str:title>", RSitioView.as_view(), name="sitio"),
+    
+    path("registrostxtss/", include("photos.urls"), name="photos"),
     
     # Incluir las rutas del ViewSet
     path('', include(router.urls)),

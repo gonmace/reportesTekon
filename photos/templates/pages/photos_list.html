@@ -105,20 +105,20 @@ Imágenes{% endblock %} {% block css %}
 <div class="container max-w-6xl mx-auto md:p-4">
   <!-- Images Grid -->
     <div class="image-grid" id="imageGrid">
-      {% for imagen in imagenes %}
+      {% for photo in photos %}
       <div
         class="card bg-white shadow-sm sombra"
-        data-id="{{ imagen.id }}"
+        data-id="{{ photo.id }}"
         draggable="true">
           <figure class="relative overflow-hidden cursor-move">
             <img
-              src="{{ imagen.imagen.url }}"
-              alt="Imagen {{ imagen.id }}"
+              src="{{ photo.imagen.url }}"
+              alt="Photo {{ photo.id }}"
               loading="lazy"
             />
             <button
               class="delete-btn btn btn-circle btn-error absolute top-2 right-2"
-              onclick="deleteImagen({{ imagen.id }})"
+              onclick="deletePhoto({{ photo.id }})"
               title="Eliminar imagen">
               <i class="fas fa-times"></i>
             </button>
@@ -128,17 +128,17 @@ Imágenes{% endblock %} {% block css %}
           <input
             class="input input-success bg-white text-black"
             placeholder="Escribe una descripción..."
-            data-imagen-id="{{ imagen.id }}"
+            data-photo-id="{{ photo.id }}"
+            value="{{ photo.descripcion|default:'' }}"
           />
-          {{ imagen.descripcion|default:'' }}
 
           <div class="flex justify-between items-center">
             <div class="text-xs text-gray-500 mt-2">
-              {{ imagen.created_at|date:"d/m/Y H:i" }}
+              {{ photo.created_at|date:"d/m/Y H:i" }}
             </div>
             <button
               class="btn btn-circle btn-success"
-              onclick="saveDescription({{ imagen.id }})">
+              onclick="saveDescription({{ photo.id }})">
               <i class="fas fa-save"></i>
             </button>
           </div>
@@ -148,7 +148,7 @@ Imágenes{% endblock %} {% block css %}
       {% empty %}
       <div class="col-span-full text-center py-8 text-gray-500">
         <i class="fas fa-images text-4xl mb-4"></i>
-        <p>No hay imágenes subidas aún</p>
+        <p>No hay fotos subidas aún</p>
       </div>
       {% endfor %}
     </div>
@@ -169,7 +169,7 @@ Imágenes{% endblock %} {% block css %}
   document.addEventListener("DOMContentLoaded", function () {
     initializeUpload();
     initializeSortable();
-    initializeEventListeners();
+    {% comment %} initializeEventListeners(); {% endcomment %}
   });
 
   function initializeUpload() {
@@ -208,17 +208,16 @@ Imágenes{% endblock %} {% block css %}
     // Add files
     for (let file of files) {
       if (file.type.startsWith("image/")) {
-        formData.append("imagenes", file);
+        formData.append("photos", file);
       }
     }
 
-    if (formData.getAll("imagenes").length === 0) {
+    if (formData.getAll("photos").length === 0) {
       alert("Por favor selecciona solo archivos de imagen.");
       return;
     }
 
     formData.append("descripcion", descripcion);
-    formData.append("registro_id", "{{ request.GET.registro_id|default:1 }}");
 
     // Show progress elements
     const progressDiv = document.getElementById("uploadProgress");
@@ -247,8 +246,8 @@ Imágenes{% endblock %} {% block css %}
             progressFill.value = 100;
 
             // Add new images to grid
-            data.imagenes.forEach((imagen) => {
-              addImageToGrid(imagen);
+            data.photos.forEach((photo) => {
+              addImageToGrid(photo);
             });
 
             // Clear form
@@ -290,7 +289,7 @@ Imágenes{% endblock %} {% block css %}
     });
 
     // Start the upload
-    xhr.open("POST", "/imagenes/upload/");
+    xhr.open("POST", "{% url 'registrostxtss:photos:upload' registro_id=registro_id title=title %}");
     xhr.setRequestHeader(
       "X-CSRFToken",
       document.querySelector("[name=csrfmiddlewaretoken]").value
@@ -298,7 +297,7 @@ Imágenes{% endblock %} {% block css %}
     xhr.send(formData);
   }
 
-  function addImageToGrid(imagen) {
+  function addImageToGrid(photo) {
     const grid = document.getElementById("imageGrid");
     const emptyMessage = grid.querySelector(".col-span-full");
     if (emptyMessage) {
@@ -307,41 +306,40 @@ Imágenes{% endblock %} {% block css %}
 
     const imageCard = document.createElement("div");
     imageCard.className = "image-card";
-    imageCard.setAttribute("data-id", imagen.id);
+    imageCard.setAttribute("data-id", photo.id);
     imageCard.draggable = true;
 
     imageCard.innerHTML = `
         <div 
-            class="card bg-white shadow-sm sombra
-            data-id="${imagen.id}"
+            class="card bg-white shadow-sm sombra"
+            data-id="${photo.id}"
             draggable="true">
                 <figure class="relative overflow-hidden cursor-move">
-                    <img src="${imagen.url}" 
-                    alt="Imagen ${imagen.id}" 
+                    <img src="${photo.url}" 
+                    alt="Photo ${photo.id}" 
                     loading="lazy">
                     <button
                         class="delete-btn btn btn-circle btn-error absolute top-2 right-2"
-                        onclick="deleteImagen(${imagen.id})"
+                        onclick="deletePhoto(${photo.id})"
                         title="Eliminar imagen">
                         <i class="fas fa-times"></i>
                     </button>
                 </figure>
         
-        
         <div class="p-2">
           <input
             class="input input-success bg-white text-black"
             placeholder="Escribe una descripción..."
-            data-imagen-id="${imagen.id}"
+            data-photo-id="${photo.id}"
+            value="${photo.descripcion || ""}"
             />
-            ${imagen.descripcion || ""}
             <div class="flex justify-between items-center">
                 <div class="text-xs text-gray-500 mt-2">
-                    ${imagen.created_at}
+                    ${photo.created_at}
                 </div>
                 <button
                     class="btn btn-circle btn-success"
-                    onclick="saveDescription(${imagen.id})">
+                    onclick="saveDescription(${photo.id})">
                     <i class="fas fa-save"></i>
                 </button>
             </div>
@@ -352,13 +350,13 @@ Imágenes{% endblock %} {% block css %}
     grid.appendChild(imageCard);
   }
 
-  function saveDescription(imagenId) {
-    const textarea = document.querySelector(
-      `textarea[data-imagen-id="${imagenId}"]`
+  function saveDescription(photoId) {
+    const input = document.querySelector(
+      `input[data-photo-id="${photoId}"]`
     );
-    const descripcion = textarea.value;
+    const descripcion = input.value;
 
-    fetch("/imagenes/update/", {
+    fetch("{% url 'registrostxtss:photos:update' registro_id=registro_id title=title %}", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -366,7 +364,7 @@ Imágenes{% endblock %} {% block css %}
           .value,
       },
       body: JSON.stringify({
-        imagen_id: imagenId,
+        photo_id: photoId,
         descripcion: descripcion,
       }),
     })
@@ -384,12 +382,12 @@ Imágenes{% endblock %} {% block css %}
       });
   }
 
-  function deleteImagen(imagenId) {
+  function deletePhoto(photoId) {
     if (!confirm("¿Estás seguro de que quieres eliminar esta imagen?")) {
       return;
     }
 
-    fetch(`/imagenes/delete/${imagenId}/`, {
+    fetch(`{% url 'registrostxtss:photos:delete' registro_id=registro_id title=title photo_id=0 %}`.replace('0', photoId), {
       method: "POST",
       headers: {
         "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
@@ -399,18 +397,20 @@ Imágenes{% endblock %} {% block css %}
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          const imageCard = document.querySelector(`[data-id="${imagenId}"]`);
-          imageCard.remove();
+          const imageCard = document.querySelector(`[data-id="${photoId}"]`);
+          if (imageCard) {
+            imageCard.remove();
 
-          // Check if grid is empty
-          const grid = document.getElementById("imageGrid");
-          if (grid.children.length === 0) {
-            grid.innerHTML = `
-                    <div class="col-span-full text-center py-8 text-gray-500">
-                        <i class="fas fa-images text-4xl mb-4"></i>
-                        <p>No hay imágenes subidas aún</p>
-                    </div>
-                `;
+            // Check if grid is empty
+            const grid = document.getElementById("imageGrid");
+            if (grid.children.length === 0) {
+              grid.innerHTML = `
+                      <div class="col-span-full text-center py-8 text-gray-500">
+                          <i class="fas fa-images text-4xl mb-4"></i>
+                          <p>No hay fotos subidas aún</p>
+                      </div>
+                  `;
+            }
           }
 
           showNotification("Imagen eliminada correctamente", "success");
@@ -443,7 +443,7 @@ Imágenes{% endblock %} {% block css %}
   }
 
   function saveOrder() {
-    const imageCards = document.querySelectorAll(".image-card");
+    const imageCards = document.querySelectorAll("[data-id]");
     const orden = Array.from(imageCards).map((card) =>
       card.getAttribute("data-id")
     );
@@ -459,7 +459,7 @@ Imágenes{% endblock %} {% block css %}
 
     // Debounce the save operation
     sortTimeout = setTimeout(() => {
-      fetch("/imagenes/reorder/", {
+      fetch("{% url 'registrostxtss:photos:reorder' registro_id=registro_id title=title %}", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     
     'users',
     'core',
-    'imagenes',
+    'photos',
     # 'registrosWOM',
     'registrostxtss',
 ]
@@ -108,6 +108,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+LANGUAGE_CODE = 'en-us'
 
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 

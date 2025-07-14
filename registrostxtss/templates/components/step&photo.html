@@ -1,23 +1,30 @@
 {% load static %}
 
 <li>
-    {% if not first %}
-        <hr class="bg-white sombra" />
-    {% endif %}
-  <div class="timeline-start timeline-box text-lg mr-4 sombra">{{title}}</div>
+  {% if not first %}
+  <hr class="bg-white sombra" />
+  {% endif %}
+  <div class="timeline-start timeline-box text-lg mr-4 sombra">
+    {{title|title}}
+  </div>
   <div class="timeline-middle">
-    <button class="btn btn-{{color_form}} btn-circle p-1 sombra">
+    <a
+      class="btn btn-{{color_form}} btn-circle p-1 sombra"
+      href="/registrostxtss/{{registro_id}}/{{title}}"
+    >
       {% include 'svgs/notes.svg' %}
-    </button>
+    </a>
   </div>
   <div class="timeline-end text-lg">
-    <button class="ml-4 btn btn-{{color_photo}} btn-circle sombra">
+    <a 
+    href="/registrostxtss/{{registro_id}}/{{title}}/photos"
+    class="ml-4 btn btn-{{color_photo}} btn-circle sombra">
       <i class="fa-solid fa-camera-retro text-lg"></i>
-    </button>
+    </a>
     <span class="text-sm">{{photo_count}}</span>
   </div>
   <div class="timeline-end text-lg"></div>
   {% if not last %}
-    <hr class="bg-white sombra" />
+  <hr class="bg-white sombra" />
   {% endif %}
 </li>

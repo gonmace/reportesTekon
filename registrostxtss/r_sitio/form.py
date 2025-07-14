@@ -1,5 +1,5 @@
 from django import forms
-from registrostxtss.models.r_sitio import RSitio
+from registrostxtss.r_sitio.models import RSitio
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
@@ -30,25 +30,40 @@ class RSitioForm(forms.ModelForm):
         self.fields['dimensiones'].help_text = 'Dimensiones del sitio'
         self.fields['altura'].help_text = 'metros'
         self.fields['deslindes'].help_text = 'Distancia a los bordes de la propiedad, las distancias cortas deben ser precisas.'
-              
+        
         # Si se proporciona registro_id, pre-seleccionar el registro correspondiente
         if self.registro_id and not self.instance.pk:
-            registro_obj = RegistrosTxTss.objects.get(id=self.registro_id)
-            sitio = registro_obj.sitio
-            self.initial['registro'] = registro_obj
+            try:
+                registro_obj = RegistrosTxTss.objects.get(id=self.registro_id)
+                sitio = registro_obj.sitio
+                self.initial['registro'] = registro_obj
+                self.fields['registro'].widget = forms.HiddenInput()
+                # Solo establecer altura si existe el campo alt en el sitio
+                if hasattr(sitio, 'alt') and sitio.alt:
+                    self.initial['altura'] = sitio.alt
+            except RegistrosTxTss.DoesNotExist:
+                pass
+        elif self.instance.pk:
+            # Si estamos editando una instancia existente, ocultar el campo registro
             self.fields['registro'].widget = forms.HiddenInput()
-            # Solo establecer altura si existe el campo alt en el sitio
-            if hasattr(sitio, 'alt') and sitio.alt:
-                self.initial['altura'] = sitio.alt 
+            sitio = self.instance.registro.sitio
+        else:
+            sitio = None
 
-      
-                # HTML dinámico
-        header_html = f"""
-        <div class="bg-base-200 rounded-t-lg pb-1">
-            <h2>{sitio.pti_cell_id or ''}</h2>
-            <h3 class="text-sm font-semibold mb-3">{sitio.operator_id or ''} - {sitio.name or '__'}</h3>
-        </div>
-        """
+        # HTML dinámico
+        if sitio:
+            header_html = f"""
+            <div class="bg-base-200 rounded-t-lg pb-1">
+                <h2>{sitio.pti_cell_id or ''}</h2>
+                <h3 class="text-sm font-semibold mb-3">{sitio.operator_id or ''} - {sitio.name or '__'}</h3>
+            </div>
+            """
+        else:
+            header_html = """
+            <div class="bg-base-200 rounded-t-lg pb-1">
+                <h2>Registro no encontrado</h2>
+            </div>
+            """
         
         btn_ubicar_mapa_html = f"""
         <button type="button"
