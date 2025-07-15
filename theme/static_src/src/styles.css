@@ -127,8 +127,10 @@
     min-height: 60px !important; 
     max-height: 60px !important;
   }
+
+  /* color para el help text */
   small {
-    @apply !text-base-content;
+    @apply !text-base-content !text-xs;
   }
 
   :where(.modal[open], .modal-open, .modal-toggle:checked + .modal):not(
