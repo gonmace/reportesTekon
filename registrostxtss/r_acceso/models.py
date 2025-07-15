@@ -1,6 +1,7 @@
 from django.db import models
 from core.models import BaseModel
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.completeness_checker import check_model_completeness
 
 class RAcceso(BaseModel):
     registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE, verbose_name='Registro')
@@ -10,7 +11,7 @@ class RAcceso(BaseModel):
     longitud_acceso_construccion = models.IntegerField(verbose_name='Longitud acceso al Sitio para construcción')
     tipo_suelo = models.CharField(max_length=100, verbose_name='Tipo de suelo de sitio y huella')
     obstaculos = models.TextField(max_length=100, verbose_name='Edificaciones cercanas / obstáculos')
-    adicionales = models.TextField(max_length=100, verbose_name='Trabajos adicionales a considerar')
+    adicionales = models.TextField(max_length=100, blank=True, null=True, verbose_name='Trabajos adicionales a considerar')
 
     class Meta:
         verbose_name = 'Registro Acceso'
@@ -47,42 +48,4 @@ class RAcceso(BaseModel):
                     'filled_fields': int
                 }
         """
-        # TODO: Verificar si el registro de acceso está relacionado con el registro de sitio
-        # Obtener la instancia de RAcceso por ID
-        try:
-            instance = RAcceso.objects.get(id=racceso_id)
-        except RAcceso.DoesNotExist:
-            return {
-                'color': 'error',
-                'is_complete': None,
-                'missing_fields': ['racceso_no_encontrado'],
-                'total_fields': 0,
-                'filled_fields': 0
-            }
-        
-        missing_fields = []
-        
-        # Obtener todos los campos del modelo
-        fields = instance._meta.get_fields()
-        
-        for field in fields:
-            # Solo verificar campos que no son automáticos y no tienen blank=True y null=True
-            if (hasattr(field, 'blank') and hasattr(field, 'null') and 
-                 field.blank and field.null and field.name != 'deleted_at'):
-                
-                field_value = getattr(instance, field.name, None)
-                
-                # Verificar si el campo está vacío
-                if field_value is None or (isinstance(field_value, str) and field_value.strip() == ''):
-                    missing_fields.append(field.name)
-        
-        total_fields = len([f for f in fields if hasattr(f, 'blank') and hasattr(f, 'null') and not f.blank and not f.null and not f.auto_created and not f.is_relation])
-        filled_fields = total_fields - len(missing_fields)
-        
-        return {
-            'color': 'warning' if len(missing_fields) > 0 else 'success',
-            'is_complete': len(missing_fields) == 0,
-            'missing_fields': missing_fields,
-            'total_fields': total_fields,
-            'filled_fields': filled_fields
-        }
+        return check_model_completeness(RAcceso, racceso_id)

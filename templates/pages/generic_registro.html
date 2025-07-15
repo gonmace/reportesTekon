@@ -1,45 +1,48 @@
 {% extends 'base.html' %}
-{% load static crispy_forms_tags%} 
+{% load static crispy_forms_tags %}
 
-{% block title %}
-{{ registro_txtss.pti_cell_id|default:"N/A" }} - {{registro_txtss.operator_id|default:"N/A" }}
-{% endblock %}
+{% block title %}{{ etapa|title }} - {{ registro_txtss.sitio.name|default:"Registro" }}{% endblock %}
+
+
+{% block pre_content %}
+    <!-- Breadcrumbs y Badge -->
+    <div class="flex justify-between items-baseline">
+        {% include 'components/common/breadcrumbs.html' %}
+        <div class="flex items-center gap-2">
+            {% if is_editing %}
+            <div class="badge badge-dash badge-warning">Editando</div>
+            {% else %}
+            <div class="badge badge-dash badge-success">Nuevo</div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock pre_content %}
 
 {% block content %}
-<div class="container max-w-6xl mx-auto md:px-1">
-  <!-- Mostrar errores si existen -->
-  {% if error %}
-  <div class="alert alert-error mb-6">
-    <i class="fa-solid fa-exclamation-triangle"></i>
-    <span>{{ error }}</span>
-  </div>
-  {% endif %}
-
-  <!-- Formulario -->
-  <div class="bg-base-200 p-1 md:p-4 rounded-lg relative">
-    <div class="absolute top-2 right-2">
-      <div class="flex flex-col gap-2">
-        <!-- Botón de regreso -->
-
-        <button
-          onclick="history.back()"
-          class="btn btn-outline btn-circle ml-auto">
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
-
-        <!-- Indicador de modo edición -->
-        {% if is_editing %}
-        <div class="badge badge-dash badge-warning">Editando</div>
-        {% else %}
-        <div class="badge badge-dash badge-success">Nuevo</div>
+<div class="container mx-auto">
+    <div class="max-w-4xl mx-auto">
+        <!-- Error Message -->
+        {% if error %}
+        <div class="alert alert-error mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ error }}</span>
+        </div>
         {% endif %}
-      </div>
-    </div>
 
-    {% crispy form %}
-  </div>
+        <!-- Form Card -->
+        <div class="card card-xs bg-base-200 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">{{ sitio.name }}</h2>
+                <!-- Form -->
+                {% crispy form %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %} 
+
 {% block post_content %}
 <!-- Modal del mapa optimizado para móviles -->
 
@@ -101,10 +104,11 @@
   </div>
 </dialog>
 
-{% endblock %} 
-{% block extra_js %}
+{% endblock post_content %} 
 
+
+
+{% block extra_js %}
 <script src="{% static 'js/components/alert-component.js' %}"></script>
 <script src="{% static 'js/registrostxtss.js' %}"></script>
-
 {% endblock extra_js %}

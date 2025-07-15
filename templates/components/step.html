@@ -1,12 +1,15 @@
 {% load static %}
+{% load registro_urls %}
+
 <li>
     {% if not first %}
         <hr class="bg-white sombra" />
     {% endif %}
     <div class="timeline-middle">
-      <button class="btn btn-{{color_form}} btn-circle p-1 sombra">
+      <a href="{% get_registro_url title registro_id %}"
+      class="btn btn-{{color_form}} btn-circle p-1 sombra">
         {% include 'svgs/notes.svg' %}
-      </button>
+      </a>
     </div>
     <div class="timeline-end timeline-box text-lg ml-4 sombra">{{title}}</div>
     {% if not last %}

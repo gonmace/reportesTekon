@@ -4,18 +4,17 @@ from registrostxtss.models.validators import validar_latitud, validar_longitud
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 from registrostxtss.models.completeness_checker import check_model_completeness
 
-class RSitio(BaseModel):
+class REmpalme(BaseModel):
     registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE, verbose_name='Registro')
-    lat = models.FloatField(validators=[validar_latitud], verbose_name='Latitud Inspeccion')
-    lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Inspeccion')
-    altura = models.CharField(max_length=100, verbose_name='Altura Torre')
-    dimensiones = models.CharField(max_length=100)
-    deslindes = models.CharField(max_length=100)
+    lat = models.FloatField(validators=[validar_latitud], verbose_name='Latitud Empalme')
+    lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Empalme')
+    proveedor = models.CharField(max_length=100, verbose_name='Proveedor de Energía')
+    capacidad = models.CharField(max_length=100, verbose_name='Capacidad de Energía')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
     
     class Meta:
-        verbose_name = 'Registro Sitio'
-        verbose_name_plural = 'Registros Sitio'
+        verbose_name = 'Registro Empalme'
+        verbose_name_plural = 'Registros Empalme'
         ordering = ['-created_at']
     
     def __str__(self):
@@ -23,20 +22,20 @@ class RSitio(BaseModel):
     
     @staticmethod
     def get_etapa():
-        return 'sitio'
+        return 'empalme'
     
     @staticmethod
     def get_actives():
-        return RSitio.objects.filter(is_deleted=False)
+        return REmpalme.objects.filter(is_deleted=False)
 
     @staticmethod
-    def check_completeness(rsitio_id):
+    def check_completeness(rempalme_id):
         """
-        Verifica si un registro RSitio tiene todos los campos obligatorios llenos.
+        Verifica si un registro REmpalme tiene todos los campos obligatorios llenos.
         Solo verifica campos que no tienen blank=True y null=True.
         
         Args:
-            rsitio_id: ID del registro RSitio
+            rempalme_id: ID del registro REmpalme
             
         Returns:
             dict: Diccionario con información sobre la completitud del registro
@@ -48,4 +47,4 @@ class RSitio(BaseModel):
                     'filled_fields': int
                 }
         """
-        return check_model_completeness(RSitio, rsitio_id)
+        return check_model_completeness(REmpalme, rempalme_id)

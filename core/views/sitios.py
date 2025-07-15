@@ -24,6 +24,10 @@ class SitiosView(LoginRequiredMixin, BreadcrumbsMixin, TemplateView):
     class Meta:
         title = 'Sitios'
         header_title = 'Registro de Sitios'
+        breadcrumbs = [
+            {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
+            {'label': 'Sitios'}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

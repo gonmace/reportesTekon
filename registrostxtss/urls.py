@@ -2,10 +2,12 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views.main import ListRegistrosView
 from .views.registros import RegistrosTxTssViewSet
-from .views.steps import StepsRegistroView
+from .views import StepsRegistroView
 
 from .r_sitio.views import RSitioView
 from .r_acceso.views import RAccesoView
+from .r_empalme.views import REmpalmeView
+
 app_name = "registrostxtss"
 
 # Configurar el router para los ViewSets
@@ -17,9 +19,9 @@ urlpatterns = [
     path("registrostxtss/", ListRegistrosView.as_view(), name="list"),
     
     path("registrostxtss/<int:registro_id>/", StepsRegistroView.as_view(), name="steps"),
-    path("registrostxtss/<int:registro_id>/<str:title>", RSitioView.as_view(), name="sitio"),
-    
-    path("registrostxtss/<int:registro_id>/acceso", RAccesoView.as_view(), name="acceso"),
+    path("registrostxtss/<int:registro_id>/sitio/", RSitioView.as_view(), name="r_sitio"),
+    path("registrostxtss/<int:registro_id>/acceso/", RAccesoView.as_view(), name="r_acceso"),
+    path("registrostxtss/<int:registro_id>/empalme/", REmpalmeView.as_view(), name="r_empalme"),
     
     path("registrostxtss/", include("photos.urls"), name="photos"),
     

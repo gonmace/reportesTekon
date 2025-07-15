@@ -118,6 +118,16 @@
     @apply h-20;
   }
 
+  .breadcrumbs > ul > li + *:before {
+    @apply !opacity-100 !text-base-content;
+  }
+
+  .rows-2 {
+    height: 60px !important; 
+    min-height: 60px !important; 
+    max-height: 60px !important;
+  }
+
   :where(.modal[open], .modal-open, .modal-toggle:checked + .modal):not(
       .modal-start,
       .modal-end

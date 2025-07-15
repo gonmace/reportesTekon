@@ -1,5 +1,10 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Gestión de
-Imágenes{% endblock %} {% block css %}
+{% extends 'base.html' %} 
+{% load static %} 
+{% block title %}Gestión de Imágenes{% endblock %}
+
+{% csrf_token %} 
+
+{% block css %}
 <style>
   .image-grid {
     display: grid;
@@ -39,8 +44,15 @@ Imágenes{% endblock %} {% block css %}
     display: none;
   }
 </style>
-{% endblock %} {% block pre_content %}
+{% endblock %} 
+
+{% block pre_content %}
 <div class="flex flex-col items-center w-full">
+  <!-- Breadcrumbs -->
+  <div class="flex justify-between items-baseline w-full">
+    {% include 'components/common/breadcrumbs.html' %}
+  </div>
+
   <!-- Upload Section -->
   <div class="bg-base-100 rounded-lg p-6 mb-2 hidden lg:block w-full">
     <div class="upload-area bg-base-200 hover:bg-base-100" id="uploadArea">
@@ -87,16 +99,13 @@ Imágenes{% endblock %} {% block css %}
       Seleccionar Imágenes
     </button>
 
-    <button
-    onclick="history.back()"
-    class="btn btn-outline btn-circle ml-auto">
-    <i class="fa-solid fa-arrow-left"></i>
-    </button>
   </div>
 
 
 </div>
-{% endblock pre_content %} {% block content %}
+{% endblock pre_content %} 
+
+{% block content %}
 <div class="container max-w-6xl mx-auto md:p-4">
   <!-- Images Grid -->
     <div class="image-grid" id="imageGrid">
@@ -154,7 +163,9 @@ Imágenes{% endblock %} {% block css %}
 <div id="sortingIndicator" class="sorting-indicator">
   <i class="fas fa-spinner fa-spin"></i> Guardando orden...
 </div>
-{% endblock %} {% block extra_js %}
+{% endblock %}
+
+{% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <script>
   let sortable;

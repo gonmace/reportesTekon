@@ -1,14 +1,13 @@
 {% if breadcrumbs %}
-<nav class="text-sm breadcrumbs mb-4">
+<nav class="breadcrumbs max-w-xs text-sm pt-2 md:pt-0">
   <ul>
-    {% for item in breadcrumbs %}
-      <li>
-        {% if item.url %}
-          <a href="{{ item.url }}" class="text-primary hover:underline">{{ item.label }}</a>
-        {% else %}
-          <span class="text-gray-500">{{ item.label }}</span>
-        {% endif %}
-      </li>
+    {% for item in breadcrumbs %} {% if forloop.last %}
+    <li class="text-primary">{{ item.label }}</li>
+    {% else %}
+    <li>
+      <a href="{{ item.url }}" class="text-base-content/40">{{ item.label }}</a>
+    </li>
+    {% endif %}
     {% endfor %}
   </ul>
 </nav>

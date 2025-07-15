@@ -11,6 +11,10 @@ class ListRegistrosView(LoginRequiredMixin, BreadcrumbsMixin, TemplateView):
     class Meta:
         title = 'Registros Tx/Tss'
         header_title = 'Registros Tx/Tss'
+        breadcrumbs = [
+            {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
+            {'label': 'TX/TSS'}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

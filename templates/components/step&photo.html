@@ -1,4 +1,5 @@
 {% load static %}
+{% load registro_urls %}
 
 <li>
   {% if not first %}
@@ -8,18 +9,15 @@
     {{title|title}}
   </div>
   <div class="timeline-middle">
-    <a
-      class="btn btn-{{color_form}} btn-circle p-1 sombra"
-      href="/registrostxtss/{{registro_id}}/{{title}}"
-    >
+    <a href="{% get_registro_url title registro_id %}"
+      class="btn btn-{{color_form}} btn-circle p-1 sombra">
       {% include 'svgs/notes.svg' %}
     </a>
   </div>
   <div class="timeline-end text-lg">
-    <a 
-    href="/registrostxtss/{{registro_id}}/{{title}}/photos"
-    class="ml-4 btn btn-{{color_photo}} btn-circle sombra">
-      <i class="fa-solid fa-camera-retro text-lg"></i>
+    <a class="ml-4 btn btn-{{color_photo}} btn-circle sombra" 
+    href="{% get_registro_photos_url title registro_id %}">
+      {% include 'svgs/photo-camera.svg' %}
     </a>
     <span class="text-sm">{{photo_count}}</span>
   </div>
