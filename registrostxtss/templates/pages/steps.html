@@ -16,4 +16,28 @@
     {% include 'components/step&photo.html' with registro_id=sitio.registro_id title="empalme" photo_count=empalme.photo.count color_form=empalme.completeness_info.color color_photo=empalme.photo.color last=True %}
 
 </ul>
+
+<!-- Leyenda de colores -->
+<div class="mt-8 p-4 bg-base-100 rounded-lg shadow-sm border">
+    <div class="flex flex-col gap-2">
+        DATOS
+        <!-- Error - Rojo -->
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-error"></div>
+            <span class="text-sm text-base-content">Sin Datos</span>
+        </div>
+        
+        <!-- Warning - Amarillo -->
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-warning"></div>
+            <span class="text-sm text-base-content">Parciales</span>
+        </div>
+        
+        <!-- Success - Verde -->
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-success"></div>
+            <span class="text-sm text-base-content">Completos</span>
+        </div>
+    </div>
+</div>
 {% endblock %}
