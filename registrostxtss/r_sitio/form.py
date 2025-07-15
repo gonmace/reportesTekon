@@ -29,7 +29,7 @@ class RSitioForm(forms.ModelForm):
         self.fields['lat'].help_text = 'Grados decimales.'
         self.fields['lon'].help_text = 'Grados decimales.'
         self.fields['dimensiones'].help_text = 'Dimensiones del sitio'
-        self.fields['altura'].help_text = 'metros'
+        self.fields['altura'].help_text = 'Metros'
         self.fields['deslindes'].help_text = 'Distancia a los bordes de la propiedad, las distancias cortas deben ser precisas.'
         
         # Si se proporciona registro_id, pre-seleccionar el registro correspondiente

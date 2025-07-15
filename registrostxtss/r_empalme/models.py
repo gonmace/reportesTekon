@@ -10,6 +10,7 @@ class REmpalme(BaseModel):
     lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Empalme')
     proveedor = models.CharField(max_length=100, verbose_name='Proveedor de Energía')
     capacidad = models.CharField(max_length=100, verbose_name='Capacidad de Energía')
+    no_poste = models.CharField(blank=True, null=True, max_length=100, verbose_name='No. Poste')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
     
     class Meta:

@@ -117,7 +117,7 @@
                                 <a 
                                     type="button"
                                     href="/registrostxtss/${T.id}"
-                                    class="btn btn-lg btn-info btn-circle text-lg sombra"
+                                    class="btn btn-lg btn-success btn-circle text-lg sombra"
                                     data-id="${I.is_deleted.id}" 
                                     title="${I.sitio.name}"
                                 >

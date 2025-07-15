@@ -127,6 +127,9 @@
     min-height: 60px !important; 
     max-height: 60px !important;
   }
+  small {
+    @apply !text-base-content;
+  }
 
   :where(.modal[open], .modal-open, .modal-toggle:checked + .modal):not(
       .modal-start,

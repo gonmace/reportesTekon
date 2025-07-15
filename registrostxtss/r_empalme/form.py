@@ -26,11 +26,9 @@ class REmpalmeForm(forms.ModelForm):
         self.helper.label_class = 'text-sm text-base-content'
         self.helper.field_class = 'mb-2'
         
-        # self.fields['lat'].help_text = 'Grados decimales.'
-        # self.fields['lon'].help_text = 'Grados decimales.'
-        # self.fields['dimensiones'].help_text = 'Dimensiones del sitio'
-        # self.fields['altura'].help_text = 'metros'
-        # self.fields['deslindes'].help_text = 'Distancia a los bordes de la propiedad, las distancias cortas deben ser precisas.'
+        self.fields['lat'].help_text = 'Grados decimales.'
+        self.fields['lon'].help_text = 'Grados decimales.'
+        self.fields['no_poste'].help_text = 'Número de poste.'
         
         # Si se proporciona registro_id, pre-seleccionar el registro correspondiente
         if self.registro_id and not self.instance.pk:
@@ -39,9 +37,6 @@ class REmpalmeForm(forms.ModelForm):
                 sitio = registro_obj.sitio
                 self.initial['registro'] = registro_obj
                 self.fields['registro'].widget = forms.HiddenInput()
-                # Solo establecer altura si existe el campo alt en el sitio
-                if hasattr(sitio, 'alt') and sitio.alt:
-                    self.initial['altura'] = sitio.alt
             except RegistrosTxTss.DoesNotExist:
                 pass
         elif self.instance.pk:
@@ -85,8 +80,11 @@ class REmpalmeForm(forms.ModelForm):
                 Div(Field('capacidad', css_class=get_form_field_css_class(self, 'capacidad')), css_class='w-1/2'),
                 css_class='flex flex-row justify-between gap-3'
             ),
+            Div(
+                Field('no_poste', css_class=f"{get_form_field_css_class(self, 'no_poste')} w-full" ),
+                css_class='max-w-1/2'
+            ),
             Div(Field('comentarios', css_class=get_form_field_css_class(self, 'comentarios')), css_class='w-full'),
-            # Botón de envío
             Div(
                 Submit('submit', 'Guardar Registro', css_class='btn btn-success w-full mt-4 sombra'),
                 css_class='text-center'
@@ -96,12 +94,13 @@ class REmpalmeForm(forms.ModelForm):
     
     class Meta:
         model = REmpalme
-        fields = ['registro', 'lat', 'lon', 'proveedor', 'capacidad', 'comentarios']
+        fields = ['registro', 'lat', 'lon', 'proveedor', 'capacidad', 'no_poste', 'comentarios']
         labels = {
             'registro': 'Registro Tx/Tss',
             'lat': 'Latitud',
             'lon': 'Longitud',
             'proveedor': 'Proveedor',
             'capacidad': 'Capacidad',
+            'no_poste': 'No. Poste',
             'comentarios': 'Comentarios',
         }
