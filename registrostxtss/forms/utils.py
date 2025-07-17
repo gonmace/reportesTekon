@@ -20,16 +20,16 @@ def get_field_css_class(field, field_name=None, base_class='input sombra'):
     if 'textarea' in widget_type:
         base_class = 'textarea sombra'
         if is_required:
-            css_class = f'{base_class} textarea-success rows-2'
+            css_class = f'{base_class} textarea-success rows-2 sombra'
         else:
-            css_class = f'{base_class} textarea-warning rows-2'
+            css_class = f'{base_class} textarea-warning rows-2 sombra'
 
     else:
         # Para inputs de texto, número, email, etc.
         if is_required:
-            css_class = f'{base_class} input-success'
+            css_class = f'{base_class} input-success sombra'
         else:
-            css_class = f'{base_class} input-warning'
+            css_class = f'{base_class} input-warning sombra'
     
     # Agregar clases específicas según el nombre del campo (opcional)
     if field_name:

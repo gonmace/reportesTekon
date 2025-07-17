@@ -1,0 +1,185 @@
+@font-face {
+  font-family: "Nunito";
+  font-weight: 200;
+  src: url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
+}
+
+@page {
+  @top-center {
+    content: element(page-header);
+  }
+  @bottom-center {
+    content: element(page-footer);
+  }
+}
+html {
+    color: #000;
+    font-family: Nunito;
+    font-size: 11pt;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+body {
+    margin: 0;
+    }
+
+h1 {
+    font-size: 12pt;
+    text-transform: uppercase;
+    margin: 0cm 0cm;
+    page: no-chapter;
+    width: 100%;
+    }
+
+h2, h3, h4 {
+    font-size: 11pt;
+    font-weight: 500;
+    }
+
+h2 {
+    text-transform: uppercase;
+    /* text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: #e60000; */
+    color: #e60000;
+    padding-bottom: 0.2em;
+    string-set: heading content();
+    }
+
+h3 {
+    text-transform: uppercase;
+    font-size: 11pt;
+    margin-top: 1.5em;
+    }
+          
+p {
+    margin: 0.5em 0;
+    }
+
+
+
+/* #datos-generales section {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 1cm 0;
+    } */
+
+.datos {
+    flex: 1 75%;
+    margin: 0;
+    padding-left: 1cm;
+    }
+
+section.datos dl {
+    display: flex;
+    flex-wrap: wrap;
+    }
+section.datos dl dt {
+    font-weight: 300;
+    width: 30%;
+    }
+section.datos dl dd {
+    flex: 1 70%;
+    font-weight: 500;
+    margin: 0;
+    padding: 0;
+    }
+
+
+
+#page-header {
+  padding-bottom: 1rem;
+  border-bottom: 0.5px solid #000;
+}
+
+.header-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+  
+  .header-logo.left {
+    width: 20%;
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .header-logo.right {
+    width: 20%;
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  /* Estilo general para SVGs (por si no se aplica otro más específico) */
+  .header-logo svg {
+    max-width: 100%;
+    vertical-align: middle;
+  }
+  
+  /* Logo izquierdo: más grande */
+  .header-logo.left svg {
+    height: 40px;
+  }
+  
+  /* Logo derecho: más pequeño */
+  .header-logo.right svg {
+    height: 28px; /* ajusta a tu gusto */
+  }
+
+  .header-title {
+    text-align: center;
+    vertical-align: middle;
+    padding: 0 0.5rem;
+  }
+  
+  
+
+/* Pie de página */
+#page-footer {
+  position: running(page-footer);
+  border-top: 1px solid #ccc;
+  font-size: 10pt;
+  padding-top: 0.5em;
+  color: #777;
+  text-align: center;
+}
+
+.page-number::before {
+  content: "Página " counter(page);
+}
+
+/* Tipografía */
+
+
+
+
+
+
+/* Tabla */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 10.5pt;
+}
+
+.table th, .table td {
+  border: 1px solid #ccc;
+  padding: 0.4em;
+  text-align: left;
+}
+
+.table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+/* Utilitarias */
+.mt-2 {
+  margin-top: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 1rem;
+}

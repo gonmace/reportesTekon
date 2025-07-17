@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Informe Técnico</title>
+  <link rel="stylesheet" href="{% static 'css/weasyprint.css' %}">
+</head>
+<body>
+
+<!-- ENCABEZADO -->
+<div id="page-header">
+  <table class="header-table">
+    <tr>
+      <td class="header-logo left">
+        {% include "svgs/phoenix_tower_logo_horizontal.svg" %}
+      </td>
+      <td class="header-title">
+        <h1>TX / Technical Site Survey <br>
+        {{ registro.sitio.pti_cell_id }}</h1>
+      </td>
+      <td class="header-logo right">
+        {% include "svgs/tekon_logo.svg" %}
+      </td>
+    </tr>
+  </table>  
+</div>
+
+<!-- PIE DE PÁGINA -->
+<div id="page-footer">
+  <span class="page-number"></span>
+</div>
+
+<!-- CONTENIDO DEL INFORME -->
+<article id="datos-generales">
+  <h2>Datos Generales.</h2>
+  <section class="datos">
+    <dl>
+      <dt>Codigo de Sitio PTI:</dt>
+      <dd>{{ registro.sitio.pti_cell_id }}</dd>
+      <dt>Codigo Operador:</dt>
+      <dd>{{ registro.sitio.operator_id }}</dd>
+      <dt>Nombre del Sitio:</dt>
+      <dd>{{ registro.sitio.name }}</dd>
+      <dt>Región:</dt>
+      <dd>{{ registro.sitio.region }}</dd>
+      <dt>Comuna:</dt>
+      <dd>{{ registro.sitio.comuna }}</dd>
+      <dt>Altura de la Antena:</dt>
+      <dd>{{ registro.sitio.alt }} m.</dd>
+      <dt>Fecha de la Visita:</dt>
+      <dd>{{ registro.fecha_visita }}</dd>
+      <dt>Responsable Técnico:</dt>
+      <dd>{{ registro.visitante.nombre }}</dd>
+    </dl>
+  </section>
+
+  <h2>INSPECCIÓN DE SITIO.</h2>
+  <section class="datos">
+    <dl>
+      <dt>Responsable Técnico:</dt>
+      <dd>{{ registro.user.first_name }} {{ registro.user.last_name }}</dd>
+      <dt>Fecha de la Visita:</dt>
+      <dd>{{ registro.fecha_visita }}</dd>
+    </dl>
+  </section>
+
+  <h2>DATOS GEOGRÁFICOS.</h2>
+  <section id="datos">
+    <dl>
+      <dt>Responsable Técnico:</dt>
+      <dd>{{ registro.user.first_name }} {{ registro.user.last_name }}</dd>
+      <dt>Fecha de la Visita:</dt>
+      <dd>{{ registro.fecha_visita }}</dd>
+    </dl>
+  </section>
+
+
+
+</article>
+
+
+
+
+
+
+
+
+
+
+
+<article id="datos-tecnicos">
+<h2>Datos Técnicos.</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Elemento</th>
+      <th>Descripción</th>
+      <th>Observaciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Antena</td>
+      <td>Antena de 18 dBi, 5.8 GHz</td>
+      <td>Instalada en torre de 25m</td>
+    </tr>
+    <tr>
+      <td>Router</td>
+      <td>RB3011UiAS</td>
+      <td>Configuración completada</td>
+    </tr>
+  </tbody>
+</table>
+</article>
+<article id="firma">
+<h2>3. Firma</h2>
+<p class="mt-2">__________________________</p>
+<p class="mb-2">Responsable Técnico</p>
+
+</body>
+</html>

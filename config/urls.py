@@ -12,6 +12,7 @@ urlpatterns = [
     # path('', include('registrosWOM.urls')),
     path('', include('registrostxtss.urls')),
     path('', include('photos.urls')),
+    path('', include('pdf_reports.urls')),
 ]
 
 if settings.DEBUG:

@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'photos',
     # 'registrosWOM',
     'registrostxtss',
+    'pdf_reports',
 ]
 
 MIDDLEWARE = [

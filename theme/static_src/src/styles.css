@@ -76,17 +76,6 @@
   .centrearXY {
     @apply top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
   }
-  .sombra {
-    -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
-    filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
-  }
-
-  /* Sombra adaptativa para tema oscuro */
-  [data-theme="dark"] .sombra {
-    @apply !border-white/30;
-    -webkit-filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.8));
-    filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.8));
-  }
 
   button[aria-current="page"] {
     @apply !btn !btn-sm !btn-accent;
@@ -101,17 +90,12 @@
     @apply hover:bg-warning/40;
   }
 
-  input[type="text"],
-  input[type="number"] {
-    @apply !border-white/20;
-    -webkit-filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
-    filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+  .sombra {
+    @apply !shadow-md !shadow-black/30;
   }
 
-  [data-theme="dark"] input[type="text"],
-  [data-theme="dark"] input[type="number"] {
-    box-shadow: 3px 3px 5px rgba(90, 90, 90, 0.5) inset,
-      -3px -3px 5px rgba(255, 255, 255, 0.5) inset;
+  [data-theme="dark"] .sombra {
+    @apply !shadow-md !shadow-black;
   }
 
   ul.timeline > li {
@@ -123,8 +107,8 @@
   }
 
   .rows-2 {
-    height: 60px !important; 
-    min-height: 60px !important; 
+    height: 60px !important;
+    min-height: 60px !important;
     max-height: 60px !important;
   }
 
