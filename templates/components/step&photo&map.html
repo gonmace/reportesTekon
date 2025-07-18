@@ -25,9 +25,9 @@
         <span class="text-sm">{{photo_count}}</span>
       </div>
       <!-- Mapa -->
-      {% if map_button %}
+      {% if map_desfase %}
         <div>
-          <button id="desfase" class="ml-3 btn btn-{{map_button}} btn-circle sombra" 
+          <button id="desfase" class="ml-3 btn btn-{{map_desfase}} btn-circle sombra" 
           data-site-lat="{{sitio.desfase.lat_base}}" 
           data-site-lon="{{sitio.desfase.lon_base}}" 
           data-inspection-lat="{{sitio.desfase.lat_inspeccion}}" 

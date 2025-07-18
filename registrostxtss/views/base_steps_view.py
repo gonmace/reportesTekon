@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import get_object_or_404
-from registrostxtss.models.registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import MapasGoogle, RegistrosTxTss
 from photos.models import Photos
 from core.utils.breadcrumbs import BreadcrumbsMixin
 from abc import ABC, abstractmethod
@@ -56,13 +56,13 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
                 config.get('min_photo_count', 4),
                 config.get('desfase'),
                 config.get('dist_empalme'),
-                config.get('map_button')
+                config.get('map_desfase')
             )
         
         context.update(steps_context)
         return context
     
-    def generate_step_context(self, registro_txtss, model_class, has_photos, min_photo_count=4, desfase=None, dist_empalme=None, map_button=False):
+    def generate_step_context(self, registro_txtss, model_class, has_photos, min_photo_count=4, desfase=None, dist_empalme=None, map_desfase=False):
         """
         Genera el contexto para un paso específico.
         
@@ -137,11 +137,18 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
         if dist_empalme:
             step_context['dist_empalme'] = dist_empalme
         
-        if map_button:
-            if completeness_info['filled_fields'] > 0:
-                step_context['map_button'] = 'error'
-            else:
-                step_context['map_button'] = 'disabled'
+        if map_desfase:
+            try:
+                mapas_google = MapasGoogle.objects.filter(registro=registro_txtss, etapa=etapa).first()
+                if mapas_google:
+                    step_context['map_desfase'] = 'success'
+                else:
+                    step_context['map_desfase'] = 'error'
+            except MapasGoogle.DoesNotExist:                
+                if completeness_info['filled_fields'] > 0:
+                    step_context['map_desfase'] = 'error'
+                else:
+                    step_context['map_desfase'] = 'disabled'
         
         return step_context
 
@@ -204,7 +211,7 @@ class StepsRegistroView(BaseStepsView):
                 'has_photos': True,
                 'min_photo_count': 4,
                 'desfase': True,
-                'map_button': True
+                'map_desfase': True
             },
             'acceso': {
                 'model_class': RAcceso,
@@ -214,6 +221,5 @@ class StepsRegistroView(BaseStepsView):
                 'model_class': REmpalme,
                 'has_photos': True,
                 'min_photo_count': 3,
-                'dist_empalme': round(dist_empalme) if dist_empalme else ""
             },
         } 

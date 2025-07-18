@@ -40,6 +40,12 @@ class MapasGoogle(models.Model):
         ordering = ['-fecha_creacion']
         verbose_name = 'Mapa Google'
         verbose_name_plural = 'Mapas Google'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['registro', 'etapa'],
+                name='unique_registro_etapa_combination'
+            )
+        ]
     
     def __str__(self):
         return f"{self.registro} - {self.fecha_creacion.strftime('%Y-%m-%d %H:%M')}"

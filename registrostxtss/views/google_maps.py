@@ -11,6 +11,7 @@ import json
 import os
 from datetime import datetime
 from django.conf import settings
+from django.utils import timezone
 
 
 class GoogleMapsView(APIView):
@@ -138,23 +139,46 @@ class GoogleMapsView(APIView):
                 file_path = os.path.join(upload_dir, filename)
                 saved_path = default_storage.save(file_path, ContentFile(imagen_bytes))
                 
-                # Crear registro en la base de datos
-                mapa_desfase = MapasGoogle.objects.create(
+                # Buscar si existe un registro con el mismo registro y etapa
+                existing_mapa = MapasGoogle.objects.filter(
                     registro=registro,
-                    archivo=saved_path,
                     etapa=etapa
+                ).first()
+                
+                # Si existe un registro anterior, eliminar su archivo físico
+                if existing_mapa and existing_mapa.archivo:
+                    try:
+                        # Eliminar el archivo físico anterior si existe
+                        if default_storage.exists(existing_mapa.archivo.name):
+                            default_storage.delete(existing_mapa.archivo.name)
+                    except Exception as e:
+                        # Si hay error al eliminar el archivo, continuar
+                        print(f"Error eliminando archivo anterior {existing_mapa.archivo.name}: {e}")
+                
+                # Crear o actualizar registro en la base de datos
+                # Si existe un registro con el mismo registro y etapa, se reemplaza
+                mapa_desfase, created = MapasGoogle.objects.update_or_create(
+                    registro=registro,
+                    etapa=etapa,
+                    defaults={
+                        'archivo': saved_path,
+                        'fecha_creacion': timezone.now()
+                    }
                 )
                 
                 # URL relativa del archivo guardado
                 file_url = default_storage.url(saved_path)
                 
+                action_message = 'Imagen actualizada exitosamente' if not created else 'Imagen guardada exitosamente'
+                
                 return Response({
                     'success': True,
-                    'message': 'Imagen guardada exitosamente',
+                    'message': action_message,
                     'mapa_id': mapa_desfase.id,
                     'file_path': saved_path,
                     'file_url': file_url,
                     'desfase_metros': distancia,
+                    'was_created': created,
                     'parameters': {
                         'coordenada_1': coord_1,
                         'coordenada_2': coord_2,

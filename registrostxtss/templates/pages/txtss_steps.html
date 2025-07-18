@@ -9,7 +9,7 @@
 {% block content %}
 <ul class="timeline timeline-vertical">
 
-    {% include 'components/step&photo&map.html' with registro_id=sitio.registro_id title="sitio" photo_count=sitio.photo.count color_form=sitio.completeness_info.color color_photo=sitio.photo.color map_button=sitio.map_button first=True %}
+    {% include 'components/step&photo&map.html' with registro_id=sitio.registro_id title="sitio" photo_count=sitio.photo.count color_form=sitio.completeness_info.color color_photo=sitio.photo.color map_desfase=sitio.map_desfase first=True %}
         
     {% include 'components/step.html' with registro_id=sitio.registro_id title="acceso" color_form=acceso.completeness_info.color %}
 
