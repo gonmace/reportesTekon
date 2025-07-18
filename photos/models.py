@@ -1,5 +1,5 @@
 from django.db import models
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from core.models import BaseModel
 
 class Photos(BaseModel):

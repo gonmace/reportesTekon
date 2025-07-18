@@ -1,6 +1,6 @@
 from django import forms
 from registrostxtss.r_empalme.models import REmpalme
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
 from crispy_forms.layout import HTML

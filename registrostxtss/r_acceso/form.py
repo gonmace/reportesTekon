@@ -1,6 +1,6 @@
 from django import forms
 from registrostxtss.r_acceso.models import RAcceso
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div, HTML
 from registrostxtss.forms.utils import get_form_field_css_class

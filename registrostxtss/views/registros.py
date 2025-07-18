@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from registrostxtss.serializers.create_reg import RegistrosTxTssSerializer
 from users.models import User
 

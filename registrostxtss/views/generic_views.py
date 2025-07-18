@@ -1,7 +1,7 @@
 from django.views.generic import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from core.utils.breadcrumbs import BreadcrumbsMixin
 from registrostxtss.r_sitio.models import RSitio
 

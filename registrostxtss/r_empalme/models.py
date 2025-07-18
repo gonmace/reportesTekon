@@ -1,7 +1,7 @@
 from django.db import models
 from core.models import BaseModel
 from registrostxtss.models.validators import validar_latitud, validar_longitud
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from registrostxtss.models.completeness_checker import check_model_completeness
 
 class REmpalme(BaseModel):

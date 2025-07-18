@@ -1,6 +1,6 @@
 from django.db import models
 from core.models import BaseModel
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from registrostxtss.models.completeness_checker import check_model_completeness
 
 class RAcceso(BaseModel):

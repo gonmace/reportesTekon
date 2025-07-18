@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from core.utils.coordenadas import obtener_imagen_google_maps, calcular_distancia_geopy
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from registrostxtss.models import MapaDesfase, RegistrosTxTss
+from registrostxtss.models import MapasGoogle, RegistrosTxTss
 import json
 import os
 from datetime import datetime
@@ -56,7 +56,7 @@ class GoogleMapsView(APIView):
             maptype = request.data.get('maptype', 'hybrid')
             scale = request.data.get('scale', 2)
             tamano = request.data.get('tamano', '1200x600')
-            
+            etapa = request.data.get('etapa', 'sitio')
             # Validar registro_id
             if not registro_id:
                 return Response({
@@ -127,7 +127,7 @@ class GoogleMapsView(APIView):
             # Guardar la imagen en el sistema de archivos y en la base de datos
             try:
                 # Crear el directorio si no existe
-                upload_dir = 'rsitio'
+                upload_dir = 'google_maps'
                 media_root = settings.MEDIA_ROOT
                 full_upload_dir = os.path.join(media_root, upload_dir)
                 
@@ -139,10 +139,10 @@ class GoogleMapsView(APIView):
                 saved_path = default_storage.save(file_path, ContentFile(imagen_bytes))
                 
                 # Crear registro en la base de datos
-                mapa_desfase = MapaDesfase.objects.create(
+                mapa_desfase = MapasGoogle.objects.create(
                     registro=registro,
                     archivo=saved_path,
-                    desfase_metros=distancia
+                    etapa=etapa
                 )
                 
                 # URL relativa del archivo guardado

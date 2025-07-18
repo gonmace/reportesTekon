@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from core.models.sites import Site
 from users.models import User
 from core.serializers import SiteSerializer

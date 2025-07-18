@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.shortcuts import get_object_or_404
 from core.utils.breadcrumbs import BreadcrumbsMixin
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 import json
 from .models import Photos
 
@@ -78,7 +78,7 @@ class UploadPhotosView(View):
     def post(self, request, registro_id, title):
         try:
             # Verificar que el registro existe
-            from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+            from registrostxtss.models.registrostxtss import RegistrosTxTss
             try:
                 registro = RegistrosTxTss.objects.get(id=registro_id)
             except RegistrosTxTss.DoesNotExist:

@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import get_object_or_404
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+from registrostxtss.models.registrostxtss import RegistrosTxTss
 from photos.models import Photos
 from core.utils.breadcrumbs import BreadcrumbsMixin
 from abc import ABC, abstractmethod
@@ -125,7 +125,6 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
                     'lon_base': site.lon_base,
                     'lat_inspeccion': instance.lat,
                     'lon_inspeccion': instance.lon,
-                    'registro_id': registro_txtss.id
                 }
             except:
                 desfase = None
@@ -138,17 +137,11 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
         if dist_empalme:
             step_context['dist_empalme'] = dist_empalme
         
-
-        
         if map_button:
             if completeness_info['filled_fields'] > 0:
                 step_context['map_button'] = 'error'
             else:
                 step_context['map_button'] = 'disabled'
-
-        print("========================")
-        print(step_context)
-        print("========================")
         
         return step_context
 
