@@ -1,0 +1,414 @@
+{% load static %}
+{% load registro_urls %}
+
+<li>
+  {% if not first %}
+  <hr class="bg-white sombra" />
+  {% endif %}
+  <div class="timeline-start timeline-box text-lg mr-4">
+    {{title|title}}
+  </div>
+  <div class="timeline-middle">
+    <a href="{% get_registro_url title registro_id %}"
+      class="btn btn-{{color_form}} btn-circle p-1 sombra">
+      {% include 'svgs/notes.svg' %}
+    </a>
+  </div>
+  <div class="timeline-end text-lg">
+  
+    <div class="flex items-start">
+      <!-- Fotos -->
+      <div>
+        <a class="ml-4 btn btn-{{color_photo}} btn-circle sombra" href="{% get_registro_photos_url title registro_id %}">
+          {% include 'svgs/photo-camera.svg' %}
+        </a>
+        <span class="text-sm">{{photo_count}}</span>
+      </div>
+      <!-- Mapa -->
+      {% if map_button %}
+        <div>
+          <button id="desfase" class="ml-3 btn btn-{{map_button}} btn-circle sombra" 
+          data-site-lat="{{sitio.desfase.lat_base}}" 
+          data-site-lon="{{sitio.desfase.lon_base}}" 
+          data-inspection-lat="{{sitio.desfase.lat_inspeccion}}" 
+          data-inspection-lon="{{sitio.desfase.lon_inspeccion}}" 
+          data-site-registro="{{registro_id}}">
+            {% include 'svgs/map-marker.svg' %}
+          </button>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+  <div class="timeline-end text-lg"></div>
+  {% if not last %}
+  <hr class="bg-white sombra" />
+  {% endif %}
+</li>
+
+<!-- Modal para mostrar el mapa de desfase -->
+<dialog id="desfase-modal" class="modal">
+  <div class="modal-box w-full sm:w-11/12 max-w-4xl max-h-[90vh] flex flex-col">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-2 flex-shrink-0">
+          <h3 class="font-bold text-lg">Mapa de Desfase</h3>
+          <div class="flex gap-2">
+              <button id="save-map-btn" class="btn btn-sm btn-success" onclick="saveMapImage()">
+                  Confirmar puntos
+              </button>
+              <button class="btn btn-sm btn-circle btn-ghost" onclick="closeDesfaseModal()">✕</button>
+          </div>
+      </div>
+      
+      <!-- Leyenda compacta -->
+      <div class="mb-2 text-xs text-base-content flex-shrink-0">
+          <div class="flex gap-4 justify-center">
+              <div class="flex items-center gap-1">
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span>M = Mandato</span>
+              </div>
+              <div class="flex items-center gap-1">
+                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <span>I = Inspección</span>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Contenedor del mapa -->
+      <div id="desfase-map" class="w-full flex-1 min-h-[300px] rounded-lg border border-base-300"></div>
+  </div>
+</dialog>
+
+<script src="{% static 'js/leaflet.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/leaflet.css' %}">
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const desfaseBtn = document.getElementById('desfase');
+    if (desfaseBtn) {
+        desfaseBtn.addEventListener('click', function() {
+            openDesfaseModal();
+        });
+    }
+});
+
+function openDesfaseModal() {
+    const btn = document.getElementById('desfase');
+    const siteLat = btn.dataset.siteLat ? parseFloat(btn.dataset.siteLat) : null;
+    const siteLon = btn.dataset.siteLon ? parseFloat(btn.dataset.siteLon) : null;
+    const inspectionLat = btn.dataset.inspectionLat ? parseFloat(btn.dataset.inspectionLat) : null;
+    const inspectionLon = btn.dataset.inspectionLon ? parseFloat(btn.dataset.inspectionLon) : null;
+    const siteName = btn.dataset.siteName || 'Sitio';
+    
+    if (!siteLat || !siteLon || !inspectionLat || !inspectionLon || 
+        isNaN(siteLat) || isNaN(siteLon) || isNaN(inspectionLat) || isNaN(inspectionLon)) {
+        alert('Error: No se pudieron obtener las coordenadas completas para mostrar el mapa.\n\nCoordenadas disponibles:\n' +
+              `Base: ${siteLat || 'N/A'}, ${siteLon || 'N/A'}\n` +
+              `Inspección: ${inspectionLat || 'N/A'}, ${inspectionLon || 'N/A'}`);
+        return;
+    }
+    
+    const modal = document.getElementById('desfase-modal');
+    modal.showModal();
+    
+    // Inicializar el mapa después de que el modal esté visible
+    setTimeout(() => {
+        initDesfaseMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName);
+    }, 100);
+}
+
+function closeDesfaseModal() {
+    const modal = document.getElementById('desfase-modal');
+    modal.close();
+    
+    // Limpiar el mapa cuando se cierre el modal
+    if (currentMap) {
+        currentMap.remove();
+        currentMap = null;
+    }
+}
+
+function initDesfaseMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName) {
+    // Verificar si Leaflet ya está cargado
+    if (typeof L === 'undefined') {
+        // Cargar Leaflet dinámicamente
+        loadLeaflet().then(() => {
+            createMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName);
+        });
+    } else {
+        createMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName);
+    }
+}
+
+function loadLeaflet() {
+    return new Promise((resolve, reject) => {
+        // Cargar CSS de Leaflet
+        if (!document.querySelector('link[href*="leaflet.css"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+            link.crossOrigin = '';
+            document.head.appendChild(link);
+        }
+        
+        // Cargar JavaScript de Leaflet
+        if (typeof L === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+            script.crossOrigin = '';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        } else {
+            resolve();
+        }
+    });
+}
+
+// Variable global para mantener referencia al mapa
+let currentMap = null;
+
+// Variables globales para almacenar las coordenadas del mapa actual
+let currentSiteLat = null;
+let currentSiteLon = null;
+let currentInspectionLat = null;
+let currentInspectionLon = null;
+let currentSiteName = null;
+
+function createMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName) {
+    const mapContainer = document.getElementById('desfase-map');
+    
+    // Destruir el mapa anterior si existe
+    if (currentMap) {
+        currentMap.remove();
+        currentMap = null;
+    }
+    
+    // Limpiar el contenedor
+    mapContainer.innerHTML = '';
+    
+    // Guardar las coordenadas actuales para usar en saveMapImage
+    currentSiteLat = siteLat;
+    currentSiteLon = siteLon;
+    currentInspectionLat = inspectionLat;
+    currentInspectionLon = inspectionLon;
+    currentSiteName = siteName;
+    
+    // Calcular el centro del mapa (punto medio entre ambos puntos)
+    const centerLat = (siteLat + inspectionLat) / 2;
+    const centerLon = (siteLon + inspectionLon) / 2;
+    
+    // Crear el mapa
+    currentMap = L.map('desfase-map', {
+        zoomControl: false,
+    }).setView([centerLat, centerLon], 15);
+    
+    // Agregar capa de OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(currentMap);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    }).addTo(currentMap);
+    
+    // Crear marcadores personalizados
+    const siteIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="background-color: #3B82F6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+    
+    const inspectionIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="background-color: #ffa000; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+    
+    // Agregar marcador de coordenadas base (mandato)
+    const siteMarker = L.marker([siteLat, siteLon], { icon: siteIcon }).addTo(currentMap);
+    siteMarker.bindPopup(`
+        <div class="text-center">
+            <strong>Coordenadas Base (Mandato)</strong><br>
+            <strong>${siteName}</strong><br>
+            Lat: ${siteLat.toFixed(6)}<br>
+            Lon: ${siteLon.toFixed(6)}
+        </div>
+    `);
+    
+    // Agregar marcador de coordenadas de inspección
+    const inspectionMarker = L.marker([inspectionLat, inspectionLon], { icon: inspectionIcon }).addTo(currentMap);
+    inspectionMarker.bindPopup(`
+        <div class="text-center">
+            <strong>Coordenadas Inspección</strong><br>
+            Lat: ${inspectionLat.toFixed(6)}<br>
+            Lon: ${inspectionLon.toFixed(6)}
+        </div>
+    `);
+    
+    // Dibujar línea entre los dos puntos
+    const line = L.polyline([[siteLat, siteLon], [inspectionLat, inspectionLon]], {
+        color: '#6B7280',
+        weight: 3,
+        opacity: 0.7,
+        dashArray: '10, 5'
+    }).addTo(currentMap);
+    
+    // Calcular y mostrar la distancia
+/*    const distance = calculateDistance(siteLat, siteLon, inspectionLat, inspectionLon);
+    line.bindPopup(`
+        <div class="text-center">
+            <strong>Distancia: ${distance.toFixed(2)} metros</strong>
+        </div>
+    `);
+    
+    // Ajustar el zoom para mostrar ambos puntos */
+    const bounds = L.latLngBounds([[siteLat, siteLon], [inspectionLat, inspectionLon]]);
+    currentMap.fitBounds(bounds, { padding: [20, 20] });
+    
+    // Agregar controles
+    L.control.zoom({ position: 'bottomright' }).addTo(currentMap);
+    L.control.scale({ position: 'bottomleft' }).addTo(currentMap);
+}
+
+// Función para guardar la imagen del mapa usando la API de Google Maps
+function saveMapImage() {
+    // Verificar que tenemos las coordenadas necesarias
+    if (!currentSiteLat || !currentSiteLon || !currentInspectionLat || !currentInspectionLon) {
+        alert('Error: No se pudieron obtener las coordenadas del mapa actual.');
+        return;
+    }
+    
+    // Mostrar indicador de carga
+    const saveBtn = document.getElementById('save-map-btn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Generando imagen...';
+    saveBtn.disabled = true;
+    
+    // Calcular la distancia entre los puntos para determinar el zoom óptimo
+    const latDiff = Math.abs(currentSiteLat - currentInspectionLat);
+    const lonDiff = Math.abs(currentSiteLon - currentInspectionLon);
+    const maxDiff = Math.max(latDiff, lonDiff);
+    
+    // Calcular zoom máximo posible pero asegurando visibilidad de ambos marcadores
+    let optimalZoom;
+    if (maxDiff < 0.00001) {  // Extremadamente cerca (menos de ~1 metro)
+        optimalZoom = 20;  // Zoom máximo
+    } else if (maxDiff < 0.0001) {  // Muy cerca (menos de ~10 metros)
+        optimalZoom = 20;  // Zoom máximo
+    } else if (maxDiff < 0.0005) {  // Cerca (menos de ~50 metros)
+        optimalZoom = 19;  // Zoom muy alto
+    } else if (maxDiff < 0.001) {   // Cerca (menos de ~100 metros)
+        optimalZoom = 18;  // Zoom alto
+    } else if (maxDiff < 0.005) {   // Moderado (menos de ~500 metros)
+        optimalZoom = 17;  // Zoom alto-medio
+    } else if (maxDiff < 0.01) {    // Moderado (menos de ~1 km)
+        optimalZoom = 16;  // Zoom medio-alto
+    } else if (maxDiff < 0.05) {    // Lejos (menos de ~5 km)
+        optimalZoom = 15;  // Zoom medio
+    } else if (maxDiff < 0.1) {     // Lejos (menos de ~10 km)
+        optimalZoom = 14;  // Zoom medio-bajo
+    } else {                        // Muy lejos (más de 10 km)
+        optimalZoom = 13;  // Zoom bajo pero visible
+    }
+    
+    console.log('Distancia entre puntos:', maxDiff, 'Zoom calculado:', optimalZoom);
+    
+    // Función para ajustar zoom basado en el número de puntos y distancia
+    function adjustZoomForPoints(zoom, pointCount) {
+        // Si hay más de 2 puntos, reducir ligeramente el zoom para asegurar visibilidad
+        if (pointCount > 2) {
+            return Math.max(zoom - 1, 13); // No bajar de zoom 13
+        }
+        return zoom;
+    }
+  
+    const desfaseBtn = document.getElementById('desfase');
+
+    // Preparar los datos para la API
+    const requestData = {
+        registro_id: desfaseBtn.dataset.siteRegistro,  // ID del registro actual
+        coordenada_1: {
+            lat: currentSiteLat,
+            lon: currentSiteLon,
+            label: 'M',
+            color: '#3B82F6',
+            size: 'large'
+        },
+        coordenada_2: {
+            lat: currentInspectionLat,
+            lon: currentInspectionLon,
+            label: 'I',
+            color: '#ffa000',
+            size: 'mid'
+        },
+        zoom: adjustZoomForPoints(optimalZoom, 2),  // Ajustar zoom para 2 puntos
+        maptype: 'hybrid',
+        scale: 2,
+        tamano: '1200x600'  // Formato rectangular panorámico para mejor visualización
+    };
+    
+    // Obtener el token CSRF del meta tag
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    if (!csrfToken) {
+        alert('Error: No se pudo obtener el token de seguridad. Por favor, recarga la página.');
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+        return;
+    }
+    
+    // Hacer la llamada a la API
+    console.log('Enviando datos a la API:', requestData);
+    console.log('URL de la API:', '/api/v1/google-maps/');
+    console.log('CSRF Token:', csrfToken);
+    
+    fetch('/api/v1/google-maps/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        console.log('Respuesta de la API:', response);
+        console.log('Status:', response.status);
+        console.log('Status Text:', response.statusText);
+        
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.log('Error response body:', text);
+                throw new Error(`HTTP error! status: ${response.status} - ${text}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensaje de éxito
+            alert(`✅ ${data.message}\n\nDesfase: ${data.desfase_metros.toFixed(2)} metros\n\nLa imagen se ha guardado en el servidor y estará disponible para el PDF del registro.`);
+        } else {
+            throw new Error(data.error || 'Error desconocido al generar la imagen');
+        }
+    })
+    .catch(error => {
+        console.error('Error al generar la imagen:', error);
+        alert('Error al generar la imagen del mapa: ' + error.message);
+    })
+    .finally(() => {
+        // Restaurar el botón
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    });
+}
+
+
+</script>
+    

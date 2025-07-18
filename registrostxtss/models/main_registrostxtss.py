@@ -4,6 +4,7 @@ from users.models import User
 from django.db.models import Q
 from core.models.core_models import BaseModel
 
+
 class RegistrosTxTss(BaseModel):
     sitio = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name="Sitio")
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuario")
@@ -25,4 +26,6 @@ class RegistrosTxTss(BaseModel):
     
     def activar_registro(self):
         self.is_deleted = False
-        self.save() 
+        self.save()
+
+

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% load static %} 
+
+{% block pre_content %}
+    {% include 'components/common/breadcrumbs.html' %}
+{% endblock pre_content %}
+
+{% block content %}
+<ul class="timeline timeline-vertical">
+
+    {% include 'components/step&photo&map.html' with registro_id=sitio.registro_id title="sitio" photo_count=sitio.photo.count color_form=sitio.completeness_info.color color_photo=sitio.photo.color map_button=sitio.map_button first=True %}
+        
+    {% include 'components/step.html' with registro_id=sitio.registro_id title="acceso" color_form=acceso.completeness_info.color %}
+
+    {% include 'components/step&photo.html' with registro_id=sitio.registro_id title="empalme" photo_count=empalme.photo.count color_form=empalme.completeness_info.color color_photo=empalme.photo.color last=True %}
+
+</ul>
+
+<!-- Leyenda de colores -->
+<div class="mt-8 p-4 bg-base-100 rounded-lg shadow-sm border sombra">
+    <div class="flex justify-between flex-col md:flex-row items-center">
+
+        <div class="flex flex-col w-full mb-2">
+            <h3 class="font-bold">Leyenda de colores</h3>
+            <!-- Error - Rojo -->
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-full bg-error"></div>
+                <span class="text-sm text-base-content">Sin Datos</span>
+            </div>
+            
+            <!-- Warning - Amarillo -->
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-full bg-warning"></div>
+                <span class="text-sm text-base-content">Parciales</span>
+            </div>
+            
+            <!-- Success - Verde -->
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-full bg-success"></div>
+                <span class="text-sm text-base-content">Completos</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col w-full my-2 md:my-0 md:mb-auto">
+            {% include 'components/resultados_clave_sitio.html' %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

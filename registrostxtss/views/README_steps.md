@@ -32,7 +32,7 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
 
 ```python
 class StepsRegistroView(BaseStepsView):
-    template_name = 'pages/steps.html'
+    template_name = 'pages/txtss_steps.html'
     
     def get_steps_config(self):
         return {

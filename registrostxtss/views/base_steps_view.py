@@ -4,7 +4,7 @@ from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 from photos.models import Photos
 from core.utils.breadcrumbs import BreadcrumbsMixin
 from abc import ABC, abstractmethod
-
+from core.utils.coordenadas import calcular_distancia_geopy
 
 class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
     """
@@ -53,13 +53,16 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
                 registro_txtss, 
                 config['model_class'], 
                 config['has_photos'], 
-                config.get('min_photo_count', 4)
+                config.get('min_photo_count', 4),
+                config.get('desfase'),
+                config.get('dist_empalme'),
+                config.get('map_button')
             )
         
         context.update(steps_context)
         return context
     
-    def generate_step_context(self, registro_txtss, model_class, has_photos, min_photo_count=4):
+    def generate_step_context(self, registro_txtss, model_class, has_photos, min_photo_count=4, desfase=None, dist_empalme=None, map_button=False):
         """
         Genera el contexto para un paso específico.
         
@@ -68,7 +71,8 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             model_class: Clase del modelo del paso
             has_photos: Si el paso tiene fotos
             min_photo_count: Número mínimo de fotos requeridas
-            
+            desfase: Información de desfase (opcional)
+            dist_empalme: Información de distancia a empalme (opcional)
         Returns:
             dict: Contexto del paso
         """
@@ -89,7 +93,7 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             'completeness_info': completeness_info,
         }
         
-        # Agregar información de fotos si es necesario
+                # Agregar información de fotos si es necesario
         if has_photos:
             try:
                 photo_count = Photos.get_photo_count_and_color(registro_txtss.id, etapa=etapa)
@@ -107,6 +111,44 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
                 'count': photo_count,
                 'color': color
             }
+
+        # Agregar información de desfase si existe
+        if desfase:
+            try:
+                site = registro_txtss.sitio
+                desfase = calcular_distancia_geopy(site.lat_base, site.lon_base, instance.lat, instance.lon)
+                color = 'success' if desfase < 10 else 'warning' if desfase <= 30 else 'error'
+                step_context['desfase'] = {
+                    'distancia': round(desfase) if desfase else "",
+                    'color': color if desfase else "",
+                    'lat_base': site.lat_base,
+                    'lon_base': site.lon_base,
+                    'lat_inspeccion': instance.lat,
+                    'lon_inspeccion': instance.lon,
+                    'registro_id': registro_txtss.id
+                }
+            except:
+                desfase = None
+                step_context['desfase'] = {
+                    'distancia': "",
+                    'color': ""
+                }
+
+            
+        if dist_empalme:
+            step_context['dist_empalme'] = dist_empalme
+        
+
+        
+        if map_button:
+            if completeness_info['filled_fields'] > 0:
+                step_context['map_button'] = 'error'
+            else:
+                step_context['map_button'] = 'disabled'
+
+        print("========================")
+        print(step_context)
+        print("========================")
         
         return step_context
 
@@ -116,12 +158,11 @@ class StepsRegistroView(BaseStepsView):
     Vista específica para los pasos del registro Tx/TSS.
     Hereda de BaseStepsView para reutilizar la funcionalidad común.
     """
-    
     class Meta:
         title = 'Pasos del Registro'
         header_title = 'Pasos del Registro'
 
-    template_name = 'pages/steps.html'
+    template_name = 'pages/txtss_steps.html'
     
     def get_breadcrumbs(self):
         """Genera breadcrumbs dinámicos con el nombre del sitio"""
@@ -157,15 +198,20 @@ class StepsRegistroView(BaseStepsView):
         Returns:
             dict: Configuración de los pasos
         """
+        
         from registrostxtss.r_sitio.models import RSitio
         from registrostxtss.r_acceso.models import RAcceso
         from registrostxtss.r_empalme.models import REmpalme
+
+        dist_empalme = None
         
         return {
             'sitio': {
                 'model_class': RSitio,
                 'has_photos': True,
-                'min_photo_count': 4
+                'min_photo_count': 4,
+                'desfase': True,
+                'map_button': True
             },
             'acceso': {
                 'model_class': RAcceso,
@@ -174,6 +220,7 @@ class StepsRegistroView(BaseStepsView):
             'empalme': {
                 'model_class': REmpalme,
                 'has_photos': True,
-                'min_photo_count': 3
+                'min_photo_count': 3,
+                'dist_empalme': round(dist_empalme) if dist_empalme else ""
             },
         } 

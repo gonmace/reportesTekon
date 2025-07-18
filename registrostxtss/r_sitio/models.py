@@ -3,6 +3,7 @@ from core.models import BaseModel
 from registrostxtss.models.validators import validar_latitud, validar_longitud
 from registrostxtss.models.main_registrostxtss import RegistrosTxTss
 from registrostxtss.models.completeness_checker import check_model_completeness
+from django.utils import timezone
 
 class RSitio(BaseModel):
     registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE, verbose_name='Registro')
@@ -49,3 +50,24 @@ class RSitio(BaseModel):
                 }
         """
         return check_model_completeness(RSitio, rsitio_id)
+
+class MapaDesfase(models.Model):
+    """
+    Modelo para almacenar las imágenes de desfase generadas
+    """
+    registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE, related_name='mapas_desfase')
+    archivo = models.FileField(upload_to='rsitio/')
+    desfase_metros = models.IntegerField('Desfase en metros',)
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        ordering = ['-fecha_creacion']
+        verbose_name = 'Mapa de Desfase'
+        verbose_name_plural = 'Mapas de Desfase'
+    
+    def __str__(self):
+        return f"{self.registro} - {self.fecha_creacion.strftime('%Y-%m-%d %H:%M')}"
+    
+    @property
+    def nombre_archivo(self):
+        return self.archivo.name.split('/')[-1] if self.archivo else '' 

@@ -5,7 +5,7 @@ from ..forms.activar import ActivarRegistroForm
 
 
 class ListRegistrosView(LoginRequiredMixin, BreadcrumbsMixin, TemplateView):
-    template_name = 'pages/main.html'
+    template_name = 'pages/txtss_main.html'
     context_object_name = 'registros'
 
     class Meta:

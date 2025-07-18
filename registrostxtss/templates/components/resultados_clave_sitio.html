@@ -1,0 +1,24 @@
+{% load static %}
+{% if sitio.desfase.distancia or empalme.dist_empalme %}
+    <h3 class="font-bold">Resultados clave</h3>
+    
+    <dl class="grid grid-cols-[200px_1fr] text-sm space-y-0.5">
+        {% if sitio.desfase.distancia %}
+            <dt>Desfase respecto mandato</dt>
+            <dd class="w-fit text-{{ sitio.desfase.color }} font-bold">
+                {{ sitio.desfase.distancia }} m
+            </dd>
+        {% endif %}
+        {% if empalme.dist_empalme %}
+            <dt>Distancia Sitio a Empalme</dt>
+            <dd class="w-fit">
+                <button id="dist-empalme" class="btn btn-outline btn-base-100 btn-xs">
+                {{ empalme.dist_empalme }} m
+                </button>
+            </dd>
+        {% endif %}
+    </dl>
+{% endif %}
+
+
+

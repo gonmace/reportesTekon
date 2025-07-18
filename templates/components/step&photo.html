@@ -15,11 +15,21 @@
     </a>
   </div>
   <div class="timeline-end text-lg">
-    <a class="ml-4 btn btn-{{color_photo}} btn-circle sombra" 
-    href="{% get_registro_photos_url title registro_id %}">
-      {% include 'svgs/photo-camera.svg' %}
-    </a>
-    <span class="text-sm">{{photo_count}}</span>
+  
+    <div class="flex items-start">
+      <div>
+        <a class="ml-4 btn btn-{{color_photo}} btn-circle sombra" href="{% get_registro_photos_url title registro_id %}">
+          {% include 'svgs/photo-camera.svg' %}
+        </a>
+        <span class="text-sm">{{photo_count}}</span>
+      </div>
+      {% comment %} <div>
+        <a class="ml-3 btn btn-disabled btn-circle sombra" href="{% get_registro_photos_url title registro_id %}">
+          {% include 'svgs/map-marker.svg' %}
+        </a>
+      </div> {% endcomment %}
+    </div>
+
   </div>
   <div class="timeline-end text-lg"></div>
   {% if not last %}
