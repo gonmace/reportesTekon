@@ -1,5 +1,6 @@
 {% load static %}
 {% load registro_urls %}
+{% load map_filters %}
 
 <li>
   {% if not first %}
@@ -25,14 +26,28 @@
         <span class="text-sm">{{photo_count}}</span>
       </div>
       <!-- Mapa -->
-      {% if map_desfase %}
+      {% if map %}
         <div>
-          <button id="desfase" class="ml-3 btn btn-{{map_desfase}} btn-circle sombra" 
-          data-site-lat="{{sitio.desfase.lat_base}}" 
-          data-site-lon="{{sitio.desfase.lon_base}}" 
-          data-inspection-lat="{{sitio.desfase.lat_inspeccion}}" 
-          data-inspection-lon="{{sitio.desfase.lon_inspeccion}}" 
-          data-site-registro="{{registro_id}}">
+          <button id="map-btn-{{title}}" class="ml-3 btn btn-{{map.status}} btn-circle sombra" 
+          data-coord1-lat="{{map.coordinates_1.lat}}" 
+          data-coord1-lon="{{map.coordinates_1.lon}}" 
+          data-coord1-label="{{map.coordinates_1.label}}"
+          data-coord1-color="{{map.coordinates_1.color}}"
+          data-coord1-size="{{map.coordinates_1.size}}"
+          {% for i in "23456789" %}
+          {% with coord_key="coordinates_"|add:i %}
+          {% if map|get_item:coord_key %}
+          data-coord{{i}}-lat="{{map|get_item:coord_key|get_item:'lat'}}" 
+          data-coord{{i}}-lon="{{map|get_item:coord_key|get_item:'lon'}}" 
+          data-coord{{i}}-label="{{map|get_item:coord_key|get_item:'label'}}"
+          data-coord{{i}}-color="{{map|get_item:coord_key|get_item:'color'}}"
+          data-coord{{i}}-size="{{map|get_item:coord_key|get_item:'size'}}"
+          {% endif %}
+          {% endwith %}
+          {% endfor %}
+          data-site-registro="{{registro_id}}"
+          data-step-title="{{title}}"
+          data-etapa="{{map.etapa}}">
             {% include 'svgs/map-marker.svg' %}
           </button>
         </div>
@@ -46,98 +61,167 @@
   {% endif %}
 </li>
 
-<!-- Modal para mostrar el mapa de desfase -->
-<dialog id="desfase-modal" class="modal">
+<!-- Modal genérico para mostrar mapas -->
+<dialog id="map-modal" class="modal">
   <div class="modal-box w-full sm:w-11/12 max-w-4xl max-h-[90vh] flex flex-col">
       <!-- Header -->
       <div class="flex justify-between items-center mb-2 flex-shrink-0">
-          <h3 class="font-bold text-lg">Mapa de Desfase</h3>
+          <h3 id="map-modal-title" class="font-bold text-lg">Mapa</h3>
           <div class="flex gap-2">
               <button id="save-map-btn" class="btn btn-sm btn-success" onclick="saveMapImage()">
                   Confirmar puntos
               </button>
-              <button class="btn btn-sm btn-circle btn-ghost" onclick="closeDesfaseModal()">✕</button>
+              <button class="btn btn-sm btn-circle btn-ghost" onclick="closeMapModal()">✕</button>
           </div>
       </div>
       
       <!-- Leyenda compacta -->
       <div class="mb-2 text-xs text-base-content flex-shrink-0">
-          <div class="flex gap-4 justify-center">
-              <div class="flex items-center gap-1">
-                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>M = Mandato</span>
-              </div>
-              <div class="flex items-center gap-1">
-                  <div class="w-3 h-3 rounded-full bg-orange-500"></div>
-                  <span>I = Inspección</span>
-              </div>
+          <div id="legend-container" class="flex gap-4 justify-center flex-wrap">
+              <!-- Los elementos de la leyenda se generarán dinámicamente -->
           </div>
       </div>
       
       <!-- Contenedor del mapa -->
-      <div id="desfase-map" class="w-full flex-1 min-h-[300px] rounded-lg border border-base-300"></div>
+      <div id="map-container" class="w-full flex-1 min-h-[300px] rounded-lg border border-base-300"></div>
   </div>
 </dialog>
 
 <script src="{% static 'js/leaflet.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/leaflet.css' %}">
 
-
 <script>
+// Namespace para evitar conflictos de variables
+window.MapManager = window.MapManager || {};
+
+// Inicializar variables solo si no existen
+if (!window.MapManager.currentMap) {
+    window.MapManager.currentMap = null;
+    window.MapManager.currentCoord1Lat = null;
+    window.MapManager.currentCoord1Lon = null;
+    window.MapManager.currentCoord1Label = null;
+    window.MapManager.currentCoord1Color = null;
+    window.MapManager.currentCoord1Size = null;
+    window.MapManager.currentCoord2Lat = null;
+    window.MapManager.currentCoord2Lon = null;
+    window.MapManager.currentCoord2Label = null;
+    window.MapManager.currentCoord2Color = null;
+    window.MapManager.currentCoord2Size = null;
+    window.MapManager.currentStepTitle = null;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    const desfaseBtn = document.getElementById('desfase');
-    if (desfaseBtn) {
-        desfaseBtn.addEventListener('click', function() {
-            openDesfaseModal();
+    // Agregar event listeners para todos los botones de mapa
+    document.querySelectorAll('[id^="map-btn-"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            openMapModal(this);
         });
-    }
+    });
 });
 
-function openDesfaseModal() {
-    const btn = document.getElementById('desfase');
-    const siteLat = btn.dataset.siteLat ? parseFloat(btn.dataset.siteLat) : null;
-    const siteLon = btn.dataset.siteLon ? parseFloat(btn.dataset.siteLon) : null;
-    const inspectionLat = btn.dataset.inspectionLat ? parseFloat(btn.dataset.inspectionLat) : null;
-    const inspectionLon = btn.dataset.inspectionLon ? parseFloat(btn.dataset.inspectionLon) : null;
-    const siteName = btn.dataset.siteName || 'Sitio';
+function openMapModal(btn) {
+    // Obtener todas las coordenadas disponibles
+    const coordinates = [];
     
-    if (!siteLat || !siteLon || !inspectionLat || !inspectionLon || 
-        isNaN(siteLat) || isNaN(siteLon) || isNaN(inspectionLat) || isNaN(inspectionLon)) {
-        alert('Error: No se pudieron obtener las coordenadas completas para mostrar el mapa.\n\nCoordenadas disponibles:\n' +
-              `Base: ${siteLat || 'N/A'}, ${siteLon || 'N/A'}\n` +
-              `Inspección: ${inspectionLat || 'N/A'}, ${inspectionLon || 'N/A'}`);
+    // Coordenada 1 (siempre requerida)
+    const coord1Lat = btn.dataset.coord1Lat ? parseFloat(btn.dataset.coord1Lat) : null;
+    const coord1Lon = btn.dataset.coord1Lon ? parseFloat(btn.dataset.coord1Lon) : null;
+    const coord1Label = btn.dataset.coord1Label || 'Punto 1';
+    const coord1Color = btn.dataset.coord1Color || '#3B82F6';
+    const coord1Size = btn.dataset.coord1Size || 'large';
+    
+    if (coord1Lat && coord1Lon && !isNaN(coord1Lat) && !isNaN(coord1Lon)) {
+        coordinates.push({
+            lat: coord1Lat,
+            lon: coord1Lon,
+            label: coord1Label,
+            color: coord1Color,
+            size: coord1Size
+        });
+    }
+    
+    // Obtener coordenadas adicionales (2-9)
+    for (let i = 2; i <= 9; i++) {
+        const lat = btn.dataset[`coord${i}Lat`] ? parseFloat(btn.dataset[`coord${i}Lat`]) : null;
+        const lon = btn.dataset[`coord${i}Lon`] ? parseFloat(btn.dataset[`coord${i}Lon`]) : null;
+        const label = btn.dataset[`coord${i}Label`] || `Punto ${i}`;
+        const color = btn.dataset[`coord${i}Color`] || '#6B7280';
+        const size = btn.dataset[`coord${i}Size`] || 'mid';
+        
+        if (lat && lon && !isNaN(lat) && !isNaN(lon)) {
+            coordinates.push({
+                lat: lat,
+                lon: lon,
+                label: label,
+                color: color,
+                size: size
+            });
+        }
+    }
+    
+    const stepTitle = btn.dataset.stepTitle || 'Paso';
+    
+    // Verificar que al menos una coordenada sea válida
+    if (coordinates.length === 0) {
+        alert('Error: No se pudieron obtener coordenadas válidas para mostrar el mapa.');
         return;
     }
     
-    const modal = document.getElementById('desfase-modal');
+    console.log(`Mostrando mapa con ${coordinates.length} punto(s):`, coordinates.map(c => c.label).join(', '));
+    
+    // Actualizar el título del modal
+    document.getElementById('map-modal-title').textContent = `Mapa de ${stepTitle}`;
+    
+    // Generar leyenda dinámicamente
+    const legendContainer = document.getElementById('legend-container');
+    legendContainer.innerHTML = '';
+    
+    coordinates.forEach((coord, index) => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'flex items-center gap-1';
+        
+        const marker = document.createElement('div');
+        marker.className = 'w-4 h-4 rounded-full border border-white shadow-sm flex items-center justify-center text-white font-bold text-xs';
+        marker.style.backgroundColor = coord.color;
+        marker.textContent = coord.label.charAt(0).toUpperCase();
+        
+        const label = document.createElement('span');
+        label.textContent = coord.label;
+        
+        legendItem.appendChild(marker);
+        legendItem.appendChild(label);
+        legendContainer.appendChild(legendItem);
+    });
+    
+    const modal = document.getElementById('map-modal');
     modal.showModal();
     
     // Inicializar el mapa después de que el modal esté visible
     setTimeout(() => {
-        initDesfaseMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName);
+        initMap(coordinates, stepTitle);
     }, 100);
 }
 
-function closeDesfaseModal() {
-    const modal = document.getElementById('desfase-modal');
+function closeMapModal() {
+    const modal = document.getElementById('map-modal');
     modal.close();
     
     // Limpiar el mapa cuando se cierre el modal
-    if (currentMap) {
-        currentMap.remove();
-        currentMap = null;
+    if (window.MapManager.currentMap) {
+        window.MapManager.currentMap.remove();
+        window.MapManager.currentMap = null;
     }
 }
 
-function initDesfaseMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName) {
+function initMap(coordinates, stepTitle) {
     // Verificar si Leaflet ya está cargado
     if (typeof L === 'undefined') {
         // Cargar Leaflet dinámicamente
         loadLeaflet().then(() => {
-            createMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName);
+            createMap(coordinates, stepTitle);
         });
     } else {
-        createMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName);
+        createMap(coordinates, stepTitle);
     }
 }
 
@@ -168,118 +252,114 @@ function loadLeaflet() {
     });
 }
 
-// Variable global para mantener referencia al mapa
-let currentMap = null;
-
-// Variables globales para almacenar las coordenadas del mapa actual
-let currentSiteLat = null;
-let currentSiteLon = null;
-let currentInspectionLat = null;
-let currentInspectionLon = null;
-let currentSiteName = null;
-
-function createMap(siteLat, siteLon, inspectionLat, inspectionLon, siteName) {
-    const mapContainer = document.getElementById('desfase-map');
+function createMap(coordinates, stepTitle) {
+    const mapContainer = document.getElementById('map-container');
     
     // Destruir el mapa anterior si existe
-    if (currentMap) {
-        currentMap.remove();
-        currentMap = null;
+    if (window.MapManager.currentMap) {
+        window.MapManager.currentMap.remove();
+        window.MapManager.currentMap = null;
     }
     
     // Limpiar el contenedor
     mapContainer.innerHTML = '';
     
     // Guardar las coordenadas actuales para usar en saveMapImage
-    currentSiteLat = siteLat;
-    currentSiteLon = siteLon;
-    currentInspectionLat = inspectionLat;
-    currentInspectionLon = inspectionLon;
-    currentSiteName = siteName;
+    window.MapManager.coordinates = coordinates;
+    window.MapManager.currentStepTitle = stepTitle;
     
-    // Calcular el centro del mapa (punto medio entre ambos puntos)
-    const centerLat = (siteLat + inspectionLat) / 2;
-    const centerLon = (siteLon + inspectionLon) / 2;
+    // Calcular el centro del mapa
+    let centerLat, centerLon;
+    if (coordinates.length === 1) {
+        // Solo un punto
+        centerLat = coordinates[0].lat;
+        centerLon = coordinates[0].lon;
+    } else {
+        // Múltiples puntos - calcular centro promedio
+        const totalLat = coordinates.reduce((sum, coord) => sum + coord.lat, 0);
+        const totalLon = coordinates.reduce((sum, coord) => sum + coord.lon, 0);
+        centerLat = totalLat / coordinates.length;
+        centerLon = totalLon / coordinates.length;
+    }
     
     // Crear el mapa
-    currentMap = L.map('desfase-map', {
+    window.MapManager.currentMap = L.map('map-container', {
         zoomControl: false,
     }).setView([centerLat, centerLon], 15);
     
     // Agregar capa de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
-    }).addTo(currentMap);
+    }).addTo(window.MapManager.currentMap);
 
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '© Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-    }).addTo(currentMap);
+    }).addTo(window.MapManager.currentMap);
     
-    // Crear marcadores personalizados
-    const siteIcon = L.divIcon({
-        className: 'custom-marker',
-        html: '<div style="background-color: #3B82F6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
+    // Función para obtener dimensiones según el tamaño
+    function getMarkerDimensions(size) {
+        const sizes = {
+            'small': { width: 16, height: 16, border: 2 },
+            'mid': { width: 20, height: 20, border: 3 },
+            'large': { width: 24, height: 24, border: 3 },
+            'xlarge': { width: 28, height: 28, border: 4 }
+        };
+        return sizes[size] || sizes.mid;
+    }
+    
+    // Crear y agregar marcadores para todas las coordenadas
+    const bounds = L.latLngBounds();
+    
+    coordinates.forEach((coord, index) => {
+        const dimensions = getMarkerDimensions(coord.size);
+        const letter = coord.label.charAt(0).toUpperCase();
+        
+        const icon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="background-color: ${coord.color}; width: ${dimensions.width}px; height: ${dimensions.height}px; border-radius: 50%; border: ${dimensions.border}px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${dimensions.width * 0.6}px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${letter}</div>`,
+            iconSize: [dimensions.width, dimensions.height],
+            iconAnchor: [dimensions.width / 2, dimensions.height / 2]
+        });
+        
+        const marker = L.marker([coord.lat, coord.lon], { icon: icon }).addTo(window.MapManager.currentMap);
+        marker.bindPopup(`
+            <div class="text-center">
+                <strong>${coord.label}</strong><br>
+                Lat: ${coord.lat.toFixed(6)}<br>
+                Lon: ${coord.lon.toFixed(6)}
+            </div>
+        `);
+        
+        // Agregar al bounds para ajustar el zoom
+        bounds.extend([coord.lat, coord.lon]);
     });
     
-    const inspectionIcon = L.divIcon({
-        className: 'custom-marker',
-        html: '<div style="background-color: #ffa000; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
-    });
-    
-    // Agregar marcador de coordenadas base (mandato)
-    const siteMarker = L.marker([siteLat, siteLon], { icon: siteIcon }).addTo(currentMap);
-    siteMarker.bindPopup(`
-        <div class="text-center">
-            <strong>Coordenadas Base (Mandato)</strong><br>
-            <strong>${siteName}</strong><br>
-            Lat: ${siteLat.toFixed(6)}<br>
-            Lon: ${siteLon.toFixed(6)}
-        </div>
-    `);
-    
-    // Agregar marcador de coordenadas de inspección
-    const inspectionMarker = L.marker([inspectionLat, inspectionLon], { icon: inspectionIcon }).addTo(currentMap);
-    inspectionMarker.bindPopup(`
-        <div class="text-center">
-            <strong>Coordenadas Inspección</strong><br>
-            Lat: ${inspectionLat.toFixed(6)}<br>
-            Lon: ${inspectionLon.toFixed(6)}
-        </div>
-    `);
-    
-    // Dibujar línea entre los dos puntos
-    const line = L.polyline([[siteLat, siteLon], [inspectionLat, inspectionLon]], {
-        color: '#6B7280',
-        weight: 3,
-        opacity: 0.7,
-        dashArray: '10, 5'
-    }).addTo(currentMap);
-    
-    // Calcular y mostrar la distancia
-/*    const distance = calculateDistance(siteLat, siteLon, inspectionLat, inspectionLon);
-    line.bindPopup(`
-        <div class="text-center">
-            <strong>Distancia: ${distance.toFixed(2)} metros</strong>
-        </div>
-    `);
-    
-    // Ajustar el zoom para mostrar ambos puntos */
-    const bounds = L.latLngBounds([[siteLat, siteLon], [inspectionLat, inspectionLon]]);
-    currentMap.fitBounds(bounds, { padding: [20, 20] });
+    // Dibujar líneas entre puntos consecutivos si hay más de uno
+    if (coordinates.length > 1) {
+        const lineCoords = coordinates.map(coord => [coord.lat, coord.lon]);
+        const line = L.polyline(lineCoords, {
+            color: '#6B7280',
+            weight: 3,
+            opacity: 0.7,
+            dashArray: '10, 5'
+        }).addTo(window.MapManager.currentMap);
+        
+        // Ajustar el zoom para mostrar todos los puntos
+        window.MapManager.currentMap.fitBounds(bounds, { padding: [20, 20] });
+    } else {
+        // Ajustar el zoom para mostrar solo el punto
+        window.MapManager.currentMap.setView([centerLat, centerLon], 16);
+    }
     
     // Agregar controles
-    L.control.zoom({ position: 'bottomright' }).addTo(currentMap);
-    L.control.scale({ position: 'bottomleft' }).addTo(currentMap);
+    L.control.zoom({ position: 'bottomright' }).addTo(window.MapManager.currentMap);
+    L.control.scale({ position: 'bottomleft' }).addTo(window.MapManager.currentMap);
 }
 
 // Función para guardar la imagen del mapa usando la API de Google Maps
 function saveMapImage() {
-    // Verificar que tenemos las coordenadas necesarias
-    if (!currentSiteLat || !currentSiteLon || !currentInspectionLat || !currentInspectionLon) {
+    // Verificar que tenemos coordenadas
+    if (!window.MapManager.coordinates || window.MapManager.coordinates.length === 0) {
         alert('Error: No se pudieron obtener las coordenadas del mapa actual.');
         return;
     }
@@ -290,68 +370,84 @@ function saveMapImage() {
     saveBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Generando imagen...';
     saveBtn.disabled = true;
     
-    // Calcular la distancia entre los puntos para determinar el zoom óptimo
-    const latDiff = Math.abs(currentSiteLat - currentInspectionLat);
-    const lonDiff = Math.abs(currentSiteLon - currentInspectionLon);
-    const maxDiff = Math.max(latDiff, lonDiff);
-    
-    // Calcular zoom máximo posible pero asegurando visibilidad de ambos marcadores
+    // Calcular zoom óptimo según el número de puntos
     let optimalZoom;
-    if (maxDiff < 0.00001) {  // Extremadamente cerca (menos de ~1 metro)
-        optimalZoom = 20;  // Zoom máximo
-    } else if (maxDiff < 0.0001) {  // Muy cerca (menos de ~10 metros)
-        optimalZoom = 20;  // Zoom máximo
-    } else if (maxDiff < 0.0005) {  // Cerca (menos de ~50 metros)
-        optimalZoom = 19;  // Zoom muy alto
-    } else if (maxDiff < 0.001) {   // Cerca (menos de ~100 metros)
-        optimalZoom = 18;  // Zoom alto
-    } else if (maxDiff < 0.005) {   // Moderado (menos de ~500 metros)
-        optimalZoom = 17;  // Zoom alto-medio
-    } else if (maxDiff < 0.01) {    // Moderado (menos de ~1 km)
-        optimalZoom = 16;  // Zoom medio-alto
-    } else if (maxDiff < 0.05) {    // Lejos (menos de ~5 km)
-        optimalZoom = 15;  // Zoom medio
-    } else if (maxDiff < 0.1) {     // Lejos (menos de ~10 km)
-        optimalZoom = 14;  // Zoom medio-bajo
-    } else {                        // Muy lejos (más de 10 km)
-        optimalZoom = 13;  // Zoom bajo pero visible
-    }
     
-    console.log('Distancia entre puntos:', maxDiff, 'Zoom calculado:', optimalZoom);
-    
-    // Función para ajustar zoom basado en el número de puntos y distancia
-    function adjustZoomForPoints(zoom, pointCount) {
-        // Si hay más de 2 puntos, reducir ligeramente el zoom para asegurar visibilidad
-        if (pointCount > 2) {
-            return Math.max(zoom - 1, 13); // No bajar de zoom 13
+    if (window.MapManager.coordinates.length === 1) {
+        // Solo un punto - zoom fijo para mejor visualización
+        optimalZoom = 16;
+        console.log('Solo un punto - Zoom fijo:', optimalZoom);
+    } else {
+        // Múltiples puntos - calcular la distancia máxima entre puntos
+        let maxDiff = 0;
+        const coords = window.MapManager.coordinates;
+        
+        for (let i = 0; i < coords.length; i++) {
+            for (let j = i + 1; j < coords.length; j++) {
+                const latDiff = Math.abs(coords[i].lat - coords[j].lat);
+                const lonDiff = Math.abs(coords[i].lon - coords[j].lon);
+                const diff = Math.max(latDiff, lonDiff);
+                maxDiff = Math.max(maxDiff, diff);
+            }
         }
-        return zoom;
+        
+        // Calcular zoom óptimo basado en la distancia máxima
+        if (maxDiff < 0.00001) {  // Extremadamente cerca (menos de ~1 metro)
+            optimalZoom = 20;  // Zoom máximo
+        } else if (maxDiff < 0.0001) {  // Muy cerca (menos de ~10 metros)
+            optimalZoom = 20;  // Zoom máximo
+        } else if (maxDiff < 0.0005) {  // Cerca (menos de ~50 metros)
+            optimalZoom = 19;  // Zoom muy alto
+        } else if (maxDiff < 0.001) {   // Cerca (menos de ~100 metros)
+            optimalZoom = 18;  // Zoom alto
+        } else if (maxDiff < 0.005) {   // Moderado (menos de ~500 metros)
+            optimalZoom = 17;  // Zoom alto-medio
+        } else if (maxDiff < 0.01) {    // Moderado (menos de ~1 km)
+            optimalZoom = 16;  // Zoom medio-alto
+        } else if (maxDiff < 0.05) {    // Lejos (menos de ~5 km)
+            optimalZoom = 15;  // Zoom medio
+        } else if (maxDiff < 0.1) {     // Lejos (menos de ~10 km)
+            optimalZoom = 14;  // Zoom medio-bajo
+        } else {                        // Muy lejos (más de 10 km)
+            optimalZoom = 13;  // Zoom bajo pero visible
+        }
+        
+        console.log('Distancia máxima entre puntos:', maxDiff, 'Zoom calculado:', optimalZoom);
     }
   
-    const desfaseBtn = document.getElementById('desfase');
+    // Obtener el botón actual del mapa
+    const currentMapBtn = document.querySelector(`[id^="map-btn-"][data-step-title="${window.MapManager.currentStepTitle}"]`);
 
     // Preparar los datos para la API
     const requestData = {
-        registro_id: desfaseBtn.dataset.siteRegistro,  // ID del registro actual
+        registro_id: currentMapBtn.dataset.siteRegistro,  // ID del registro actual
+        etapa: currentMapBtn.dataset.etapa,  // Etapa del mapa
         coordenada_1: {
-            lat: currentSiteLat,
-            lon: currentSiteLon,
-            label: 'M',
-            color: '#3B82F6',
-            size: 'large'
+            lat: window.MapManager.coordinates[0].lat,
+            lon: window.MapManager.coordinates[0].lon,
+            label: window.MapManager.coordinates[0].label.charAt(0).toUpperCase(),
+            color: window.MapManager.coordinates[0].color,
+            size: window.MapManager.coordinates[0].size
         },
-        coordenada_2: {
-            lat: currentInspectionLat,
-            lon: currentInspectionLon,
-            label: 'I',
-            color: '#ffa000',
-            size: 'mid'
-        },
-        zoom: adjustZoomForPoints(optimalZoom, 2),  // Ajustar zoom para 2 puntos
-        maptype: 'hybrid',
-        scale: 2,
-        tamano: '1200x600'  // Formato rectangular panorámico para mejor visualización
     };
+    
+    // Agregar coordenadas adicionales si existen
+    for (let i = 1; i < window.MapManager.coordinates.length; i++) {
+        const coord = window.MapManager.coordinates[i];
+        requestData[`coordenada_${i + 1}`] = {
+            lat: coord.lat,
+            lon: coord.lon,
+            label: coord.label.charAt(0).toUpperCase(),
+            color: coord.color,
+            size: coord.size
+        };
+    }
+    
+    // Agregar configuración del mapa
+    requestData.zoom = optimalZoom;  // Zoom calculado según el número de puntos
+    requestData.maptype = 'hybrid';
+    requestData.scale = 2;
+    requestData.tamano = '1200x600';  // Formato rectangular panorámico para mejor visualización
     
     // Obtener el token CSRF del meta tag
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -393,7 +489,21 @@ function saveMapImage() {
     .then(data => {
         if (data.success) {
             // Mostrar mensaje de éxito
-            alert(`✅ ${data.message}\n\nDesfase: ${data.desfase_metros.toFixed(2)} metros\n\nLa imagen se ha guardado en el servidor y estará disponible para el PDF del registro.`);
+            let distanceText = '';
+            if (data.distancia_total_metros) {
+                distanceText = `\nDistancia total: ${data.distancia_total_metros.toFixed(2)} metros`;
+            } else if (data.desfase_metros) {
+                distanceText = `\nDistancia: ${data.desfase_metros.toFixed(2)} metros`;
+            }
+            
+            const pointCount = window.MapManager.coordinates.length;
+            const pointText = pointCount === 1 ? 'punto' : 'puntos';
+            alert(`✅ ${data.message}\n${pointCount} ${pointText} procesado(s)${distanceText}\n\nLa imagen se ha guardado en el servidor y estará disponible para el PDF del registro.`);
+            
+            // Refrescar la página después de un breve delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } else {
             throw new Error(data.error || 'Error desconocido al generar la imagen');
         }
@@ -408,7 +518,6 @@ function saveMapImage() {
         saveBtn.disabled = false;
     });
 }
-
 
 </script>
     

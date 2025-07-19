@@ -4,6 +4,7 @@ from import_export.admin import ImportExportModelAdmin
 from import_export import resources, fields
 from .models.sites import Site
 from .models.registros import Registro
+from .models.app_settings import AppSettings
 from import_export.formats.base_formats import CSV, XLSX
 
 class SiteResource(resources.ModelResource):
@@ -42,3 +43,37 @@ class RegistroAdmin(admin.ModelAdmin):
     list_per_page = 100
 
 admin.site.register(Registro, RegistroAdmin)
+
+class AppSettingsAdmin(admin.ModelAdmin):
+    list_display = ('app_name', 'google_maps_api_key', 'last_apk_version', 'created_at')
+    list_editable = ('google_maps_api_key', 'last_apk_version')
+    search_fields = ('app_name',)
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('Información General', {
+            'fields': ('app_name', 'logo')
+        }),
+        ('Google Maps', {
+            'fields': ('google_maps_api_key',),
+            'description': 'Configura la API key de Google Maps para generar imágenes de mapas estáticos.'
+        }),
+        ('APK', {
+            'fields': ('app_apk', 'last_apk_version'),
+            'description': 'Configuración para la aplicación móvil APK.'
+        }),
+        ('Notificaciones', {
+            'fields': ('recipients_email',),
+            'description': 'Lista de correos electrónicos separados por comas para recibir notificaciones.'
+        }),
+        ('Información del Sistema', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        # Solo mostrar la configuración más reciente
+        return super().get_queryset(request).order_by('-created_at')[:1]
+
+admin.site.register(AppSettings, AppSettingsAdmin)

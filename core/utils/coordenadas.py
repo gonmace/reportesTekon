@@ -1,6 +1,7 @@
 from geopy.distance import geodesic
 import requests
 import math
+from core.models.app_settings import AppSettings
 
 def calcular_distancia_geopy(lat_1, lon_1, lat_2, lon_2):
     """Calcula la distancia entre dos puntos usando geopy."""
@@ -44,7 +45,20 @@ def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2
         bytes: Contenido de la imagen o None si hay error
     """
     base_url = "https://maps.googleapis.com/maps/api/staticmap?"
-    api_key = "AIzaSyD22EmbDEXIc7Meum5e2MCYj4D0JpDrmpU"
+    
+    # Obtener la API key desde la configuración de la aplicación
+    try:
+        app_settings = AppSettings.get_actives()
+        api_key = app_settings.google_maps_api_key if app_settings else None
+        api_key = "AIzaSyCha-3YT1hTLafIM1rl7dv0-3lqEc5Drys"
+        
+        if not api_key:
+            print("Error: No se encontró la Google Maps API key en la configuración de la aplicación")
+            return None
+            
+    except Exception as e:
+        print(f"Error obteniendo la API key: {e}")
+        return None
 
     # Recolectar todos los puntos válidos
     puntos = []
@@ -136,5 +150,13 @@ def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2
         "markers": markers,
     }
     
-    response = requests.get(base_url, params=params)
-    return response.content if response.status_code == 200 else None
+    try:
+        response = requests.get(base_url, params=params, timeout=30)
+        if response.status_code == 200:
+            return response.content
+        else:
+            print(f"Error en la respuesta de Google Maps API: {response.status_code} - {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Error de conexión con Google Maps API: {e}")
+        return None
