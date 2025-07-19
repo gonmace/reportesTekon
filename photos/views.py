@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.shortcuts import get_object_or_404
 from core.utils.breadcrumbs import BreadcrumbsMixin
-from registrostxtss.models.registrostxtss import RegistrosTxTss
+from registros.models.registrostxtss import Registros
 import json
 from .models import Photos
 
@@ -27,14 +27,14 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
         """Genera breadcrumbs dinámicos basados en el registro y etapa"""
         breadcrumbs = [
             {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
-            {'label': 'TX/TSS', 'url_name': 'registrostxtss:list'}
+            {'label': 'Registros', 'url_name': 'registros:list'}
         ]
         
         # Obtener el nombre del sitio del registro
         registro_id = self.kwargs.get('registro_id')
         if registro_id:
             try:
-                registro_txtss = get_object_or_404(RegistrosTxTss, id=registro_id)
+                registro_txtss = get_object_or_404(Registros, id=registro_id)
                 try:
                     sitio_cod = registro_txtss.sitio.pti_cell_id
                 except:
@@ -42,14 +42,14 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
                 
                 breadcrumbs.append({
                     'label': sitio_cod, 
-                    'url_name': 'registrostxtss:steps',
+                    'url_name': 'registros:steps',
                     'url_kwargs': {'registro_id': registro_id}
                 })
                 
                 # Agregar el nivel de Photos
                 breadcrumbs.append({'label': 'Photos'})
                     
-            except RegistrosTxTss.DoesNotExist:
+            except Registros.DoesNotExist:
                 breadcrumbs.append({'label': 'Registro'})
         else:
             breadcrumbs.append({'label': 'Registro'})
@@ -65,11 +65,11 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
         registro_id = self.kwargs.get('registro_id')
         if registro_id:
             try:
-                registro_txtss = get_object_or_404(RegistrosTxTss, id=registro_id)
+                registro_txtss = get_object_or_404(Registros, id=registro_id)
                 context['registro_txtss'] = registro_txtss
                 context['sitio'] = registro_txtss.sitio
-            except RegistrosTxTss.DoesNotExist:
-                context['error'] = 'Registro Tx/Tss no encontrado'
+            except Registros.DoesNotExist:
+                context['error'] = 'Registro no encontrado'
         
         return context
 
@@ -78,10 +78,10 @@ class UploadPhotosView(View):
     def post(self, request, registro_id, title):
         try:
             # Verificar que el registro existe
-            from registrostxtss.models.registrostxtss import RegistrosTxTss
+            from registros.models.registrostxtss import Registros
             try:
-                registro = RegistrosTxTss.objects.get(id=registro_id)
-            except RegistrosTxTss.DoesNotExist:
+                registro = Registros.objects.get(id=registro_id)
+            except Registros.DoesNotExist:
                 return JsonResponse({
                     'success': False,
                     'message': f'Registro con ID {registro_id} no encontrado'

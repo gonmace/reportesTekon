@@ -1,6 +1,6 @@
 from django_weasyprint.views import WeasyTemplateView
 from datetime import datetime
-from registrostxtss.models import RegistrosTxTss
+from registros.models import Registros
 from django.conf import settings
 from pathlib import Path
 from django.shortcuts import render
@@ -19,7 +19,7 @@ class RegistroPDFView(WeasyTemplateView):
         context = super().get_context_data(**kwargs)
         registro_id = self.kwargs.get('registro_id')
 
-        registro = RegistrosTxTss.objects.select_related('sitio', 'user')\
+        registro = Registros.objects.select_related('sitio', 'user')\
             .prefetch_related('racceso_set', 'rsitio_set', 'rempalme_set')\
             .get(id=registro_id)
             
@@ -29,7 +29,7 @@ class RegistroPDFView(WeasyTemplateView):
         return context
 
 def preview_registro_individual(request, registro_id):
-    registro = RegistrosTxTss.objects.select_related('sitio', 'user')\
+    registro = Registros.objects.select_related('sitio', 'user')\
         .prefetch_related('racceso_set', 'rsitio_set', 'rempalme_set')\
         .get(id=registro_id)
     

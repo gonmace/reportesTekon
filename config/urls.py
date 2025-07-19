@@ -10,7 +10,7 @@ urlpatterns = [
     path('', include('core.urls.dashboard')),
     path('', include('core.urls.sitios')),
     # path('', include('registrosWOM.urls')),
-    path('', include('registrostxtss.urls')),
+    path('', include('registros.urls')),
     path('', include('photos.urls')),
     path('', include('pdf_reports.urls')),
 ]

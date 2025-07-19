@@ -1,9 +1,9 @@
 from django.db import models
-from registrostxtss.models.registrostxtss import RegistrosTxTss
+from registros.models.registrostxtss import Registros
 from core.models import BaseModel
 
 class Photos(BaseModel):
-    registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE)
+    registro = models.ForeignKey(Registros, on_delete=models.CASCADE)
     etapa = models.CharField(max_length=255)
     imagen = models.ImageField(upload_to='photos/')
     descripcion = models.CharField(max_length=128, blank=True, null=True)
