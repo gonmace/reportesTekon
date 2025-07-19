@@ -9,10 +9,7 @@
   
   <!-- Título del step -->
   <div class="timeline-start timeline-box text-lg mr-4">
-    {{step.title}}
-    {% if step.description %}
-      <div class="text-sm text-base-content/70 mt-1">{{step.description}}</div>
-    {% endif %}
+    {{step.title|title}}
   </div>
   
   <!-- Botón del formulario (siempre presente) -->
