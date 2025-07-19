@@ -6,62 +6,84 @@
   {% if not first %}
   <hr class="bg-white sombra" />
   {% endif %}
+  
+  <!-- Título del step -->
   <div class="timeline-start timeline-box text-lg mr-4">
-    {{title|title}}
+    {{step.title}}
+    {% if step.description %}
+      <div class="text-sm text-base-content/70 mt-1">{{step.description}}</div>
+    {% endif %}
   </div>
+  
+  <!-- Botón del formulario (siempre presente) -->
   <div class="timeline-middle">
-    <a href="{% get_registro_url title registro_id %}"
-      class="btn btn-{{color_form}} btn-circle p-1 sombra">
+    <a href="{{step.elements.form.url}}"
+      class="btn btn-{{step.elements.form.color}} btn-circle p-1 sombra"
+      title="Editar {{step.title}}">
       {% include 'svgs/notes.svg' %}
     </a>
   </div>
-  <div class="timeline-end text-lg">
   
-    <div class="flex items-start">
+  <!-- Elementos adicionales -->
+  <div class="timeline-end text-lg">
+    <div class="flex items-start gap-2">
+      
       <!-- Fotos -->
-      <div>
-        <a class="ml-4 btn btn-{{color_photo}} btn-circle sombra" href="{% get_registro_photos_url title registro_id %}">
-          {% include 'svgs/photo-camera.svg' %}
-        </a>
-        <span class="text-sm">{{photo_count}}</span>
-      </div>
-      <!-- Mapa -->
-      {% if map %}
-        <div>
-          <button id="map-btn-{{title}}" class="ml-3 btn btn-{{map.status}} btn-circle sombra" 
-          data-coord1-lat="{{map.coordinates_1.lat}}" 
-          data-coord1-lon="{{map.coordinates_1.lon}}" 
-          data-coord1-label="{{map.coordinates_1.label}}"
-          data-coord1-color="{{map.coordinates_1.color}}"
-          data-coord1-size="{{map.coordinates_1.size}}"
-          {% for i in "23456789" %}
-          {% with coord_key="coordinates_"|add:i %}
-          {% if map|get_item:coord_key %}
-          data-coord{{i}}-lat="{{map|get_item:coord_key|get_item:'lat'}}" 
-          data-coord{{i}}-lon="{{map|get_item:coord_key|get_item:'lon'}}" 
-          data-coord{{i}}-label="{{map|get_item:coord_key|get_item:'label'}}"
-          data-coord{{i}}-color="{{map|get_item:coord_key|get_item:'color'}}"
-          data-coord{{i}}-size="{{map|get_item:coord_key|get_item:'size'}}"
+      {% if step.elements.photos.enabled %}
+        <div class="flex items-center gap-1 ml-3">
+          <a class="btn btn-{{step.elements.photos.color}} btn-circle sombra" 
+             href="{{step.elements.photos.url}}"
+             title="Fotos de {{step.title}}">
+            {% include 'svgs/photo-camera.svg' %}
+          </a>
+          <span class="text-sm">{{step.elements.photos.count}}</span>
+          {% if step.elements.photos.required and step.elements.photos.count < step.elements.photos.min_count %}
+            <span class="text-xs text-error">*</span>
           {% endif %}
-          {% endwith %}
-          {% endfor %}
-          data-site-registro="{{registro_id}}"
-          data-step-title="{{title}}"
-          data-etapa="{{map.etapa}}">
+        </div>
+      {% endif %}
+      
+      <!-- Mapa -->
+      {% if step.elements.map.enabled %}
+        <div class="flex items-center gap-1">
+          <button id="map-btn-{{step.step_name}}" 
+                  class="btn btn-{{step.elements.map.status}} btn-circle sombra"
+                  title="Ver mapa de {{step.title}}"
+                  data-coord1-lat="{{step.elements.map.coordinates.coord1.lat}}" 
+                  data-coord1-lon="{{step.elements.map.coordinates.coord1.lon}}" 
+                  data-coord1-label="{{step.elements.map.coordinates.coord1.label}}"
+                  data-coord1-color="{{step.elements.map.coordinates.coord1.color}}"
+                  data-coord1-size="{{step.elements.map.coordinates.coord1.size}}"
+                  {% for i in "23456789" %}
+                  {% with coord_key="coord"|add:i %}
+                  {% if step.elements.map.coordinates|get_item:coord_key %}
+                  data-coord{{i}}-lat="{{step.elements.map.coordinates|get_item:coord_key|get_item:'lat'}}" 
+                  data-coord{{i}}-lon="{{step.elements.map.coordinates|get_item:coord_key|get_item:'lon'}}" 
+                  data-coord{{i}}-label="{{step.elements.map.coordinates|get_item:coord_key|get_item:'label'}}"
+                  data-coord{{i}}-color="{{step.elements.map.coordinates|get_item:coord_key|get_item:'color'}}"
+                  data-coord{{i}}-size="{{step.elements.map.coordinates|get_item:coord_key|get_item:'size'}}"
+                  {% endif %}
+                  {% endwith %}
+                  {% endfor %}
+                  data-site-registro="{{step.registro_id}}"
+                  data-step-title="{{step.title}}"
+                  data-etapa="{{step.elements.map.etapa}}">
             {% include 'svgs/map-marker.svg' %}
           </button>
         </div>
       {% endif %}
+      
     </div>
-
   </div>
-  <div class="timeline-end text-lg"></div>
+  
   {% if not last %}
   <hr class="bg-white sombra" />
   {% endif %}
 </li>
 
-<!-- Modal genérico para mostrar mapas -->
+<!-- Modal genérico para mostrar mapas (solo se incluye una vez) -->
+{% if forloop.first %}
+
 <dialog id="map-modal" class="modal">
   <div class="modal-box w-full sm:w-11/12 max-w-4xl max-h-[90vh] flex flex-col">
       <!-- Header -->
@@ -97,16 +119,7 @@ window.MapManager = window.MapManager || {};
 // Inicializar variables solo si no existen
 if (!window.MapManager.currentMap) {
     window.MapManager.currentMap = null;
-    window.MapManager.currentCoord1Lat = null;
-    window.MapManager.currentCoord1Lon = null;
-    window.MapManager.currentCoord1Label = null;
-    window.MapManager.currentCoord1Color = null;
-    window.MapManager.currentCoord1Size = null;
-    window.MapManager.currentCoord2Lat = null;
-    window.MapManager.currentCoord2Lon = null;
-    window.MapManager.currentCoord2Label = null;
-    window.MapManager.currentCoord2Color = null;
-    window.MapManager.currentCoord2Size = null;
+    window.MapManager.coordinates = null;
     window.MapManager.currentStepTitle = null;
 }
 
@@ -520,4 +533,4 @@ function saveMapImage() {
 }
 
 </script>
-    
+{% endif %} 

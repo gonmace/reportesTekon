@@ -6,7 +6,7 @@ from photos.models import Photos
 from core.utils.breadcrumbs import BreadcrumbsMixin
 from abc import ABC, abstractmethod
 from core.utils.coordenadas import calcular_distancia_geopy
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 
 
 class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
@@ -14,13 +14,14 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
     Vista base abstracta para manejar pasos de registro de manera genérica.
     
     Esta clase proporciona la funcionalidad base para crear vistas de pasos
-    que pueden manejar diferentes tipos de contextos (con y sin fotos, mapas, etc.).
+    que pueden manejar diferentes tipos de contextos de manera completamente configurable.
     
     Características principales:
     - Gestión automática de fotos y su estado
     - Sistema de mapas genérico y configurable
     - Cálculo de desfases entre coordenadas
     - Verificación de completitud de pasos
+    - Sistema de elementos configurable por step
     
     Para usar esta clase, hereda de ella y define:
     - template_name: El template a usar
@@ -32,43 +33,43 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
     def get_steps_config(self) -> Dict[str, Dict[str, Any]]:
         """
         Define la configuración de los pasos del registro.
-        Cada paso puede tener fotos o no, y diferentes configuraciones.
+        Cada paso puede tener cualquier combinación de elementos configurados.
         
         Returns:
             dict: Configuración de los pasos con la siguiente estructura:
             {
                 'step_name': {
                     'model_class': ModelClass,
-                    'has_photos': bool (opcional, default: False),
-                    'min_photo_count': int (opcional, default: 4),
-                    'desfase': bool (opcional),
-                    'map': {
-                        'coordinates_1': {
-                            'model': str,  # 'site', 'current', o nombre del modelo ('rsitio', 'racceso', etc.)
-                            'lat': str,    # nombre del campo de latitud
-                            'lon': str,    # nombre del campo de longitud
-                            'label': str,  # etiqueta para mostrar
-                            'color': str,  # color del marcador (opcional, default: '#3B82F6')
-                            'size': str    # tamaño del marcador (opcional, default: 'large')
+                    'elements': {
+                        'form': bool,  # Siempre True (requerido)
+                        'photos': {
+                            'enabled': bool,  # Si el step tiene fotos
+                            'min_count': int,  # Mínimo de fotos requeridas (default: 4)
+                            'required': bool,  # Si las fotos son obligatorias (default: False)
                         },
-                        'coordinates_2': {
-                            'model': str,  # 'site', 'current', o nombre del modelo
-                            'lat': str,    # nombre del campo de latitud
-                            'lon': str,    # nombre del campo de longitud
-                            'label': str,  # etiqueta para mostrar
-                            'color': str,  # color del marcador (opcional, default: '#10B981')
-                            'size': str    # tamaño del marcador (opcional, default: 'mid')
+                        'map': {
+                            'enabled': bool,  # Si el step tiene mapa
+                            'coordinates': {
+                                'coordinates_1': {
+                                    'model': str,  # 'site', 'current', o nombre del modelo
+                                    'lat': str,    # nombre del campo de latitud
+                                    'lon': str,    # nombre del campo de longitud
+                                    'label': str,  # etiqueta para mostrar
+                                    'color': str,  # color del marcador (opcional)
+                                    'size': str    # tamaño del marcador (opcional)
+                                },
+                                # ... más coordenadas hasta coordinates_9
+                            }
                         },
-                        'coordinates_3': {
-                            'model': str,  # 'site', 'current', o nombre del modelo
-                            'lat': str,    # nombre del campo de latitud
-                            'lon': str,    # nombre del campo de longitud
-                            'label': str,  # etiqueta para mostrar
-                            'color': str,  # color del marcador (opcional, default: '#8B5CF6')
-                            'size': str    # tamaño del marcador (opcional, default: 'mid')
+                        'desfase': {
+                            'enabled': bool,  # Si calcular desfase entre puntos
+                            'reference': str,  # 'site' para usar sitio base como referencia
+                            'description': str,  # Descripción del desfase (opcional)
                         }
-                        # Se pueden agregar más coordenadas: coordinates_4, coordinates_5, etc.
-                    }
+                    },
+                    'order': int,  # Orden de aparición (opcional, default: orden alfabético)
+                    'title': str,  # Título personalizado (opcional, default: step_name)
+                    'description': str,  # Descripción del step (opcional)
                 }
             }
         """
@@ -85,23 +86,44 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
         steps_config = self.get_steps_config()
         steps_context = self._generate_steps_context(registro_txtss, steps_config)
         
-        context.update(steps_context)
+        # Ordenar los steps según la configuración
+        ordered_steps = self._order_steps(steps_context, steps_config)
+        
+        context.update({
+            'steps': ordered_steps,
+            'steps_config': steps_config,
+            'registro_txtss': registro_txtss,
+        })
         return context
+    
+    def _order_steps(self, steps_context: Dict[str, Any], steps_config: Dict[str, Dict[str, Any]]) -> List[Tuple[str, Dict[str, Any]]]:
+        """Ordena los steps según la configuración."""
+        # Crear lista de tuplas (step_name, step_data) con orden
+        steps_with_order = []
+        for step_name, step_data in steps_context.items():
+            config = steps_config.get(step_name, {})
+            order = config.get('order', 999)  # Default alto para steps sin orden
+            steps_with_order.append((step_name, step_data, order))
+        
+        # Ordenar por orden y luego alfabéticamente
+        steps_with_order.sort(key=lambda x: (x[2], x[0]))
+        
+        # Retornar solo (step_name, step_data)
+        return [(name, data) for name, data, _ in steps_with_order]
     
     def _generate_steps_context(self, registro_txtss: RegistrosTxTss, steps_config: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
         """Genera el contexto para todos los pasos."""
         steps_context = {}
         
         for step_name, config in steps_config.items():
-            steps_context[step_name] = self._generate_single_step_context(registro_txtss, config)
+            steps_context[step_name] = self._generate_single_step_context(registro_txtss, config, step_name)
         
         return steps_context
     
-    def _generate_single_step_context(self, registro_txtss: RegistrosTxTss, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_single_step_context(self, registro_txtss: RegistrosTxTss, config: Dict[str, Any], step_name: str) -> Dict[str, Any]:
         """Genera el contexto para un paso específico."""
         model_class = config['model_class']
-        has_photos = config.get('has_photos', False)  # default a False
-        min_photo_count = config.get('min_photo_count', 4)
+        elements_config = config.get('elements', {})
         
         # Obtener instancia y información básica
         instance, instance_id = self._get_model_instance(model_class, registro_txtss)
@@ -112,21 +134,120 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
         step_context = {
             'registro_id': registro_txtss.id,
             'completeness_info': completeness_info,
+            'step_name': step_name,
+            'title': config.get('title', step_name.title()),
+            'description': config.get('description', ''),
+            'etapa': etapa,
+            'elements': {
+                # El formulario siempre está presente
+                'form': {
+                    'enabled': True,
+                    'url': self._get_form_url(step_name, registro_txtss.id),
+                    'color': completeness_info['color']
+                }
+            },
         }
         
-        # Agregar información de fotos si es necesario
-        if has_photos:
-            step_context['photo'] = self._get_photo_info(registro_txtss.id, etapa, min_photo_count)
+        # Procesar elementos opcionales
+        if 'photos' in elements_config and elements_config['photos'].get('enabled', False):
+            step_context['elements']['photos'] = self._get_photos_element(
+                registro_txtss.id, etapa, elements_config['photos']
+            )
         
-        # Agregar información de desfase si está configurado
-        if config.get('desfase') and instance:
-            step_context['desfase'] = self._get_desfase_info(registro_txtss.sitio, instance)
+        if 'map' in elements_config and elements_config['map'].get('enabled', False):
+            map_info = self._get_map_element(
+                registro_txtss, model_class, etapa, completeness_info, elements_config['map']
+            )
+            if map_info:
+                step_context['elements']['map'] = map_info
         
-        # Procesar configuración del mapa si existe
-        if config.get('map'):
-            step_context['map'] = self._get_map_info(registro_txtss, model_class, etapa, completeness_info, config['map'])
+        if 'desfase' in elements_config and elements_config['desfase'].get('enabled', False):
+            if instance:
+                step_context['elements']['desfase'] = self._get_desfase_element(
+                    registro_txtss.sitio, instance, elements_config['desfase']
+                )
         
         return step_context
+    
+    def _get_form_url(self, step_name: str, registro_id: int) -> str:
+        """Genera la URL del formulario para el step."""
+        # Mapeo de nombres de step a URLs
+        step_urls = {
+            'sitio': 'registrostxtss:r_sitio',
+            'acceso': 'registrostxtss:r_acceso',
+            'empalme': 'registrostxtss:r_empalme',
+        }
+        
+        url_name = step_urls.get(step_name, f'registrostxtss:r_{step_name}')
+        return f'/registrostxtss/{registro_id}/{step_name}/'
+    
+    def _get_photos_element(self, registro_id: int, etapa: str, photos_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Obtiene la configuración del elemento de fotos."""
+        min_count = photos_config.get('min_count', 4)
+        required = photos_config.get('required', False)
+        
+        try:
+            photo_count = Photos.get_photo_count_and_color(registro_id, etapa=etapa)
+            color = self._get_photo_color(photo_count, min_count)
+        except Photos.DoesNotExist:
+            photo_count = 0
+            color = 'error'
+        
+        return {
+            'enabled': True,
+            'count': photo_count,
+            'color': color,
+            'min_count': min_count,
+            'required': required,
+            'url': f'/registrostxtss/{registro_id}/{etapa}/photos/'
+        }
+    
+    def _get_map_element(self, registro_txtss: RegistrosTxTss, model_class, etapa: str, 
+                         completeness_info: Dict[str, Any], map_config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Obtiene la configuración del elemento de mapa."""
+        coordinates_config = map_config.get('coordinates', {})
+        
+        # Verificar estado del mapa
+        map_status = self._get_map_status(registro_txtss, etapa, completeness_info)
+        
+        # Obtener coordenadas
+        coordinates = self._get_map_coordinates(registro_txtss, model_class, coordinates_config)
+        
+        if not coordinates:
+            return None
+        
+        map_info = {
+            'enabled': True,
+            'status': map_status,
+            'etapa': etapa,
+            'coordinates': coordinates
+        }
+        
+        return map_info
+    
+    def _get_desfase_element(self, site, instance, desfase_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Obtiene la configuración del elemento de desfase."""
+        try:
+            desfase = calcular_distancia_geopy(site.lat_base, site.lon_base, instance.lat, instance.lon)
+            color = self._get_desfase_color(desfase)
+            
+            return {
+                'enabled': True,
+                'distancia': round(desfase) if desfase else "",
+                'color': color if desfase else "",
+                'description': desfase_config.get('description', ''),
+                'lat_base': site.lat_base,
+                'lon_base': site.lon_base,
+                'lat_inspeccion': instance.lat,
+                'lon_inspeccion': instance.lon,
+            }
+        except (AttributeError, TypeError):
+            return {
+                'enabled': True,
+                'distancia': "",
+                'color': "",
+                'description': desfase_config.get('description', '')
+            }
     
     def _get_model_instance(self, model_class, registro_txtss: RegistrosTxTss) -> Tuple[Optional[Any], Optional[int]]:
         """Obtiene la instancia del modelo y su ID."""
@@ -135,20 +256,6 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             return instance, instance.id
         except model_class.DoesNotExist:
             return None, None
-    
-    def _get_photo_info(self, registro_id: int, etapa: str, min_photo_count: int) -> Dict[str, Any]:
-        """Obtiene la información de fotos para un paso."""
-        try:
-            photo_count = Photos.get_photo_count_and_color(registro_id, etapa=etapa)
-            color = self._get_photo_color(photo_count, min_photo_count)
-        except Photos.DoesNotExist:
-            photo_count = 0
-            color = 'error'
-        
-        return {
-            'count': photo_count,
-            'color': color
-        }
     
     def _get_photo_color(self, photo_count: int, min_photo_count: int) -> str:
         """Determina el color basado en el número de fotos."""
@@ -159,26 +266,6 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
         else:
             return 'warning'
     
-    def _get_desfase_info(self, site, instance) -> Dict[str, Any]:
-        """Obtiene la información de desfase entre el sitio base y la inspección."""
-        try:
-            desfase = calcular_distancia_geopy(site.lat_base, site.lon_base, instance.lat, instance.lon)
-            color = self._get_desfase_color(desfase)
-            
-            return {
-                'distancia': round(desfase) if desfase else "",
-                'color': color if desfase else "",
-                'lat_base': site.lat_base,
-                'lon_base': site.lon_base,
-                'lat_inspeccion': instance.lat,
-                'lon_inspeccion': instance.lon,
-            }
-        except (AttributeError, TypeError):
-            return {
-                'distancia': "",
-                'color': ""
-            }
-    
     def _get_desfase_color(self, desfase: float) -> str:
         """Determina el color del desfase basado en la distancia."""
         if desfase < 10:
@@ -187,32 +274,6 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             return 'warning'
         else:
             return 'error'
-    
-    def _get_map_info(self, registro_txtss: RegistrosTxTss, model_class, etapa: str, 
-                      completeness_info: Dict[str, Any], map_config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Obtiene la información del mapa para un paso."""
-        # Verificar estado del mapa
-        map_status = self._get_map_status(registro_txtss, etapa, completeness_info)
-        
-        # Obtener coordenadas
-        coordinates = self._get_map_coordinates(registro_txtss, model_class, map_config)
-        
-        if not coordinates:
-            return None
-        
-        map_info = {
-            'status': map_status,
-            'etapa': etapa,
-            'coordinates_1': coordinates['coord1']
-        }
-        
-        # Agregar todas las coordenadas adicionales
-        for i in range(2, 10):  # Soporte para hasta 9 coordenadas
-            coord_key = f'coord{i}'
-            if coord_key in coordinates:
-                map_info[f'coordinates_{i}'] = coordinates[coord_key]
-        
-        return map_info
     
     def _get_map_status(self, registro_txtss: RegistrosTxTss, etapa: str, 
                        completeness_info: Dict[str, Any]) -> str:
@@ -224,7 +285,7 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             return 'error' if completeness_info['filled_fields'] > 0 else 'disabled'
     
     def _get_map_coordinates(self, registro_txtss: RegistrosTxTss, model_class, 
-                            map_config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+                            coordinates_config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Obtiene las coordenadas para el mapa."""
         try:
             site = registro_txtss.sitio
@@ -235,8 +296,8 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             # Obtener todas las coordenadas configuradas
             for i in range(1, 10):  # Soporte para hasta 9 coordenadas
                 coord_key = f'coordinates_{i}'
-                if coord_key in map_config:
-                    coord = self._get_coordinate_from_config(site, instance, map_config[coord_key], registro_txtss)
+                if coord_key in coordinates_config:
+                    coord = self._get_coordinate_from_config(site, instance, coordinates_config[coord_key], registro_txtss)
                     print(f"DEBUG - Coordenada {i}: {coord}")  # Debug
                     if coord['lat'] and coord['lon']:
                         coordinates[f'coord{i}'] = coord
@@ -414,71 +475,94 @@ class StepsRegistroView(BaseStepsView):
         return {
             'sitio': {
                 'model_class': RSitio,
-                'has_photos': True,
-                'min_photo_count': 4,
-                'desfase': True,
-                'map': {
-                    'coordinates_1': {
-                        'model': 'site',  
-                        'lat': 'lat_base',
-                        'lon': 'lon_base',
-                        'label': 'Mandato',
-                        'color': '#3B82F6',
-                        'size': 'large',   
+                'order': 1,
+                'title': 'Sitio',
+                'description': 'Información general del sitio.',
+                'elements': {
+                    'photos': {
+                        'enabled': True,
+                        'min_count': 4,
+                        'required': False,
                     },
-                    'coordinates_2': {
-                        'model': 'current',
-                        'lat': 'lat',
-                        'lon': 'lon',
-                        'label': 'Inspección',
-                        'color': '#F59E0B',
-                        'size': 'mid',
+                    'map': {
+                        'enabled': True,
+                        'coordinates': {
+                            'coordinates_1': {
+                                'model': 'site',  
+                                'lat': 'lat_base',
+                                'lon': 'lon_base',
+                                'label': 'Mandato',
+                                'color': '#3B82F6',
+                                'size': 'large',   
+                            },
+                            'coordinates_2': {
+                                'model': 'current',
+                                'lat': 'lat',
+                                'lon': 'lon',
+                                'label': 'Inspección',
+                                'color': '#F59E0B',
+                                'size': 'mid',
+                            },
+                        }
                     },
-                }
+                    'desfase': {
+                        'enabled': True,
+                        'reference': 'site',
+                        'description': 'Desfase respecto mandato',
+                    }
+                },
             },
             'acceso': {
                 'model_class': RAcceso,
-                'map': {
-                    'coordinates_1': {
-                        'model': 'current',
-                        'lat': 'lat',
-                        'lon': 'lon',
-                        'label': 'Acceso',
-                        'color': '#8B5CF6',
-                        'size': 'large',
-                    },
-                    # No se especifica coordinates_2 - solo se muestra un punto
-                }
+                'order': 2,
+                'title': 'Acceso',
+                'description': 'Información sobre el acceso al sitio.',
             },
             'empalme': {
                 'model_class': REmpalme,
-                'has_photos': True,
-                'min_photo_count': 3,
-                'map': {
-                    'coordinates_1': {
-                        'model': 'rsitio', 
-                        'lat': 'lat',
-                        'lon': 'lon',
-                        'label': 'Sitio',
-                        'color': '#F59E0B',
-                        'size': 'large',   
+                'order': 3,
+                'title': 'Empalme',
+                'description': 'Información sobre el empalme.',
+                'elements': {
+                    'photos': {
+                        'enabled': True,
+                        'min_count': 3,
+                        'required': False,
                     },
-                    'coordinates_2': {
-                        'model': 'current',
-                        'lat': 'lat',
-                        'lon': 'lon',
-                        'label': 'Empalme',
-                        'color': '#e60000',
-                        'size': 'mid',     
+                    'map': {
+                        'enabled': True,
+                        'coordinates': {
+                            'coordinates_1': {
+                                'model': 'rsitio', 
+                                'lat': 'lat',
+                                'lon': 'lon',
+                                'label': 'Sitio',
+                                'color': '#F59E0B',
+                                'size': 'large',   
+                            },
+                            'coordinates_2': {
+                                'model': 'current',
+                                'lat': 'lat',
+                                'lon': 'lon',
+                                'label': 'Empalme',
+                                'color': '#e60000',
+                                'size': 'mid',     
+                            },
+                            'coordinates_3': {
+                                'model': 'site',
+                                'lat': 'lat_base',
+                                'lon': 'lon_base',
+                                'label': 'Mandato',
+                                'color': '#3B82F6',
+                                'size': 'large',     
+                            },
+                        }
                     },
-                    'coordinates_3': {
-                        'model': 'site',
-                        'lat': 'lat_base',
-                        'lon': 'lon_base',
-                        'label': 'Mandato',
-                        'color': '#3B82F6',
-                        'size': 'large',     
-                    },
-                }
+                    'desfase': {
+                        'enabled': True,
+                        'reference': 'site',
+                        'description': 'Distancia Sitio a Empalme',
+                    }
+                },
             },
         }

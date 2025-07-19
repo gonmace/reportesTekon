@@ -8,13 +8,9 @@
 
 {% block content %}
 <ul class="timeline timeline-vertical">
-
-    {% include 'components/step&photo&map.html' with registro_id=sitio.registro_id title="sitio" photo_count=sitio.photo.count color_form=sitio.completeness_info.color color_photo=sitio.photo.color map=sitio.map first=True %}
-        
-    {% include 'components/step.html' with registro_id=sitio.registro_id title="acceso" color_form=acceso.completeness_info.color %}
-
-    {% include 'components/step&photo&map.html' with registro_id=sitio.registro_id title="empalme" photo_count=empalme.photo.count color_form=empalme.completeness_info.color color_photo=empalme.photo.color map=empalme.map last=True %}
-
+    {% for step_name, step in steps %}
+        {% include 'components/step_generic.html' with step=step first=forloop.first last=forloop.last %}
+    {% endfor %}
 </ul>
 
 <!-- Leyenda de colores -->
@@ -43,7 +39,25 @@
         </div>
 
         <div class="flex flex-col w-full my-2 md:my-0 md:mb-auto">
-            {% include 'components/resultados_clave_sitio.html' %}
+            
+            {% for step_name, step in steps %}
+                {% if step.elements.desfase.enabled %}
+                <dl class="grid grid-cols-[200px_1fr] text-sm space-y-0.5">
+                    {% if step.elements.desfase.distancia %}
+                        <dt>{{ step.elements.desfase.description }}</dt>
+                        {% if step_name == 'sitio' %}
+                            <dd class="w-fit text-{{ step.elements.desfase.color }} font-bold">
+                                {{ step.elements.desfase.distancia }} m
+                            </dd>
+                        {% else %}
+                            <dd class="w-fit font-bold">
+                                {{ step.elements.desfase.distancia }} m
+                            </dd>
+                        {% endif %}
+                    {% endif %}
+                </dl>
+                {% endif %}
+            {% endfor %}
         </div>
 
     </div>
