@@ -27,7 +27,7 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
         """Genera breadcrumbs dinámicos basados en el registro y etapa"""
         breadcrumbs = [
             {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
-            {'label': 'Registros', 'url_name': 'registros:list'}
+            {'label': 'Registros TX/TSS', 'url_name': 'registros_txtss:list'}
         ]
         
         # Obtener el nombre del sitio del registro
@@ -42,7 +42,7 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
                 
                 breadcrumbs.append({
                     'label': sitio_cod, 
-                    'url_name': 'registros:steps',
+                    'url_name': 'registros_txtss:steps',
                     'url_kwargs': {'registro_id': registro_id}
                 })
                 

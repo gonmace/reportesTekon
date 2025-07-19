@@ -1,5 +1,5 @@
 from django import forms
-from registros.r_acceso.models import RAcceso
+from registros_txtss.r_acceso.models import RAcceso
 from registros.models.registrostxtss import Registros
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div, HTML

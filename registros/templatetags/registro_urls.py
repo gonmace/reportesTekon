@@ -18,23 +18,26 @@ def get_registro_url(etapa, registro_id, tipo='form'):
     """
     # Mapeo de tipos de URL a patrones de nombres
     url_patterns = {
-        'form': f'registros:r_{etapa}',
-        'photos': f'registros:photos_{etapa}',
-        'edit': f'registros:edit_{etapa}',
-        'delete': f'registros:delete_{etapa}',
-        'view': f'registros:view_{etapa}',
+        'form': f'registros_txtss:r_{etapa}',
+        'photos': f'photos:list',
+        'edit': f'registros_txtss:edit_{etapa}',
+        'delete': f'registros_txtss:delete_{etapa}',
+        'view': f'registros_txtss:view_{etapa}',
     }
     
     try:
         # Intentar generar la URL usando el patrón específico
-        url_name = url_patterns.get(tipo, f'registros:{tipo}_{etapa}')
-        return reverse(url_name, kwargs={'registro_id': registro_id})
+        url_name = url_patterns.get(tipo, f'registros_txtss:{tipo}_{etapa}')
+        if tipo == 'photos':
+            return reverse(url_name, kwargs={'registro_id': registro_id, 'title': etapa})
+        else:
+            return reverse(url_name, kwargs={'registro_id': registro_id})
     except NoReverseMatch:
         # Si no existe la URL específica, usar el patrón genérico
         if tipo == 'photos':
-            return f'/registros/{registro_id}/{etapa}/photos/'
+            return f'/txtss/registros/{registro_id}/{etapa}/photos/'
         else:
-            return f'/registros/{registro_id}/{etapa}/'
+            return f'/txtss/registros/{registro_id}/{etapa}/'
 
 @register.simple_tag
 def get_registro_photos_url(etapa, registro_id):

@@ -1,6 +1,6 @@
 from registros.views.generic_views import GenericRegistroView
-from registros.r_acceso.models import RAcceso
-from registros.r_acceso.form import RAccesoForm
+from registros_txtss.r_acceso.models import RAcceso
+from registros_txtss.r_acceso.form import RAccesoForm
 
 
 class RAccesoView(GenericRegistroView):

@@ -1,6 +1,6 @@
 from registros.views.generic_views import GenericRegistroView
-from registros.r_empalme.models import REmpalme
-from registros.r_empalme.form import REmpalmeForm
+from registros_txtss.r_empalme.models import REmpalme
+from registros_txtss.r_empalme.form import REmpalmeForm
 
 
 class REmpalmeView(GenericRegistroView):

@@ -1,6 +1,6 @@
 from registros.views.generic_views import GenericRegistroView
-from registros.r_sitio.models import RSitio
-from registros.r_sitio.form import RSitioForm
+from registros_txtss.r_sitio.models import RSitio
+from registros_txtss.r_sitio.form import RSitioForm
 
 
 class RSitioView(GenericRegistroView):

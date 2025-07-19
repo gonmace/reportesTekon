@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from registros.models.registrostxtss import Registros
 from core.utils.breadcrumbs import BreadcrumbsMixin
-from registros.r_sitio.models import RSitio
+from registros_txtss.r_sitio.models import RSitio
 
 class GenericRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
     """
@@ -73,7 +73,7 @@ class GenericRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
         """Genera breadcrumbs dinámicos basados en la etapa y registro_id"""
         breadcrumbs = [
             {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
-            {'label': 'Registros', 'url_name': 'registros:list'}
+            {'label': 'Registros TX/TSS', 'url_name': 'registros_txtss:list'}
         ]
         
         # Obtener el nombre del sitio del registro
@@ -86,14 +86,14 @@ class GenericRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
                     
                     breadcrumbs.append({
                         'label': sitio_cod, 
-                        'url_name': 'registros:steps',
+                        'url_name': 'registros_txtss:steps',
                         'url_kwargs': {'registro_id': registro_id}
                     })
                 except RSitio.DoesNotExist:
                     sitio_cod = registro_txtss.sitio.operator_id
                     breadcrumbs.append({
                         'label': sitio_cod, 
-                        'url_name': 'registros:steps',
+                        'url_name': 'registros_txtss:steps',
                         'url_kwargs': {'registro_id': registro_id}
                     })
 
@@ -139,7 +139,7 @@ class GenericRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
         # Guardar el formulario
         form.save()
         # Redirigir a la página de listado
-        return redirect('registros:steps', registro_id=form.instance.registro.id)
+        return redirect('registros_txtss:steps', registro_id=form.instance.registro.id)
     
     def form_invalid(self, form):
         print("form invalid")

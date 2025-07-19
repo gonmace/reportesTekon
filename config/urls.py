@@ -11,6 +11,7 @@ urlpatterns = [
     path('', include('core.urls.sitios')),
     # path('', include('registrosWOM.urls')),
     path('', include('registros.urls')),
+    path('txtss/', include('registros_txtss.urls')),
     path('', include('photos.urls')),
     path('', include('pdf_reports.urls')),
 ]

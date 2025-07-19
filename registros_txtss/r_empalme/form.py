@@ -1,5 +1,5 @@
 from django import forms
-from registros.r_sitio.models import RSitio
+from registros_txtss.r_empalme.models import REmpalme
 from registros.models.registrostxtss import Registros
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
@@ -12,7 +12,7 @@ if settings.DEBUG:
     console = Console()
 
 
-class RSitioForm(forms.ModelForm):
+class REmpalmeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         # Extraer registroId de los argumentos si está presente
         self.registro_id = kwargs.pop('registro_id', None)
@@ -28,9 +28,7 @@ class RSitioForm(forms.ModelForm):
         
         self.fields['lat'].help_text = 'Grados decimales.'
         self.fields['lon'].help_text = 'Grados decimales.'
-        self.fields['dimensiones'].help_text = 'Dimensiones del sitio'
-        self.fields['altura'].help_text = 'Metros'
-        self.fields['deslindes'].help_text = 'Distancia a los bordes de la propiedad, las distancias cortas deben ser precisas.'
+        self.fields['no_poste'].help_text = 'Número de poste.'
         
         # Si se proporciona registro_id, pre-seleccionar el registro correspondiente
         if self.registro_id and not self.instance.pk:
@@ -39,9 +37,6 @@ class RSitioForm(forms.ModelForm):
                 sitio = registro_obj.sitio
                 self.initial['registro'] = registro_obj
                 self.fields['registro'].widget = forms.HiddenInput()
-                # Solo establecer altura si existe el campo alt en el sitio
-                if hasattr(sitio, 'alt') and sitio.alt:
-                    self.initial['altura'] = sitio.alt
             except Registros.DoesNotExist:
                 pass
         elif self.instance.pk:
@@ -81,22 +76,15 @@ class RSitioForm(forms.ModelForm):
                 css_class='flex flex-row justify-between gap-3 mb-3'
             ),
             Div(
-                Div(Field('altura', css_class=get_form_field_css_class(self, 'altura')), css_class='max-w-16'),
-                Div(
-                    Div(Field('dimensiones',
-                            css_class=get_form_field_css_class(self, 'dimensiones'),
-                            placeholder='ej: 15x15 m',
-                            ), css_class='max-w-90'),
-                    Div(Field('deslindes', 
-                            css_class=get_form_field_css_class(self, 'deslindes'),
-                            placeholder='ej: 18 / 18 +50 / +100 m',
-                            ), css_class=' w-full sm:w-3/4'), 
-                    css_class='flex sm:flex-row flex-col justify-between gap-3'
-                    ),
+                Div(Field('proveedor', css_class=get_form_field_css_class(self, 'proveedor')), css_class='w-1/2'),
+                Div(Field('capacidad', css_class=get_form_field_css_class(self, 'capacidad')), css_class='w-1/2'),
                 css_class='flex flex-row justify-between gap-3'
             ),
+            Div(
+                Field('no_poste', css_class=f"{get_form_field_css_class(self, 'no_poste')} w-full" ),
+                css_class='max-w-1/2'
+            ),
             Div(Field('comentarios', css_class=get_form_field_css_class(self, 'comentarios')), css_class='w-full'),
-            # Botón de envío
             Div(
                 Submit('submit', 'Guardar Registro', css_class='btn btn-success w-full mt-4 sombra'),
                 css_class='text-center'
@@ -105,14 +93,14 @@ class RSitioForm(forms.ModelForm):
 
     
     class Meta:
-        model = RSitio
-        fields = ['registro', 'lat', 'lon', 'altura', 'dimensiones', 'deslindes', 'comentarios']
+        model = REmpalme
+        fields = ['registro', 'lat', 'lon', 'proveedor', 'capacidad', 'no_poste', 'comentarios']
         labels = {
             'registro': 'Registro',
             'lat': 'Latitud',
             'lon': 'Longitud',
-            'altura': 'Altura',
-            'dimensiones': 'Dimensiones',
-            'deslindes': 'Deslindes',
+            'proveedor': 'Proveedor',
+            'capacidad': 'Capacidad',
+            'no_poste': 'No. Poste',
             'comentarios': 'Comentarios',
         }

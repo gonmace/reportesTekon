@@ -171,15 +171,17 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
     
     def _get_form_url(self, step_name: str, registro_id: int) -> str:
         """Genera la URL del formulario para el step."""
+        from django.urls import reverse
+        
         # Mapeo de nombres de step a URLs
         step_urls = {
-            'sitio': 'registros:r_sitio',
-            'acceso': 'registros:r_acceso',
-            'empalme': 'registros:r_empalme',
+            'sitio': 'registros_txtss:r_sitio',
+            'acceso': 'registros_txtss:r_acceso',
+            'empalme': 'registros_txtss:r_empalme',
         }
         
-        url_name = step_urls.get(step_name, f'registros:r_{step_name}')
-        return f'/registros/{registro_id}/{step_name}/'
+        url_name = step_urls.get(step_name, f'registros_txtss:r_{step_name}')
+        return reverse(url_name, kwargs={'registro_id': registro_id})
     
     def _get_photos_element(self, registro_id: int, etapa: str, photos_config: Dict[str, Any]) -> Dict[str, Any]:
         """Obtiene la configuración del elemento de fotos."""
@@ -193,13 +195,15 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             photo_count = 0
             color = 'error'
         
+        from django.urls import reverse
+        
         return {
             'enabled': True,
             'count': photo_count,
             'color': color,
             'min_count': min_count,
             'required': required,
-            'url': f'/registros/{registro_id}/{etapa}/photos/'
+            'url': f'/txtss/registros/{registro_id}/{etapa}/photos/'
         }
     
     def _get_map_element(self, registro_txtss: Registros, model_class, etapa: str, 
@@ -303,23 +307,16 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
                 coord_key = f'coordinates_{i}'
                 if coord_key in coordinates_config:
                     coord = self._get_coordinate_from_config(site, instance, coordinates_config[coord_key], registro_txtss)
-                    print(f"DEBUG - Coordenada {i}: {coord}")  # Debug
                     if coord['lat'] and coord['lon']:
                         coordinates[f'coord{i}'] = coord
-                        print(f"DEBUG - Coordenada {i} válida agregada")  # Debug
-                    else:
-                        print(f"DEBUG - Coordenada {i} inválida: lat={coord['lat']}, lon={coord['lon']}")  # Debug
             
             # Verificar que al menos la primera coordenada sea válida
             if not coordinates:
-                print("DEBUG - No se encontraron coordenadas válidas")  # Debug
                 return None
             
-            print(f"DEBUG - Coordenadas finales: {list(coordinates.keys())}")  # Debug
             return coordinates
             
         except AttributeError as e:
-            print(f"DEBUG - Error obteniendo coordenadas: {e}")  # Debug
             return None
     
     def _get_coordinate_from_config(self, site, instance, coord_config: Dict[str, Any], registro_txtss=None) -> Dict[str, Any]:
@@ -331,14 +328,11 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
         size = coord_config.get('size', 'large')  # default large
         model_source = coord_config.get('model', 'current')  # default a 'current'
         
-        print(f"DEBUG - Obteniendo coordenada: model={model_source}, lat_field={lat_field}, lon_field={lon_field}")  # Debug
-        
         # Determinar de dónde obtener las coordenadas
         if model_source == 'site':
             # Coordenadas del sitio base
             lat = getattr(site, lat_field, None)
             lon = getattr(site, lon_field, None)
-            print(f"DEBUG - Coordenadas del sitio: lat={lat}, lon={lon}")  # Debug
         elif model_source == 'current':
             # Coordenadas del modelo actual
             if instance:
@@ -346,12 +340,10 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
                 lon = getattr(instance, lon_field, None)
             else:
                 lat, lon = None, None
-            print(f"DEBUG - Coordenadas del modelo actual: lat={lat}, lon={lon}")  # Debug
         else:
             # Coordenadas de un modelo específico
             if registro_txtss:
                 lat, lon = self._get_coordinates_from_specific_model(registro_txtss, model_source, lat_field, lon_field)
-                print(f"DEBUG - Coordenadas del modelo específico {model_source}: lat={lat}, lon={lon}")  # Debug
             else:
                 lat, lon = None, None
         
@@ -406,9 +398,9 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             Clase del modelo o None si no se encuentra
         """
         model_mapping = {
-            'rsitio': 'registros.r_sitio.models.RSitio',
-            'racceso': 'registros.r_acceso.models.RAcceso',
-            'rempalme': 'registros.r_empalme.models.REmpalme',
+            'rsitio': 'registros_txtss.r_sitio.models.RSitio',
+            'racceso': 'registros_txtss.r_acceso.models.RAcceso',
+            'rempalme': 'registros_txtss.r_empalme.models.REmpalme',
         }
         
         if model_name not in model_mapping:
@@ -421,156 +413,3 @@ class BaseStepsView(BreadcrumbsMixin, TemplateView, ABC):
             return getattr(module, class_name)
         except (ImportError, AttributeError):
             return None
-
-
-class StepsRegistroView(BaseStepsView):
-    """
-    Vista específica para los pasos del registro Tx/TSS.
-    Hereda de BaseStepsView para reutilizar la funcionalidad común.
-    """
-    
-    template_name = 'pages/steps_txtss.html'
-    
-    def get_breadcrumbs(self):
-        """Genera breadcrumbs dinámicos con el nombre del sitio."""
-        breadcrumbs = [
-            {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
-            {'label': 'Registros', 'url_name': 'registros:list'}
-        ]
-        
-        # Obtener el nombre del sitio del registro
-        registro_id = self.kwargs.get('registro_id')
-        if registro_id:
-            try:
-                registro_txtss = get_object_or_404(Registros, id=registro_id)
-                sitio_cod = self._get_sitio_codigo(registro_txtss)
-                breadcrumbs.append({'label': sitio_cod})
-            except Registros.DoesNotExist:
-                breadcrumbs.append({'label': 'Steps'})
-        else:
-            breadcrumbs.append({'label': 'Steps'})
-        
-        return self._resolve_breadcrumbs(breadcrumbs)
-    
-    def _get_sitio_codigo(self, registro_txtss: Registros) -> str:
-        """Obtiene el código del sitio para los breadcrumbs."""
-        try:
-            return registro_txtss.sitio.pti_cell_id
-        except AttributeError:
-            try:
-                return registro_txtss.sitio.operator_id
-            except AttributeError:
-                return 'Sitio'
-    
-    def get_steps_config(self) -> Dict[str, Dict[str, Any]]:
-        """
-        Define la configuración de los pasos del registro Tx/TSS.
-        
-        Configuración de mapas:
-        - 'model': 'site' = usar coordenadas del sitio base (lat_base, lon_base)
-        - 'model': 'current' = usar coordenadas del modelo actual del paso
-        - 'model': 'rsitio' = usar coordenadas del modelo RSitio
-        - 'model': 'racceso' = usar coordenadas del modelo RAcceso
-        - 'model': 'rempalme' = usar coordenadas del modelo REmpalme
-        
-        Returns:
-            dict: Configuración de los pasos
-        """
-        from registros.r_sitio.models import RSitio
-        from registros.r_acceso.models import RAcceso
-        from registros.r_empalme.models import REmpalme
-        
-        return {
-            'sitio': {
-                'model_class': RSitio,
-                'order': 1,
-                'title': 'Sitio',
-                'description': 'Información general del sitio.',
-                'elements': {
-                    'photos': {
-                        'enabled': True,
-                        'min_count': 4,
-                        'required': False,
-                    },
-                    'map': {
-                        'enabled': True,
-                        'coordinates': {
-                            'coordinates_1': {
-                                'model': 'site',  
-                                'lat': 'lat_base',
-                                'lon': 'lon_base',
-                                'label': 'Mandato',
-                                'color': '#3B82F6',
-                                'size': 'large',   
-                            },
-                            'coordinates_2': {
-                                'model': 'current',
-                                'lat': 'lat',
-                                'lon': 'lon',
-                                'label': 'Inspección',
-                                'color': '#F59E0B',
-                                'size': 'mid',
-                            },
-                        }
-                    },
-                    'desfase': {
-                        'enabled': True,
-                        'reference': 'site',
-                        'description': 'Desfase respecto mandato',
-                    }
-                },
-            },
-            'acceso': {
-                'model_class': RAcceso,
-                'order': 2,
-                'title': 'Acceso',
-                'description': 'Información sobre el acceso al sitio.',
-            },
-            'empalme': {
-                'model_class': REmpalme,
-                'order': 3,
-                'title': 'Empalme',
-                'description': 'Información sobre el empalme.',
-                'elements': {
-                    'photos': {
-                        'enabled': True,
-                        'min_count': 3,
-                        'required': False,
-                    },
-                    'map': {
-                        'enabled': True,
-                        'coordinates': {
-                            'coordinates_1': {
-                                'model': 'rsitio', 
-                                'lat': 'lat',
-                                'lon': 'lon',
-                                'label': 'Sitio',
-                                'color': '#F59E0B',
-                                'size': 'large',   
-                            },
-                            'coordinates_2': {
-                                'model': 'current',
-                                'lat': 'lat',
-                                'lon': 'lon',
-                                'label': 'Empalme',
-                                'color': '#e60000',
-                                'size': 'mid',     
-                            },
-                            'coordinates_3': {
-                                'model': 'site',
-                                'lat': 'lat_base',
-                                'lon': 'lon_base',
-                                'label': 'Mandato',
-                                'color': '#3B82F6',
-                                'size': 'large',     
-                            },
-                        }
-                    },
-                    'desfase': {
-                        'enabled': True,
-                        'reference': 'site',
-                        'description': 'Distancia Sitio a Empalme',
-                    }
-                },
-            },
-        }
