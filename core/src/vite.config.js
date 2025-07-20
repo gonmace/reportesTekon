@@ -8,7 +8,7 @@ module.exports = defineConfig({
         rollupOptions: {
             output: {
                 entryFileNames: 'core.js',
-                format: 'iife'
+                format: 'es'
               },
             input: './index-core.js',
         }

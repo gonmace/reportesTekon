@@ -1,9 +1,12 @@
 from django.db import models
-from registros.models.registrostxtss import Registros
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from core.models import BaseModel
 
 class Photos(BaseModel):
-    registro = models.ForeignKey(Registros, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    registro = GenericForeignKey('content_type', 'object_id')
     etapa = models.CharField(max_length=255)
     imagen = models.ImageField(upload_to='photos/')
     descripcion = models.CharField(max_length=128, blank=True, null=True)
@@ -18,20 +21,27 @@ class Photos(BaseModel):
         ordering = ['orden', '-created_at']
 
     @staticmethod
-    def get_photo_count_and_color(sitio_id, etapa):
+    def get_photo_count_and_color(registro_id, etapa):
         """
-        Obtiene la cantidad de imágenes para un sitio específico y una etapa determinada.
+        Obtiene la cantidad de imágenes para un registro específico y una etapa determinada.
         
         Args:
-            sitio_id (int): ID del sitio
+            registro_id (int): ID del registro
             etapa (str): Nombre de la etapa
             
         Returns:
             int: Cantidad de imágenes encontradas
         """
         
+        # Obtener el ContentType del modelo Registros
+        from django.contrib.contenttypes.models import ContentType
+        from registros_txtss.models import Registros
+        
+        content_type = ContentType.objects.get_for_model(Registros)
+        
         return Photos.objects.filter(
-            registro=sitio_id,
+            content_type=content_type,
+            object_id=registro_id,
             etapa=etapa
         ).count()
 

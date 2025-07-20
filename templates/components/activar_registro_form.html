@@ -1,0 +1,72 @@
+<!-- Modal para activar registro -->
+<dialog id="activar-registro-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">Activar Registro</h3>
+        
+        <form method="post" action="{% url 'registros_txtss:activar_registro' %}" id="activar-registro-form">
+            {% csrf_token %}
+            
+            <div class="form-control">
+                <label for="{{ form.sitio.id_for_label }}" class="label">
+                    <span class="label-text">Sitio</span>
+                </label>
+                {{ form.sitio }}
+                {% if form.sitio.errors %}
+                    <div class="text-error text-sm mt-1">
+                        {% for error in form.sitio.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-control mt-4">
+                <label for="{{ form.user.id_for_label }}" class="label">
+                    <span class="label-text">ITO</span>
+                </label>
+                {{ form.user }}
+                {% if form.user.errors %}
+                    <div class="text-error text-sm mt-1">
+                        {% for error in form.user.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="modal-action">
+                <button type="button" class="btn btn-error" onclick="closeModal()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-success" id="activar-registro-btn">
+                    Activar Registro
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Backdrop para cerrar el modal -->
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
+<style>
+    .modal-box {
+        max-width: 500px;
+    }
+    
+    .form-control select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        background-color: white;
+    }
+    
+    .form-control select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+</style> 

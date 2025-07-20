@@ -1,9 +1,8 @@
 from django.views.generic import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
-from registros.models.registrostxtss import Registros
+from registros_txtss.models import Registros
 from core.utils.breadcrumbs import BreadcrumbsMixin
-from registros_txtss.r_sitio.models import RSitio
 
 class GenericRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
     """
@@ -59,10 +58,10 @@ class GenericRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
                     pti_id = registro_txtss.sitio.pti_cell_id
                     operator_id = registro_txtss.sitio.operator_id
                     sitio_name = f"{pti_id} / {operator_id}"
-                except RSitio.DoesNotExist:
+                except AttributeError:
                     try:
                         sitio_name = registro_txtss.sitio.pti_cell_id
-                    except RSitio.DoesNotExist:
+                    except AttributeError:
                         sitio_name = registro_txtss.sitio.operator_id
                 
             except Registros.DoesNotExist:
@@ -89,7 +88,7 @@ class GenericRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
                         'url_name': 'registros_txtss:steps',
                         'url_kwargs': {'registro_id': registro_id}
                     })
-                except RSitio.DoesNotExist:
+                except AttributeError:
                     sitio_cod = registro_txtss.sitio.operator_id
                     breadcrumbs.append({
                         'label': sitio_cod, 

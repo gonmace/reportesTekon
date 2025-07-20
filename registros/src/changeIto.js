@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function loadUsersIto() {
     try {
-        const response = await fetch('/api/v1/registros/usuarios_ito/');
+        const response = await fetch('/txtss/api/v1/registros/usuarios_ito/');
         if (response.ok) {
             const users = await response.json();
             populateUserSelect(users);
@@ -72,7 +72,7 @@ async function handleFormSubmit(e) {
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
     try {
-        const response = await fetch('/api/v1/registros/', {
+        const response = await fetch('/txtss/api/v1/registros/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

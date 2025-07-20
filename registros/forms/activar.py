@@ -1,6 +1,6 @@
 from django import forms
 from users.models import User
-from registros.models.registrostxtss import Registros
+from registros_txtss.models import Registros
 from crispy_forms.layout import Layout, Submit, Button, Div, Field
 from crispy_forms.helper import FormHelper
 from core.models.sites import Site

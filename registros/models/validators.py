@@ -1,22 +1,24 @@
-# validators.py
-from django.core.exceptions import ValidationError
+"""
+Validadores comunes para modelos de registros.
+"""
 
-def validar_longitud_sitio(value):
-    if not 0 <= value <= 10000:
-        raise ValidationError("La longitud de acceso no puede tener ese valor.")
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
 
 def validar_latitud(value):
-    # Verificar si el valor es un número entero o flotante
-    if not isinstance(value, (int, float)):
-        raise ValidationError("La latitud debe ser un número entero o flotante.")
-    # Verificar si el valor está dentro del rango válido
-    if not -90 <= value <= 90:
-        raise ValidationError("La latitud debe estar entre -90 y 90 grados.")
+    """Valida que la latitud esté en el rango correcto."""
+    if value < -90 or value > 90:
+        raise ValidationError(_('La latitud debe estar entre -90 y 90 grados.'))
+
 
 def validar_longitud(value):
-    # Verificar si el valor es un número entero o flotante
-    if not isinstance(value, (int, float)):
-        raise ValidationError("La longitud debe ser un número entero o flotante.")
-    # Verificar si el valor está dentro del rango válido
-    if not -180 <= value <= 180:
-        raise ValidationError("La longitud debe estar entre -180 y 180 grados.")
+    """Valida que la longitud esté en el rango correcto."""
+    if value < -180 or value > 180:
+        raise ValidationError(_('La longitud debe estar entre -180 y 180 grados.'))
+
+
+def validar_porcentaje(value):
+    """Valida que el valor esté entre 0 y 100."""
+    if value < 0 or value > 100:
+        raise ValidationError(_('El porcentaje debe estar entre 0 y 100.'))

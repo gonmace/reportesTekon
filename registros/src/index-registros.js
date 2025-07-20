@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
         function initializeTable() {
             const tabla = new DataTable('#registros-table', {
                 ajax: {
-                    url: '/api/v1/registros/',
+                    url: '/txtss/api/v1/registros/',
                     dataSrc: '',
                     // dataSrc: function(json) {
                     //     console.log('Data de registros:', json);
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             return `
                                 <a 
                                     type="button"
-                                    href="/txtss/registros/${data.id}"
+                                    href="/txtss/registros/${data.id}/"
                                     class="btn btn-lg btn-success btn-circle text-lg sombra"
                                     data-id="${row.is_deleted.id}" 
                                     title="${row.sitio.name}"
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         const rowData = tabla.row(cell.closest('tr')).data();
                         
                         // Actualizar el registro
-                        fetch(`/api/v1/registros/${registroId}/`, {
+                        fetch(`/txtss/api/v1/registros/${registroId}/`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Cargar usuarios ITO y luego inicializar la tabla
-        fetch('/api/v1/registros/usuarios_ito/')
+        fetch('/txtss/api/v1/registros/usuarios_ito/')
             .then(response => response.json())
             .then(data => {
                 usuariosIto = data;
@@ -290,14 +290,14 @@ document.addEventListener("DOMContentLoaded", function () {
             // Obtener el token CSRF
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-            // Hacer la petición POST a la API
-            fetch('/api/v1/registros/', {
+            // Hacer la petición POST al formulario
+            fetch(form.action, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: JSON.stringify(data)
+                body: formData
             })
             .then(response => {
                 if (response.ok) {
@@ -306,22 +306,25 @@ document.addEventListener("DOMContentLoaded", function () {
                     throw new Error('Error en la petición');
                 }
             })
+            .then(response => response.json())
             .then(data => {
-                console.log('Registro creado exitosamente:', data);
+                console.log('Respuesta del servidor:', data);
                 
-                // Cerrar el modal
-                modal.close();
-                
-
-                    Alert.success('Registro creado exitosamente', {
+                if (data.success) {
+                    // Cerrar el modal
+                    modal.close();
+                    
+                    Alert.success(data.message || 'Registro activado exitosamente', {
                         autoHide: 3000
                     });
-
-                
-                // Recargar la página después de un breve delay para que se vea la alerta
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                    
+                    // Recargar la página después de un breve delay para que se vea la alerta
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error(data.message || 'Error al activar el registro');
+                }
             })
             .catch(error => {
                 console.error('Error:', error);

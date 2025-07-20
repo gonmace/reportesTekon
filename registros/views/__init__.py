@@ -1,8 +1,10 @@
 # Views package
 
-# Importaciones convenientes para las vistas de pasos
-from .base_steps_view import BaseStepsView
+# Importaciones convenientes para las vistas base
+from .base import RegistroListView, RegistroStepsView, ElementoView
 
 __all__ = [
-    'BaseStepsView',
+    'RegistroListView',
+    'RegistroStepsView', 
+    'ElementoView',
 ]

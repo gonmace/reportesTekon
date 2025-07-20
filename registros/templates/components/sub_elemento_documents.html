@@ -1,0 +1,96 @@
+{% load crispy_forms_tags %}
+
+<div class="sub-elemento sub-elemento-documents">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-file-alt me-2"></i>
+                Documentos
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if data %}
+                <div class="documents-list">
+                    {% for document in data %}
+                        <div class="document-item d-flex align-items-center p-3 border rounded mb-2">
+                            <div class="document-icon me-3">
+                                {% if document.file_type == 'pdf' %}
+                                    <i class="fas fa-file-pdf text-danger fa-2x"></i>
+                                {% elif document.file_type == 'doc' or document.file_type == 'docx' %}
+                                    <i class="fas fa-file-word text-primary fa-2x"></i>
+                                {% elif document.file_type == 'xls' or document.file_type == 'xlsx' %}
+                                    <i class="fas fa-file-excel text-success fa-2x"></i>
+                                {% elif document.file_type == 'jpg' or document.file_type == 'png' %}
+                                    <i class="fas fa-file-image text-info fa-2x"></i>
+                                {% else %}
+                                    <i class="fas fa-file text-secondary fa-2x"></i>
+                                {% endif %}
+                            </div>
+                            <div class="document-info flex-grow-1">
+                                <h6 class="mb-1">{{ document.title }}</h6>
+                                <small class="text-muted">
+                                    {{ document.file_size|filesizeformat }} • 
+                                    {{ document.uploaded_at|date:"d/m/Y H:i" }}
+                                </small>
+                            </div>
+                            <div class="document-actions">
+                                <a href="{{ document.file.url }}" 
+                                   class="btn btn-sm btn-outline-primary me-2"
+                                   target="_blank">
+                                    <i class="fas fa-download"></i>
+                                    Descargar
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="deleteDocument({{ document.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                    <p>No hay documentos disponibles</p>
+                    <small>Suba documentos para verlos aquí</small>
+                </div>
+            {% endif %}
+            
+            <!-- Botón para subir documentos -->
+            <div class="mt-3">
+                <button class="btn btn-outline-primary" onclick="uploadDocuments()">
+                    <i class="fas fa-upload me-2"></i>
+                    Subir Documentos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.document-item {
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.document-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.document-icon {
+    min-width: 40px;
+    text-align: center;
+}
+
+.document-info h6 {
+    margin: 0;
+    color: #495057;
+}
+
+.document-actions {
+    display: flex;
+    gap: 8px;
+}
+</style> 

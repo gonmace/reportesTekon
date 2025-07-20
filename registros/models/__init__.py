@@ -1,17 +1,17 @@
-from .registrostxtss import Registros 
-from .completeness_checker import CompletenessChecker, check_model_completeness, check_instance_completeness
-from .registrostxtss import MapasGoogle    
-from registros_txtss.r_sitio.models import RSitio
-from registros_txtss.r_acceso.models import RAcceso
-from registros_txtss.r_empalme.models import REmpalme
+"""
+Modelos base para el sistema de registros.
+"""
+
+from .base import RegistroBase
+from .paso import PasoBase
+from .completeness_checker import check_model_completeness
+from .validators import validar_latitud, validar_longitud, validar_porcentaje
 
 __all__ = [
-    'Registros',
-    'MapasGoogle',
-    'RSitio', 
-    'RAcceso',
-    'REmpalme',
-    'CompletenessChecker',
+    'RegistroBase',
+    'PasoBase',
     'check_model_completeness',
-    'check_instance_completeness',
+    'validar_latitud',
+    'validar_longitud',
+    'validar_porcentaje',
 ]

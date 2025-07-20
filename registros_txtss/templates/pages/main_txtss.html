@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dataTables.dataTables.min.css' %}">
+{% endblock css %}
+
+{% block title %}TX/TSS{% endblock %}
+
+{% block pre_content %}
+    <!-- Breadcrumbs -->
+    <div class="flex justify-between items-baseline mb-2">
+        {% include 'components/common/breadcrumbs.html' %}
+        <div class="flex items-center gap-2">
+
+            <div class="flex items-center gap-2">
+                <input type="text" id="buscadorPersonalizado" class="input input-success input-sm w-full" placeholder="Buscar..." autocomplete="off" />
+            </div>
+
+            <button class="btn btn-primary btn-sm ml-2 sombra" id="activar-registro-btn">
+                <i class="fa-solid fa-check"></i>
+                Activar Registro
+            </button>
+            
+        </div>
+    </div>
+{% endblock pre_content %}
+
+
+{% block content %}
+
+<!-- Token CSRF para las actualizaciones AJAX -->
+{% csrf_token %}
+
+<div class="overflow-x-auto w-full">
+    <table id="registros-table" class="display">
+        <thead>
+            <tr>
+                <th class="!text-center">PTI ID</th>
+                <th class="!text-center">Operador ID</th>
+                <th>Nombre Sitio</th>
+                {% if user.is_superuser %}
+                <th class="!text-center whitespace-nowrap">ITO</th>
+                <th class="!text-center whitespace-nowrap">Registro</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Los datos se cargarán dinámicamente con JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li {% if message.tags %} class="text-red-600 {{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% comment %} {% if user.is_authenticated %}
+Esta autenticado
+{% endif %} {% endcomment %}
+
+<!-- Modal para activar registro -->
+{% include 'components/activar_registro_form.html' %}
+
+{% endblock content %}
+
+
+{% block extra_js %}
+<script>
+// Configuración para el JavaScript genérico
+window.isSuperuser = {{ user.is_superuser|yesno:"true,false" }};
+window.API_BASE_URL = '{% url "registros_txtss:list" %}api/v1/';
+window.REGISTROS_URL = '{% url "registros_txtss:list" %}api/v1/registros/';
+window.USUARIOS_URL = '{% url "registros_txtss:list" %}api/v1/usuarios/usuarios_ito/';
+window.ACTIVAR_URL = '{% url "registros_txtss:activar_registro" %}';
+window.TABLE_ID = '#registros-table';
+window.PAGE_LENGTH = 10;
+window.SHOW_ACTIONS = {{ user.is_superuser|yesno:"true,false" }};
+window.ACTIONS_URL = '{% url "registros_txtss:list" %}';
+window.MODAL_ID = '#activar-registro-modal';
+window.ACTIVAR_BTN_ID = '#activar-registro-btn';
+</script>
+<script src="{% static 'js/components/alert-component.js' %}"></script>
+<script type="module" src="{% static 'js/generic-registros.js' %}"></script>
+{% endblock extra_js %} 

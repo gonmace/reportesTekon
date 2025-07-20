@@ -1,6 +1,6 @@
 from django_weasyprint.views import WeasyTemplateView
 from datetime import datetime
-from registros.models import Registros
+from registros_txtss.models import Registros
 from django.conf import settings
 from pathlib import Path
 from django.shortcuts import render
