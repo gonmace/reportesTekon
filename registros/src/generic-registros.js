@@ -287,56 +287,93 @@ class GenericRegistrosTable {
 
 class GenericModalHandler {
     constructor(config = {}) {
+        console.log('GenericModalHandler constructor iniciado');
         this.config = {
             modalId: window.MODAL_ID || '#activar-registro-modal',
             activarBtnId: window.ACTIVAR_BTN_ID || '#activar-registro-btn',
             activarUrl: window.ACTIVAR_URL || '/txtss/activar/',
             ...config
         };
+        console.log('Configuración del modal:', this.config);
         this.modal = null;
         this.activarBtn = null;
         this.init();
     }
     
     init() {
+        console.log('GenericModalHandler init iniciado');
         this.modal = document.getElementById(this.config.modalId.replace('#', ''));
         this.activarBtn = document.getElementById(this.config.activarBtnId.replace('#', ''));
         
+        console.log('Modal encontrado:', this.modal);
+        console.log('Botón activar encontrado:', this.activarBtn);
+        
         if (this.activarBtn && this.modal) {
+            console.log('Configurando eventos del modal...');
             this.configurarEventos();
+        } else {
+            console.error('No se encontraron los elementos del modal');
         }
     }
     
     configurarEventos() {
+        console.log('Configurando eventos del modal...');
+        
         // Abrir modal
         this.activarBtn.addEventListener("click", () => {
+            console.log('Botón activar clickeado');
             this.modal.showModal();
         });
         
         // Cerrar modal
         window.closeModal = () => {
+            console.log('Cerrando modal');
             this.modal.close();
         };
         
         // Manejar formulario
         const form = this.modal.querySelector('form');
+        console.log('Formulario encontrado:', form);
         if (form) {
+            console.log('Agregando event listener al formulario');
             form.addEventListener('submit', (e) => this.handleFormSubmit(e));
+        } else {
+            console.error('No se encontró el formulario en el modal');
         }
     }
     
     async handleFormSubmit(e) {
         e.preventDefault();
         
+        console.log('Formulario enviado');
+        
         const formData = new FormData(e.target);
-        const data = {
-            sitio_id: formData.get('sitio'),
-            user_id: formData.get('user'),
-            is_deleted: false
-        };
+        
+        // Verificar que los campos requeridos estén presentes
+        const sitio = formData.get('sitio');
+        const user = formData.get('user');
+        const title = formData.get('title');
+        const description = formData.get('description');
+        
+        console.log('Datos del formulario:', {
+            sitio,
+            user,
+            title,
+            description
+        });
+        
+        if (!sitio || !user) {
+            Alert.error('Por favor completa todos los campos requeridos.', {
+                autoHide: 3000,
+                dismissible: true
+            });
+            return;
+        }
         
         try {
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            console.log('CSRF Token:', csrfToken);
+            console.log('URL de activación:', this.config.activarUrl);
             
             const response = await fetch(this.config.activarUrl, {
                 method: 'POST',
@@ -347,13 +384,12 @@ class GenericModalHandler {
                 body: formData
             });
             
-            if (!response.ok) {
-                throw new Error('Error en la petición');
-            }
+            console.log('Respuesta del servidor:', response.status, response.statusText);
             
             const result = await response.json();
+            console.log('Datos de respuesta:', result);
             
-            if (result.success) {
+            if (response.ok && result.success) {
                 this.modal.close();
                 
                 Alert.success(result.message || 'Registro activado exitosamente', {
@@ -364,11 +400,17 @@ class GenericModalHandler {
                     window.location.reload();
                 }, 1000);
             } else {
-                throw new Error(result.message || 'Error al activar el registro');
+                // Manejar errores del servidor
+                const errorMessage = result.message || 'Error al activar el registro';
+                console.error('Error del servidor:', errorMessage);
+                Alert.error(errorMessage, {
+                    autoHide: 0,
+                    dismissible: true
+                });
             }
             
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error en la petición:', error);
             Alert.error('Error al crear el registro. Por favor, inténtalo de nuevo.', {
                 autoHide: 0,
                 dismissible: true
@@ -379,11 +421,17 @@ class GenericModalHandler {
 
 // Inicialización cuando el DOM esté listo
 document.addEventListener("DOMContentLoaded", function () {
+    console.log('DOM cargado, inicializando componentes...');
+    
     // Inicializar tabla genérica
+    console.log('Inicializando GenericRegistrosTable...');
     new GenericRegistrosTable();
     
     // Inicializar manejador de modal genérico
+    console.log('Inicializando GenericModalHandler...');
     new GenericModalHandler();
+    
+    console.log('Componentes inicializados');
 });
 
 // Exportar clases para uso en otros módulos

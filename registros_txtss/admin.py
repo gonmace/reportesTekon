@@ -8,10 +8,12 @@ from .models import Registros, RSitio, RAcceso, REmpalme
 
 @admin.register(Registros)
 class RegistrosAdmin(admin.ModelAdmin):
-    list_display = ['sitio', 'user', 'is_active', 'created_at']
-    list_filter = ['is_active', 'created_at']
-    search_fields = ['sitio__name', 'user__username']
-    readonly_fields = ['created_at', 'updated_at']
+    list_display = ['title', 'sitio', 'user', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['title', 'sitio__name', 'user__username']
+    list_per_page = 10
+    list_display_links = ['title']
+    list_select_related = ['sitio', 'user']
 
 
 @admin.register(RSitio)

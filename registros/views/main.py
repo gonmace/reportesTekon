@@ -9,8 +9,8 @@ class ListRegistrosView(LoginRequiredMixin, BreadcrumbsMixin, TemplateView):
     context_object_name = 'registros'
 
     class Meta:
-        title = 'Registros Tx/Tss'
-        header_title = 'Registros Tx/Tss'
+        title = 'Tx/Tss'
+        header_title = 'Tx/Tss'
         breadcrumbs = [
             {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
             {'label': 'TX/TSS'}

@@ -238,56 +238,60 @@ def ejemplo_uso_en_vista():
 
 def ejemplo_uso_implementado():
     """
-    Ejemplo de uso con las clases ya implementadas.
+    Ejemplo de uso con la nueva configuración declarativa.
     """
     try:
         from registros_txtss.models import Registros
-        from registros_txtss.elementos import ElementoSitio
+        from registros.components.registro_config import ElementoGenerico
+        from registros_txtss.config import REGISTRO_CONFIG
         
         # Obtener un registro
         registro = Registros.objects.first()
         if not registro:
             return {'message': 'No hay registros disponibles'}
         
-        # Crear elemento de sitio
-        elemento_sitio = ElementoSitio(registro)
+        # Obtener configuración del elemento sitio
+        elemento_config = REGISTRO_CONFIG.pasos['sitio'].elemento
+        
+        # Crear elemento de sitio usando configuración declarativa
+        elemento_sitio = ElementoGenerico(registro, elemento_config)
         
         # Obtener instancia existente
         instancia = elemento_sitio.get_or_create()
         if instancia:
-            elemento_sitio = ElementoSitio(registro, instancia)
+            elemento_sitio = ElementoGenerico(registro, elemento_config, instancia)
         
         # Obtener formulario
         form = elemento_sitio.get_form()
         
-        # Obtener sub-elementos
-        sub_elementos = elemento_sitio.get_all_sub_elementos()
-        
-        # Obtener información de completitud
-        completeness_info = elemento_sitio.get_completeness_info()
+        # Obtener sub-elementos desde la configuración
+        sub_elementos = elemento_config.sub_elementos
         
         return {
             'success': True,
             'elemento': {
-                'tipo': elemento_sitio.tipo,
-                'model': elemento_sitio.model.__name__,
+                'nombre': elemento_config.nombre,
+                'model': elemento_config.model.__name__,
                 'has_instance': instancia is not None,
-                'completeness_info': completeness_info,
+                'title': elemento_config.title,
+                'description': elemento_config.description,
             },
             'form': {
                 'fields': list(form.fields.keys()) if form else [],
                 'is_valid': form.is_valid() if form else False,
+                'form_class': elemento_config.form_class.__name__ if elemento_config.form_class else 'Dinámico',
             },
             'sub_elementos': {
-                tipo: {
-                    'tipo': sub_elemento.tipo,
-                    'has_data': bool(sub_elemento.get_data()),
+                sub_elem.tipo: {
+                    'tipo': sub_elem.tipo,
+                    'config': sub_elem.config,
+                    'template': sub_elem.template_name,
                 }
-                for tipo, sub_elemento in sub_elementos.items()
+                for sub_elem in sub_elementos
             },
             'urls': {
-                'form': f'/txtss/registros/{registro.id}/elemento/sitio/form/',
-                'api': f'/txtss/registros/{registro.id}/elemento/sitio/',
+                'form': f'/txtss/registros/{registro.id}/sitio/',
+                'api': f'/txtss/registros/{registro.id}/sitio/',
             }
         }
         
@@ -295,7 +299,7 @@ def ejemplo_uso_implementado():
         return {
             'success': False,
             'error': f'Error de importación: {str(e)}',
-            'message': 'Asegúrate de que las clases estén correctamente definidas'
+            'message': 'Asegúrate de que la configuración esté correctamente definida'
         }
     except Exception as e:
         return {

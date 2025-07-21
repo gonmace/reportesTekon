@@ -1,16 +1,28 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ elemento.tipo|title }} - {{ registro.sitio.name }}{% endblock %}
+{% block title %}{{ elemento_config.title|default:elemento.tipo|title }} - {% if registro.sitio %}{{ registro.sitio.name }}{% else %}{{ registro.title }}{% endif %}{% endblock %}
+
+{% block pre_content %}
+    <!-- Breadcrumbs -->
+    {% include 'components/common/breadcrumbs.html' %}
+{% endblock pre_content %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-6">
-    <div class="bg-white rounded-lg shadow-lg p-6">
+<div class="container mx-auto p-2 md:p-4 bg-base-100 rounded-lg shadow-lg">
+    
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ elemento.tipo|title }}</h1>
-                <p class="text-gray-600">{{ registro.sitio.name }}</p>
+                <h1 class="text-2xl font-bold text-gray-900">{{ elemento_config.title|default:elemento.tipo|title }}</h1>
+                {% if registro.sitio %}
+                    <p class="text-gray-600">{{ registro.sitio.name }}</p>
+                {% else %}
+                    <p class="text-gray-600">{{ registro.title }}</p>
+                {% endif %}
+                {% if elemento_config.description %}
+                <p class="text-sm text-gray-500">{{ elemento_config.description }}</p>
+                {% endif %}
             </div>
             <div class="flex space-x-2">
                 <a href="{% url 'registros_txtss:steps' registro.id %}" 
@@ -22,116 +34,12 @@
 
         <!-- Formulario -->
         <div class="mb-6">
-            <form method="post" id="elemento-form" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form|crispy }}
-                
-                <div class="flex justify-end space-x-2 mt-4">
-                    <button type="button" class="btn btn-outline" onclick="history.back()">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
-                </div>
-            </form>
+            {% if form %}
+                {% crispy form %}
+            {% else %}
+                <p class="text-red-500">No se pudo cargar el formulario.</p>
+            {% endif %}
         </div>
-
-        <!-- Sub-elementos -->
-        {% if sub_elementos %}
-        <div class="border-t pt-6">
-            <h2 class="text-lg font-semibold mb-4">Elementos adicionales</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% for tipo, sub_elemento in sub_elementos.items %}
-                    {% if sub_elemento %}
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h3 class="font-medium text-gray-900 mb-2">{{ tipo|title }}</h3>
-                        <div class="text-sm text-gray-600">
-                            {{ sub_elemento.get_data|default:"Sin datos" }}
-                        </div>
-                        {% if sub_elemento.get_url %}
-                        <a href="{{ sub_elemento.get_url }}" 
-                           class="btn btn-sm btn-outline mt-2">
-                            Ver {{ tipo|title }}
-                        </a>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    </div>
+    
 </div>
-
-<!-- Modal para mensajes -->
-<div id="message-modal" class="modal">
-    <div class="modal-box">
-        <h3 class="font-bold text-lg" id="modal-title"></h3>
-        <p class="py-4" id="modal-message"></p>
-        <div class="modal-action">
-            <button class="btn" onclick="closeModal()">Cerrar</button>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('elemento-form');
-    
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(form);
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showModal('Éxito', data.message, 'success');
-                if (data.redirect_url) {
-                    setTimeout(() => {
-                        window.location.href = data.redirect_url;
-                    }, 1500);
-                }
-            } else {
-                showModal('Error', data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showModal('Error', 'Error inesperado al procesar la solicitud', 'error');
-        });
-    });
-});
-
-function showModal(title, message, type) {
-    const modal = document.getElementById('message-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalMessage = document.getElementById('modal-message');
-    
-    modalTitle.textContent = title;
-    modalMessage.textContent = message;
-    
-    // Cambiar colores según el tipo
-    modalTitle.className = `font-bold text-lg ${type === 'success' ? 'text-green-600' : 'text-red-600'}`;
-    
-    modal.showModal();
-}
-
-function closeModal() {
-    const modal = document.getElementById('message-modal');
-    modal.close();
-}
-</script>
 {% endblock %} 

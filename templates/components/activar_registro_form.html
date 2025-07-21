@@ -3,8 +3,12 @@
     <div class="modal-box">
         <h3 class="font-bold text-lg mb-4">Activar Registro</h3>
         
-        <form method="post" action="{% url 'registros_txtss:activar_registro' %}" id="activar-registro-form">
+        <form method="post" action="{{ activar_url|default:'#' }}" id="activar-registro-form">
             {% csrf_token %}
+            
+            <!-- Campos ocultos -->
+            {{ form.title }}
+            {{ form.description }}
             
             <div class="form-control">
                 <label for="{{ form.sitio.id_for_label }}" class="label">
@@ -38,7 +42,7 @@
                 <button type="button" class="btn btn-error" onclick="closeModal()">
                     Cancelar
                 </button>
-                <button type="submit" class="btn btn-success" id="activar-registro-btn">
+                <button type="submit" class="btn btn-success" id="activar-registro-submit-btn">
                     Activar Registro
                 </button>
             </div>
@@ -68,5 +72,14 @@
         outline: none;
         border-color: #3b82f6;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Asegurar que el modal sea visible */
+    dialog.modal {
+        display: none;
+    }
+    
+    dialog.modal[open] {
+        display: block;
     }
 </style> 

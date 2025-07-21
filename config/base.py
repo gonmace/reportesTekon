@@ -23,12 +23,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'crispy_forms',
     'crispy_daisyui',
+    'django_tables2',
     
     'users',
     'core',
     'photos',
-    'registros',
     'registros_txtss',
+    'registros',
     'pdf_reports',
 ]
 

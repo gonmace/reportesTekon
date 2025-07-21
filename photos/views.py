@@ -71,7 +71,7 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
                 
                 # Determinar la aplicación basada en el tipo de registro
                 if hasattr(registro, '_meta') and registro._meta.app_label == 'registros_txtss':
-                    breadcrumbs.append({'label': 'Registros TX/TSS', 'url_name': 'registros_txtss:list'})
+                    breadcrumbs.append({'label': 'TX/TSS', 'url_name': 'registros_txtss:list'})
                     breadcrumbs.append({
                         'label': sitio_cod, 
                         'url_name': 'registros_txtss:steps',

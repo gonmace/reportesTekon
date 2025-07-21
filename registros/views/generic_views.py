@@ -1,147 +1,107 @@
+"""
+Vistas genéricas para registros.
+"""
+
 from django.views.generic import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect
-from registros_txtss.models import Registros
-from core.utils.breadcrumbs import BreadcrumbsMixin
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.http import JsonResponse
+from registros.forms.activar import create_activar_registro_form
+from typing import Dict, Any
 
-class GenericRegistroView(LoginRequiredMixin, BreadcrumbsMixin, FormView):
+
+class GenericActivarRegistroView(LoginRequiredMixin, FormView):
     """
-    Vista genérica para manejar cualquier modelo de registro.
-    Cada modelo debe tener su propio formulario específico.
+    Vista genérica para activar registros.
+    Puede ser usada por cualquier aplicación que herede de RegistroBase.
     """
-    template_name = 'pages/generic_registro.html'
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.model_class = None
-        self.etapa = None
+        self.registro_config = self.get_registro_config()
+        self.template_name = self.registro_config.list_template
     
-    def setup(self, request, *args, **kwargs):
-        """Configura la vista con el modelo específico."""
-        super().setup(request, *args, **kwargs)
-        
-        # Obtener el modelo y etapa de los kwargs
-        self.model_class = kwargs.get('model_class')
-        self.etapa = kwargs.get('etapa', 'registro')
-        
-        if not self.model_class:
-            raise ValueError("model_class debe ser especificado")
+    def get_registro_config(self):
+        """Obtiene la configuración del registro. Debe ser sobrescrito."""
+        raise NotImplementedError("Debe implementar get_registro_config()")
     
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        
-        # Obtener el registro_id de la URL
-        registro_id = self.kwargs.get('registro_id')
-        if registro_id:
-            kwargs['registro_id'] = registro_id
-            # Verificar si ya existe un registro para este registro_txtss
-            try:
-                registro_txtss = get_object_or_404(Registros, id=registro_id)
-                registro_existente = self.model_class.objects.filter(registro=registro_txtss).first()
-                if registro_existente:
-                    kwargs['instance'] = registro_existente
-            except Registros.DoesNotExist:
-                pass
-        return kwargs
+    def get_form_class(self):
+        """Retorna el formulario configurado para el modelo específico."""
+        return create_activar_registro_form(
+            registro_model=self.registro_config.registro_model,
+            title_default=self.registro_config.title,
+            description_default=f'Registro {self.registro_config.title} activado desde el formulario'
+        )
     
-    def get_page_title(self):
-        """Genera el título de la página basado en la etapa y el sitio"""
-        # Obtener el registro_id de la URL
-        registro_id = self.kwargs.get('registro_id')
-        sitio_name = "Registro"
-        
-        if registro_id:
-            try:
-                registro_txtss = get_object_or_404(Registros, id=registro_id)
-                
-                try:
-                    pti_id = registro_txtss.sitio.pti_cell_id
-                    operator_id = registro_txtss.sitio.operator_id
-                    sitio_name = f"{pti_id} / {operator_id}"
-                except AttributeError:
-                    try:
-                        sitio_name = registro_txtss.sitio.pti_cell_id
-                    except AttributeError:
-                        sitio_name = registro_txtss.sitio.operator_id
-                
-            except Registros.DoesNotExist:
-                sitio_name = "Registro"
-        return f"{sitio_name}"
+    def form_valid(self, form):
+        try:
+            # Verificar si ya existe un registro para este sitio y usuario
+            sitio = form.cleaned_data['sitio']
+            user = form.cleaned_data['user']
+            
+            existing_registro = self.registro_config.registro_model.objects.filter(
+                sitio=sitio, 
+                user=user
+            ).first()
+            
+            if existing_registro:
+                if hasattr(existing_registro, 'is_deleted') and existing_registro.is_deleted:
+                    # Si existe pero está marcado como eliminado, reactivarlo
+                    existing_registro.is_deleted = False
+                    existing_registro.save()
+                    registro = existing_registro
+                else:
+                    # Si ya existe y está activo, mostrar error
+                    error_message = f'Ya existe un registro activo para el sitio {sitio.name} y el usuario {user.username}'
+                    if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': False,
+                            'message': error_message
+                        }, status=400)
+                    else:
+                        messages.error(self.request, error_message)
+                        return self.form_invalid(form)
+            else:
+                # Crear nuevo registro
+                registro = form.save()
+            
+            messages.success(self.request, f'Registro activado exitosamente para {registro.sitio.name}')
+            
+            if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Registro activado exitosamente para {registro.sitio.name}'
+                })
+            else:
+                return redirect(f'{self.registro_config.app_namespace}:list')
+        except Exception as e:
+            if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': str(e)
+                }, status=400)
+            else:
+                messages.error(self.request, f'Error al activar registro: {str(e)}')
+                return self.form_invalid(form)
     
-    def get_breadcrumbs(self):
-        """Genera breadcrumbs dinámicos basados en la etapa y registro_id"""
-        breadcrumbs = [
-            {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
-            {'label': 'Registros TX/TSS', 'url_name': 'registros_txtss:list'}
-        ]
-        
-        # Obtener el nombre del sitio del registro
-        registro_id = self.kwargs.get('registro_id')
-        if registro_id:
-            try:
-                registro_txtss = get_object_or_404(Registros, id=registro_id)
-                try:
-                    sitio_cod = registro_txtss.sitio.pti_cell_id
-                    
-                    breadcrumbs.append({
-                        'label': sitio_cod, 
-                        'url_name': 'registros_txtss:steps',
-                        'url_kwargs': {'registro_id': registro_id}
-                    })
-                except AttributeError:
-                    sitio_cod = registro_txtss.sitio.operator_id
-                    breadcrumbs.append({
-                        'label': sitio_cod, 
-                        'url_name': 'registros_txtss:steps',
-                        'url_kwargs': {'registro_id': registro_id}
-                    })
-
-            except Registros.DoesNotExist:
-                breadcrumbs.append({'label': 'Registro'})
+    def form_invalid(self, form):
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Error en el formulario',
+                'errors': form.errors
+            }, status=400)
         else:
-            breadcrumbs.append({'label': 'Registro'})
-        
-        # Agregar la etapa actual
-        if self.etapa:
-            breadcrumbs.append({'label': self.etapa.title()})
-        
-        return self._resolve_breadcrumbs(breadcrumbs)
+            return super().form_invalid(form)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['etapa'] = self.etapa
-        context['model_name'] = self.model_class.__name__
-        
-        # Obtener el registro_id de la URL
-        registro_id = self.kwargs.get('registro_id')
-        if registro_id:
-            try:
-                registro_txtss = get_object_or_404(Registros, id=registro_id)
-                sitio = registro_txtss.sitio
-                context['sitio'] = sitio
-                context['registro_txtss'] = registro_txtss
-                
-                # Verificar si ya existe un registro para este registro_txtss
-                registro_existente = self.model_class.objects.filter(registro=registro_txtss).first()
-                if registro_existente:
-                    context['is_editing'] = True
-                    context['registro_existente'] = registro_existente
-                else:
-                    context['is_editing'] = False
-                    
-            except Registros.DoesNotExist:
-                context['error'] = 'Registro no encontrado'
-        
-        return context
-    
-    def form_valid(self, form):
-        # Guardar el formulario
-        form.save()
-        # Redirigir a la página de listado
-        return redirect('registros_txtss:steps', registro_id=form.instance.registro.id)
-    
-    def form_invalid(self, form):
-        print("form invalid")
-        print(form.errors)
-        # Si el formulario es inválido, volver a mostrar la página con errores
-        return self.render_to_response(self.get_context_data(form=form)) 
+        context.update({
+            'page_title': self.registro_config.title,
+            'show_activate_button': True,
+            'activate_button_text': 'Activar Registro',
+            'activar_url': self.request.build_absolute_uri(f'/{self.registro_config.app_namespace}/activar/'),
+            'modal_template': 'components/activar_registro_form.html',
+        })
+        return context 

@@ -1,27 +1,27 @@
 """
-URLs para registros TX/TSS.
+URLs simplificadas para registros TX/TSS usando el sistema genérico.
 """
 
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import ListRegistrosView, StepsRegistroView, ElementoRegistroView, ActivarRegistroView
-from registros.views.registros import RegistrosViewSet
-from users.views import UserViewSet
+from django.urls import path
+from .views import (
+    ListRegistrosView,
+    StepsRegistroView, 
+    ElementoRegistroView,
+    ActivarRegistroView
+)
 
-app_name = "registros_txtss"
-
-# API Router
-router = DefaultRouter()
-router.register(r'api/v1/registros', RegistrosViewSet, basename='registros')
-router.register(r'api/v1/usuarios', UserViewSet, basename='usuarios')
+app_name = 'registros_txtss'
 
 urlpatterns = [
-    # Vistas principales
-    path("", ListRegistrosView.as_view(), name="list"),
-    path("activar/", ActivarRegistroView.as_view(), name="activar_registro"),
-    path("registros/<int:registro_id>/", StepsRegistroView.as_view(), name="steps"),
-    path("registros/<int:registro_id>/<str:paso_nombre>/", ElementoRegistroView.as_view(), name="elemento"),
+    # Lista de registros
+    path('', ListRegistrosView.as_view(), name='list'),
     
-    # API URLs
-    path("", include(router.urls)),
+    # Activar registro
+    path('activar/', ActivarRegistroView.as_view(), name='activar'),
+    
+    # Pasos del registro
+    path('<int:registro_id>/', StepsRegistroView.as_view(), name='steps'),
+    
+    # Elementos específicos de cada paso
+    path('<int:registro_id>/<str:paso_nombre>/', ElementoRegistroView.as_view(), name='elemento'),
 ] 

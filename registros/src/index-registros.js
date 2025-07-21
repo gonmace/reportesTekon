@@ -281,11 +281,18 @@ document.addEventListener("DOMContentLoaded", function () {
             e.preventDefault();
             
             const formData = new FormData(form);
-            const data = {
-                sitio_id: formData.get('sitio'),
-                user_id: formData.get('user'),
-                is_deleted: false
-            };
+            
+            // Verificar que los campos requeridos estén presentes
+            const sitio = formData.get('sitio');
+            const user = formData.get('user');
+            
+            if (!sitio || !user) {
+                Alert.error('Por favor completa todos los campos requeridos.', {
+                    autoHide: 3000,
+                    dismissible: true
+                });
+                return;
+            }
 
             // Obtener el token CSRF
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -306,7 +313,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     throw new Error('Error en la petición');
                 }
             })
-            .then(response => response.json())
             .then(data => {
                 console.log('Respuesta del servidor:', data);
                 

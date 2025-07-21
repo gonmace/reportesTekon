@@ -1,5 +1,5 @@
 """
-Vistas genéricas para manejar elementos usando las clases de componentes.
+Vistas genéricas para manejar elementos usando configuración declarativa.
 """
 
 from django.views import View
@@ -9,11 +9,13 @@ from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from registros_txtss.models import Registros
 from registros.components.utils import handle_elemento_ajax_request
+from registros.components.registro_config import ElementoGenerico
+from registros_txtss.config import REGISTRO_CONFIG
 
 
 class ElementoView(LoginRequiredMixin, View):
     """
-    Vista genérica para manejar elementos de registro.
+    Vista genérica para manejar elementos de registro usando configuración declarativa.
     """
     
     def get(self, request, registro_id, tipo_elemento):
@@ -24,31 +26,28 @@ class ElementoView(LoginRequiredMixin, View):
             # Obtener el registro
             registro = get_object_or_404(Registros, id=registro_id)
             
-            # Obtener la clase del elemento basada en el tipo
-            elemento_class = self.get_elemento_class(tipo_elemento)
-            if not elemento_class:
+            # Obtener la configuración del elemento basada en el tipo
+            elemento_config = self.get_elemento_config(tipo_elemento)
+            if not elemento_config:
                 return JsonResponse({'error': f'Tipo de elemento no válido: {tipo_elemento}'}, status=400)
             
             # Crear instancia del elemento
-            elemento = elemento_class(registro)
+            elemento = ElementoGenerico(registro, elemento_config)
             
             # Obtener instancia existente
             instance = elemento.get_or_create()
             if instance:
-                elemento = elemento_class(registro, instance)
+                elemento = ElementoGenerico(registro, elemento_config, instance)
             
             # Obtener formulario
             form = elemento.get_form()
-            
-            # Obtener sub-elementos
-            sub_elementos = elemento.get_all_sub_elementos()
             
             # Preparar contexto
             context = {
                 'elemento': elemento,
                 'form': form,
                 'instance': instance,
-                'sub_elementos': sub_elementos,
+                'sub_elementos': elemento_config.sub_elementos,
                 'registro': registro,
             }
             
@@ -66,18 +65,18 @@ class ElementoView(LoginRequiredMixin, View):
             # Obtener el registro
             registro = get_object_or_404(Registros, id=registro_id)
             
-            # Obtener la clase del elemento basada en el tipo
-            elemento_class = self.get_elemento_class(tipo_elemento)
-            if not elemento_class:
+            # Obtener la configuración del elemento basada en el tipo
+            elemento_config = self.get_elemento_config(tipo_elemento)
+            if not elemento_config:
                 return JsonResponse({'error': f'Tipo de elemento no válido: {tipo_elemento}'}, status=400)
             
             # Crear instancia del elemento
-            elemento = elemento_class(registro)
+            elemento = ElementoGenerico(registro, elemento_config)
             
             # Obtener instancia existente
             instance = elemento.get_or_create()
             if instance:
-                elemento = elemento_class(registro, instance)
+                elemento = ElementoGenerico(registro, elemento_config, instance)
             
             # Manejar la petición usando la función genérica
             return handle_elemento_ajax_request(request, elemento)
@@ -85,19 +84,15 @@ class ElementoView(LoginRequiredMixin, View):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     
-    def get_elemento_class(self, tipo_elemento):
+    def get_elemento_config(self, tipo_elemento):
         """
-        Obtiene la clase del elemento basada en el tipo.
+        Obtiene la configuración del elemento basada en el tipo.
         """
-        from registros_txtss.elementos import ElementoSitio, ElementoAcceso, ElementoEmpalme
+        # Buscar en la configuración del registro
+        if tipo_elemento in REGISTRO_CONFIG.pasos:
+            return REGISTRO_CONFIG.pasos[tipo_elemento].elemento
         
-        elementos_map = {
-            'sitio': ElementoSitio,
-            'acceso': ElementoAcceso,
-            'empalme': ElementoEmpalme,
-        }
-        
-        return elementos_map.get(tipo_elemento)
+        return None
     
     def render_response(self, request, context):
         """

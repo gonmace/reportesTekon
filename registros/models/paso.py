@@ -11,7 +11,8 @@ class PasoBase(BaseModel):
     Modelo base para todos los pasos de registros.
     Cada paso específico debe heredar de esta clase.
     """
-    registro = models.ForeignKey('Registros', on_delete=models.CASCADE, verbose_name='Registro')
+    # Usar una referencia genérica que puede ser sobrescrita por subclases
+    registro = None  # Debe ser definido por las subclases
     
     class Meta:
         abstract = True

@@ -1,0 +1,15 @@
+from registros.views.generic_views import GenericRegistroView
+from registros.r_empalme.models import REmpalme
+from registros.r_empalme.form import REmpalmeForm
+
+
+class REmpalmeView(GenericRegistroView):
+    """
+    Vista específica para el modelo REmpalme usando la vista genérica.
+    """
+    form_class = REmpalmeForm
+    
+    def setup(self, request, *args, **kwargs):
+        kwargs['model_class'] = REmpalme
+        kwargs['etapa'] = 'empalme'
+        super().setup(request, *args, **kwargs) 
