@@ -17,7 +17,7 @@ def create_single_point_map_config(
     lon_field: str = 'lon',
     name_field: str = 'name',
     zoom: int = 15,
-    template_name: str = 'components/mapa.html',
+    template_name: str = 'components/mapa.html',  # Template extraído de step_generic.html
     css_classes: str = 'mapa-container',
     icon_color: str = 'red',
     icon_size: str = 'normal',
@@ -73,7 +73,7 @@ def create_multi_point_map_config(
     second_model_relation_field='registro',
     descripcion_distancia='Distancia entre puntos',
     zoom=15,
-    template_name='components/mapa.html',
+    template_name='components/mapa.html',  # Template extraído de step_generic.html
     css_classes='mapa-container',
     # Configuración de iconos para el primer modelo
     icon1_color='red',

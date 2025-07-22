@@ -29,6 +29,11 @@ def calcular_distancia_geopy(lat_1, lon_1, lat_2, lon_2):
     else:
         return None
 
+
+def calcular_distancia_entre_puntos(lat_1, lon_1, lat_2, lon_2):
+    """Alias para calcular_distancia_geopy para compatibilidad."""
+    return calcular_distancia_geopy(lat_1, lon_1, lat_2, lon_2)
+
 def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2, tamano="1200x600"):
     """
     Función genérica para obtener imagen de Google Maps con cualquier número de coordenadas.

@@ -37,6 +37,7 @@ sitio_mapa_component = create_multi_point_map_config(
     icon2_size='normal',
     icon2_type='marker',
     zoom=15,
+    template_name='components/mapa_modal.html',
 )
 
 sitio_fotos_component = create_photos_config(

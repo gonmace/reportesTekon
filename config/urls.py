@@ -12,6 +12,7 @@ urlpatterns = [
     path('reg_txtss/', include('reg_txtss.urls')),
     path('', include('photos.urls')),
     path('', include('pdf_reports.urls')),
+    path('api/', include('core.urls.api')),
 ]
 
 if settings.DEBUG:
