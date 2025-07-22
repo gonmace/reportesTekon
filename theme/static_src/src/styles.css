@@ -3,6 +3,7 @@
 /* @import "tailwindcss-animated"; */
 
 @source "../../../**/*.{html,py,js,ts}";
+@source "../../../templates/components/maps_form.html"
 @source "../../../static/js/components/alert-component.js";
 @source "../../../registrostxtss/forms/r_sitio_form.py";
 @source "../../../templates/svgs/*.svg";

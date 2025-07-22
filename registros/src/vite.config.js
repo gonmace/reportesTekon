@@ -7,14 +7,10 @@ module.exports = defineConfig({
         minify: true,
         rollupOptions: {
             output: {
-                entryFileNames: '[name].js',
-                format: 'es',
-                inlineDynamicImports: false
+                entryFileNames: 'maps.js',
+                format: 'iife',
               },
-            input: {
-                'registros': './index-registros.js',
-                'generic-registros': './generic-registros.js'
-            },
+            input: './index-maps.js',
         }
     }
 });

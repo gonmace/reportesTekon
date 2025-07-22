@@ -25,6 +25,4 @@ urlpatterns = [
     # Elementos específicos de cada paso
     path('<int:registro_id>/<str:paso_nombre>/', ElementoRegistroView.as_view(), name='elemento'),
     
-    # Fotos - incluir las URLs de photos
-    path('<int:registro_id>/<str:paso_nombre>/photos/', include('photos.urls_reg_txtss')),
 ] 
