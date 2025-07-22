@@ -75,13 +75,13 @@ class RegistroStepsView(LoginRequiredMixin, BreadcrumbsMixin, TemplateView):
                     'instance': instance,
                     'title': config.get('title', step_name.title()),
                     'description': config.get('description', ''),
-                    'url': f'/txtss/registros/{registro.id}/{step_name}/',
+                    'url': f'/{self.app_namespace}/registros/{registro.id}/{step_name}/',
                     'has_data': instance is not None,
                     'step_name': step_name,
                     'registro_id': registro.id,
                     'elements': {
                         'form': {
-                            'url': f'/txtss/registros/{registro.id}/{step_name}/',
+                            'url': f'/{self.app_namespace}/registros/{registro.id}/{step_name}/',
                             'color': 'primary' if instance else 'warning'
                         },
                         'photos': {

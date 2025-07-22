@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     'users',
     'core',
     'photos',
-    'registros_txtss',
+    'reg_txtss',
     'registros',
     'pdf_reports',
 ]

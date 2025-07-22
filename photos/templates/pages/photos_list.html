@@ -295,7 +295,7 @@
     });
 
     // Start the upload
-    xhr.open("POST", "{% url 'registros:photos:upload' registro_id=registro_id title=title %}");
+    xhr.open("POST", "{% url 'photos:upload' app_name=app_name registro_id=registro_id step_name=title %}");
     xhr.setRequestHeader(
       "X-CSRFToken",
       document.querySelector("[name=csrfmiddlewaretoken]").value
@@ -362,7 +362,7 @@
     );
     const descripcion = input.value;
 
-    fetch("{% url 'registros:photos:update' registro_id=registro_id title=title %}", {
+    fetch("{% url 'photos:update' app_name=app_name registro_id=registro_id step_name=title %}", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -393,7 +393,7 @@
       return;
     }
 
-    fetch(`{% url 'registros:photos:delete' registro_id=registro_id title=title photo_id=0 %}`.replace('0', photoId), {
+    fetch(`{% url 'photos:delete' app_name=app_name registro_id=registro_id step_name=title photo_id=0 %}`.replace('0', photoId), {
       method: "POST",
       headers: {
         "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
@@ -465,7 +465,7 @@
 
     // Debounce the save operation
     sortTimeout = setTimeout(() => {
-      fetch("{% url 'registros:photos:reorder' registro_id=registro_id title=title %}", {
+      fetch("{% url 'photos:reorder' app_name=app_name registro_id=registro_id step_name=title %}", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -53,19 +53,19 @@ Función de conveniencia para generar URLs de fotos.
 
 El sistema intenta generar URLs usando estos patrones:
 
-1. **Formularios**: `registrostxtss:r_{etapa}`
-2. **Fotos**: `registrostxtss:photos_{etapa}`
-3. **Edición**: `registrostxtss:edit_{etapa}`
-4. **Eliminación**: `registrostxtss:delete_{etapa}`
-5. **Vista**: `registrostxtss:view_{etapa}`
-6. **Personalizado**: `registrostxtss:{tipo}_{etapa}`
+1. **Formularios**: `reg_txtss:r_{etapa}`
+2. **Fotos**: `reg_txtss:photos_{etapa}`
+3. **Edición**: `reg_txtss:edit_{etapa}`
+4. **Eliminación**: `reg_txtss:delete_{etapa}`
+5. **Vista**: `reg_txtss:view_{etapa}`
+6. **Personalizado**: `reg_txtss:{tipo}_{etapa}`
 
 ## URLs de Fallback
 
 Si no existe una URL específica, el sistema genera URLs genéricas:
 
-- **Formularios**: `/registrostxtss/{registro_id}/{etapa}/`
-- **Fotos**: `/registrostxtss/{registro_id}/{etapa}/photos/`
+- **Formularios**: `/reg_txtss/{registro_id}/{etapa}/`
+- **Fotos**: `/reg_txtss/{registro_id}/{etapa}/photos/`
 
 ## Ejemplos Completos
 

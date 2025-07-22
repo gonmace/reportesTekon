@@ -2,43 +2,41 @@
 Configuración declarativa para registros TX/TSS.
 """
 
-from registros.config import create_site_paso_config, create_simple_paso_config, create_registro_config
-from .models import Registros, RSitio, RAcceso, REmpalme
+from registros.config import create_photo_map_config, create_photo_config, create_simple_config, create_registro_config
+from .models import RegTxtss, RSitio, RAcceso, REmpalme
 from .forms import RSitioForm, RAccesoForm, REmpalmeForm
 
 
 # Configuración de pasos usando funciones genéricas
 PASOS_CONFIG = {
-    'sitio': create_site_paso_config(
+    'sitio': create_photo_map_config(
         model_class=RSitio,
         form_class=RSitioForm,
         title='Sitio',
-        description='Información general del sitio.'
+        description='Información general del sitio.',
+        photo_min=4
     ),
-    'acceso': create_simple_paso_config(
+    'acceso': create_simple_config(
         model_class=RAcceso,
         form_class=RAccesoForm,
-        fields=['tipo_suelo', 'distancia', 'comentarios'],
         title='Acceso',
-        description='Información sobre el acceso al sitio.',
-        photo_count=3
+        description='Información sobre el acceso al sitio.'
     ),
-    'empalme': create_simple_paso_config(
+    'empalme': create_photo_config(
         model_class=REmpalme,
         form_class=REmpalmeForm,
-        fields=['proveedor', 'capacidad', 'comentarios'],
         title='Empalme',
         description='Información sobre el empalme.',
-        photo_count=2
+        photo_min=2
     ),
 }
 
 # Configuración completa del registro
 REGISTRO_CONFIG = create_registro_config(
-    registro_model=Registros,
+    registro_model=RegTxtss,
     pasos_config=PASOS_CONFIG,
     title='TX/TSS',
-    app_namespace='txtss',
+    app_namespace='reg_txtss',
     list_template='pages/main_txtss.html',
     steps_template='pages/steps_txtss.html'
 ) 

@@ -29,7 +29,7 @@
       {% if step.elements.photos.enabled %}
         <div class="flex items-center gap-1 ml-3">
           <a class="btn btn-{{step.elements.photos.color}} btn-circle sombra" 
-             href="{{step.elements.photos.url}}"
+             href="{% get_registro_photos_url step.step_name step.registro_id app_namespace='reg_txtss' %}"
              title="Fotos de {{step.title}}">
             {% include 'svgs/photo-camera.svg' %}
           </a>

@@ -15,8 +15,8 @@ class RegTxtss(RegistroBase):
     """
     Modelo para registros TX/TSS.
     """
-    sitio = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Sitio', related_name='registros_txtss')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario', related_name='registros_txtss')
+    sitio = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Sitio', related_name='reg_txtss')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario', related_name='reg_txtss')
     title = models.CharField(max_length=100, verbose_name='Título')
     description = models.TextField(blank=True, null=True, verbose_name='Descripción')
     is_deleted = models.BooleanField(default=False)
@@ -26,7 +26,7 @@ class RegTxtss(RegistroBase):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Registro {self.id}"
+        return f"RegTxtss {self.id}"
     
     def clean(self):
         """Custom validation method"""
@@ -40,7 +40,7 @@ class RegTxtss(RegistroBase):
 # Pasos específicos
 class RSitio(PasoBase):
     """Paso Sitio para registros TX/TSS."""
-    registro = models.ForeignKey(Registros, on_delete=models.CASCADE, verbose_name='Registro')
+    registro = models.ForeignKey(RegTxtss, on_delete=models.CASCADE, verbose_name='Registro')
     lat = models.FloatField(validators=[validar_latitud], verbose_name='Latitud Inspeccion')
     lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Inspeccion')
     altura = models.CharField(max_length=100, verbose_name='Altura Torre')
@@ -67,7 +67,7 @@ class RSitio(PasoBase):
 
 class RAcceso(PasoBase):
     """Paso Acceso para registros TX/TSS."""
-    registro = models.ForeignKey(Registros, on_delete=models.CASCADE, verbose_name='Registro')
+    registro = models.ForeignKey(RegTxtss, on_delete=models.CASCADE, verbose_name='Registro')
     tipo_suelo = models.CharField(max_length=100, verbose_name='Tipo de Suelo')
     distancia = models.CharField(max_length=100, verbose_name='Distancia')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
@@ -91,7 +91,7 @@ class RAcceso(PasoBase):
 
 class REmpalme(PasoBase):
     """Paso Empalme para registros TX/TSS."""
-    registro = models.ForeignKey(Registros, on_delete=models.CASCADE, verbose_name='Registro')
+    registro = models.ForeignKey(RegTxtss, on_delete=models.CASCADE, verbose_name='Registro')
     proveedor = models.CharField(max_length=100, verbose_name='Proveedor')
     capacidad = models.CharField(max_length=100, verbose_name='Capacidad')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')

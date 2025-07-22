@@ -4,7 +4,7 @@ from django.urls import reverse, NoReverseMatch
 register = template.Library()
 
 @register.simple_tag
-def get_registro_url(etapa, registro_id, tipo='form'):
+def get_registro_url(etapa, registro_id, tipo='form', app_namespace='reg_txtss'):
     """
     Genera la URL para cualquier tipo de vista relacionada con registros.
     
@@ -18,29 +18,29 @@ def get_registro_url(etapa, registro_id, tipo='form'):
     """
     # Mapeo de tipos de URL a patrones de nombres
     url_patterns = {
-        'form': f'registros_txtss:r_{etapa}',
-        'photos': f'photos:list',
-        'edit': f'registros_txtss:edit_{etapa}',
-        'delete': f'registros_txtss:delete_{etapa}',
-        'view': f'registros_txtss:view_{etapa}',
+        'form': f'{app_namespace}:r_{etapa}',
+        'photos': f'{app_namespace}:fotos',
+        'edit': f'{app_namespace}:edit_{etapa}',
+        'delete': f'{app_namespace}:delete_{etapa}',
+        'view': f'{app_namespace}:view_{etapa}',
     }
     
     try:
         # Intentar generar la URL usando el patrón específico
-        url_name = url_patterns.get(tipo, f'registros_txtss:{tipo}_{etapa}')
+        url_name = url_patterns.get(tipo, f'{app_namespace}:{tipo}_{etapa}')
         if tipo == 'photos':
-            return reverse(url_name, kwargs={'registro_id': registro_id, 'title': etapa})
+            return reverse(url_name, kwargs={'registro_id': registro_id, 'paso_nombre': etapa})
         else:
             return reverse(url_name, kwargs={'registro_id': registro_id})
     except NoReverseMatch:
         # Si no existe la URL específica, usar el patrón genérico
         if tipo == 'photos':
-            return f'/txtss/registros/{registro_id}/{etapa}/photos/'
+            return f'/{app_namespace}/{registro_id}/{etapa}/photos/'
         else:
-            return f'/txtss/registros/{registro_id}/{etapa}/'
+            return f'/{app_namespace}/{registro_id}/{etapa}/'
 
 @register.simple_tag
-def get_registro_photos_url(etapa, registro_id):
+def get_registro_photos_url(etapa, registro_id, app_namespace='reg_txtss'):
     """
     Genera la URL para las fotos de una etapa específica de registro.
     
@@ -51,4 +51,4 @@ def get_registro_photos_url(etapa, registro_id):
     Returns:
         URL generada para las fotos
     """
-    return get_registro_url(etapa, registro_id, 'photos') 
+    return get_registro_url(etapa, registro_id, 'photos', app_namespace) 

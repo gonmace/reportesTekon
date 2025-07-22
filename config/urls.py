@@ -9,10 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls.dashboard')),
     path('', include('core.urls.sitios')),
-    # path('', include('registrosWOM.urls')),
-    # path('', include('registros.urls')),  # Movido a registros_txtss
-    path('txtss/', include('registros_txtss.urls')),
-    # path('test/', include('registros_test.urls')),
+    path('reg_txtss/', include('reg_txtss.urls')),
     path('', include('photos.urls')),
     path('', include('pdf_reports.urls')),
 ]

@@ -56,7 +56,7 @@ class MenuBuilder:
             MenuItem('Dashboard', 'dashboard:dashboard', 'fas fa-tachometer-alt', module='supervision'),
             MenuItem('Sitios', 'sitios:sitios_list', 'fas fa-map-marker-alt', module='supervision'),
             # MenuItem('Registros WOM', 'registrosWOM:list', 'fas fa-file-alt', module='registrosWOM'),
-            MenuItem('TX/TSS', 'registros_txtss:list', 'fas fa-file-alt', module='registros'),
+            MenuItem('TX/TSS', 'reg_txtss:list', 'fas fa-file-alt', module='registros'),
             # MenuItem('Registros Test', 'registros_test:list', 'fas fa-vial', module='registros'),
         ]
         # elif module_code == 'postes':

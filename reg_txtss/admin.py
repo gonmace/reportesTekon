@@ -3,10 +3,10 @@ Admin para registros TX/TSS.
 """
 
 from django.contrib import admin
-from .models import Registros, RSitio, RAcceso, REmpalme
+from .models import RegTxtss, RSitio, RAcceso, REmpalme
 
 
-@admin.register(Registros)
+@admin.register(RegTxtss)
 class RegistrosAdmin(admin.ModelAdmin):
     list_display = ['title', 'sitio', 'user', 'created_at']
     list_filter = ['created_at']

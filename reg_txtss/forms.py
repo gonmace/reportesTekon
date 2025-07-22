@@ -5,7 +5,7 @@ Formularios para registros TX/TSS.
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
-from .models import RSitio, RAcceso, REmpalme, Registros
+from .models import RSitio, RAcceso, REmpalme, RegTxtss
 from registros.forms.utils import get_form_field_css_class, get_field_css_class
 from crispy_forms.layout import Layout, Field, Submit, Div, HTML
 
@@ -32,12 +32,12 @@ class RSitioForm(forms.ModelForm):
         # Configurar el campo registro automáticamente
         
         # Configurar el queryset del campo registro
-        self.fields['registro'].queryset = Registros.objects.all()
+        self.fields['registro'].queryset = RegTxtss.objects.all()
         
         try:
             if self.registro_id:
                 # Para formularios nuevos, establecer el registro según el ID
-                registro_obj = Registros.objects.get(id=self.registro_id)
+                registro_obj = RegTxtss.objects.get(id=self.registro_id)
                 # Primero ocultar el campo (comentado para pruebas)
                 # self.fields['registro'].widget = forms.HiddenInput()
                 # Luego establecer el valor inicial
@@ -51,7 +51,7 @@ class RSitioForm(forms.ModelForm):
                 # Si no hay registro_id, ocultar el campo (comentado para pruebas)
                 pass
                 # self.fields['registro'].widget = forms.HiddenInput()
-        except Registros.DoesNotExist:
+        except RegTxtss.DoesNotExist:
             # Si el registro no existe, ocultar el campo (comentado para pruebas)
             pass
             # self.fields['registro'].widget = forms.HiddenInput()
@@ -128,7 +128,7 @@ class RAccesoForm(forms.ModelForm):
         try:
             if self.registro_id:
                 # Para formularios nuevos, establecer el registro según el ID
-                registro_obj = Registros.objects.get(id=self.registro_id)
+                registro_obj = RegTxtss.objects.get(id=self.registro_id)
                 self.initial['registro'] = registro_obj.id  # Usar el ID, no el objeto
                 self.fields['registro'].widget = forms.HiddenInput()
                 self.fields['registro'].initial = registro_obj.id  # Usar el ID, no el objeto
@@ -138,7 +138,7 @@ class RAccesoForm(forms.ModelForm):
             else:
                 # Si no hay registro_id, ocultar el campo
                 self.fields['registro'].widget = forms.HiddenInput()
-        except Registros.DoesNotExist:
+        except RegTxtss.DoesNotExist:
             # Si el registro no existe, ocultar el campo
             self.fields['registro'].widget = forms.HiddenInput()
         
@@ -177,7 +177,7 @@ class REmpalmeForm(forms.ModelForm):
         try:
             if self.registro_id:
                 # Para formularios nuevos, establecer el registro según el ID
-                registro_obj = Registros.objects.get(id=self.registro_id)
+                registro_obj = RegTxtss.objects.get(id=self.registro_id)
                 self.initial['registro'] = registro_obj.id  # Usar el ID, no el objeto
                 self.fields['registro'].widget = forms.HiddenInput()
                 self.fields['registro'].initial = registro_obj.id  # Usar el ID, no el objeto
@@ -187,7 +187,7 @@ class REmpalmeForm(forms.ModelForm):
             else:
                 # Si no hay registro_id, ocultar el campo
                 self.fields['registro'].widget = forms.HiddenInput()
-        except Registros.DoesNotExist:
+        except RegTxtss.DoesNotExist:
             # Si el registro no existe, ocultar el campo
             self.fields['registro'].widget = forms.HiddenInput()
         

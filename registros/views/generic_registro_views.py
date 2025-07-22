@@ -164,6 +164,36 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             has_photos = any(sub.tipo == 'fotos' for sub in elemento_config.sub_elementos)
             has_map = any(sub.tipo == 'mapa' for sub in elemento_config.sub_elementos)
             
+            # Obtener configuración de fotos si existe
+            photo_config = None
+            min_count = 0
+            if has_photos:
+                for sub in elemento_config.sub_elementos:
+                    if sub.tipo == 'fotos':
+                        photo_config = sub.config
+                        min_count = photo_config.get('min_files', 4)
+                        break
+            
+            # Contar fotos si el paso las tiene
+            photo_count = 0
+            if has_photos:
+                from photos.models import Photos
+                from django.contrib.contenttypes.models import ContentType
+                
+                # Obtener el ContentType del modelo del registro
+                content_type = ContentType.objects.get_for_model(type(registro))
+                
+                # Determinar el nombre de la app para el filtro
+                app_filter = self.registro_config.app_namespace
+                
+                # Contar fotos para este registro, etapa y app
+                photo_count = Photos.count_photos(
+                    registro_id=registro.id,
+                    etapa=step_name,
+                    app_name=app_filter,
+                    content_type=content_type
+                )
+            
             # Verificar completitud
             completeness = elemento.check_completeness() if hasattr(elemento, 'check_completeness') else {
                 'color': 'gray',
@@ -172,7 +202,19 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 'total_fields': 0,
                 'filled_fields': 0
             }
-            
+
+            # --- Lógica de color para el botón del formulario ---
+            form_color = 'warning'
+            form = elemento.get_form()
+            if form and form.is_bound:
+                if form.is_valid():
+                    form_color = 'success'
+                else:
+                    form_color = 'error'
+            elif instance:
+                form_color = 'success'
+            # --- Fin lógica de color ---
+
             # Generar estructura que espera el template step_generic.html
             step_data = {
                 'title': paso_config.title,
@@ -180,16 +222,16 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 'registro_id': registro.id,
                 'elements': {
                     'form': {
-                        'url': f'/txtss/{registro.id}/{step_name}/',
-                        'color': 'success' if instance else 'warning'
+                        'url': f'/{self.registro_config.app_namespace}/{registro.id}/{step_name}/',
+                        'color': form_color
                     },
                     'photos': {
                         'enabled': has_photos,
-                        'url': f'/txtss/{registro.id}/{step_name}/fotos/' if has_photos else '',
-                        'color': 'success' if has_photos and instance else 'warning',
-                        'count': 0,  # TODO: Implementar conteo de fotos
+                        'url': f'/{self.registro_config.app_namespace}/{registro.id}/{step_name}/photos/' if has_photos else '',
+                        'color': 'success' if has_photos and photo_count >= min_count else 'warning',
+                        'count': photo_count,
                         'required': has_photos,
-                        'min_count': 1 if has_photos else 0
+                        'min_count': min_count
                     },
                     'map': {
                         'enabled': has_map,

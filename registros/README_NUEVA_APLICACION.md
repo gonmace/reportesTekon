@@ -173,19 +173,19 @@ class RDatosForm(forms.ModelForm):
 En `mi_nueva_app/config.py`:
 
 ```python
-from registros.config import create_site_paso_config, create_simple_paso_config, create_registro_config
+from registros.config import create_photo_map_config, create_photo_config, create_simple_config, create_registro_config
 from .models import MiRegistro, RSitio, RDatos
 from .forms import RSitioForm, RDatosForm
 
 # Configuración de pasos
 PASOS_CONFIG = {
-    'sitio': create_site_paso_config(
+    'sitio': create_photo_map_config(
         model_class=RSitio,
         form_class=RSitioForm,
         title='Sitio',
         description='Información general del sitio.'
     ),
-    'datos': create_simple_paso_config(
+    'datos': create_photo_config(
         model_class=RDatos,
         form_class=RDatosForm,
         fields=['campo1', 'campo2', 'comentarios'],

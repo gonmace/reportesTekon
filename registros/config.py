@@ -7,11 +7,12 @@ from typing import Dict, Any, Type
 from django.db import models
 
 
-def create_site_paso_config(
+def create_photo_map_config(
     model_class: Type[models.Model],
     form_class: Type,
     title: str = "Sitio",
-    description: str = "Información general del sitio."
+    description: str = "Información general del sitio.",
+    photo_min: int = 4
 ) -> PasoConfig:
     """
     Crea una configuración de paso para sitio con mapa y fotos.
@@ -21,6 +22,7 @@ def create_site_paso_config(
         form_class: Clase del formulario
         title: Título del paso
         description: Descripción del paso
+        photo_min: Número mínimo de fotos requeridas
     
     Returns:
         PasoConfig configurado
@@ -49,7 +51,7 @@ def create_site_paso_config(
                 SubElementoConfig(
                     tipo='fotos',
                     config={
-                        'max_files': 5,
+                        'min_files': photo_min,
                         'allowed_types': ['image/jpeg', 'image/png']
                     },
                     template_name='components/fotos.html',
@@ -62,13 +64,12 @@ def create_site_paso_config(
     )
 
 
-def create_simple_paso_config(
+def create_photo_config(
     model_class: Type[models.Model],
     form_class: Type,
-    fields: list,
     title: str,
     description: str,
-    photo_count: int = 3
+    photo_min: int = 4
 ) -> PasoConfig:
     """
     Crea una configuración de paso simple con fotos.
@@ -76,10 +77,9 @@ def create_simple_paso_config(
     Args:
         model_class: Clase del modelo del paso
         form_class: Clase del formulario
-        fields: Lista de campos del formulario
         title: Título del paso
         description: Descripción del paso
-        photo_count: Número máximo de fotos permitidas
+        photo_min: Número mínimo de fotos requeridas
     
     Returns:
         PasoConfig configurado
@@ -89,25 +89,54 @@ def create_simple_paso_config(
             nombre=title.lower(),
             model=model_class,
             form_class=form_class,
-            fields=fields,
             title=title,
             description=description,
             success_message=f"Datos de {title.lower()} guardados exitosamente.",
             error_message=f"Error al guardar los datos de {title.lower()}.",
-            css_classes={
-                field: 'input input-success sombra' for field in fields if field != 'comentarios'
-            },
             sub_elementos=[
                 SubElementoConfig(
                     tipo='fotos',
                     config={
-                        'max_files': photo_count,
+                        'min_files': photo_min,
                         'allowed_types': ['image/jpeg', 'image/png']
                     },
                     template_name='components/fotos.html',
                     css_classes='fotos-container'
                 )
             ]
+        ),
+        title=title,
+        description=description
+    )
+
+
+def create_simple_config(
+    model_class: Type[models.Model],
+    form_class: Type,
+    title: str,
+    description: str
+) -> PasoConfig:
+    """
+    Crea una configuración de paso simple solo con formulario.
+    
+    Args:
+        model_class: Clase del modelo del paso
+        form_class: Clase del formulario
+        title: Título del paso
+        description: Descripción del paso
+    
+    Returns:
+        PasoConfig configurado
+    """
+    return PasoConfig(
+        elemento=ElementoConfig(
+            nombre=title.lower(),
+            model=model_class,
+            form_class=form_class,
+            title=title,
+            description=description,
+            success_message=f"Datos de {title.lower()} guardados exitosamente.",
+            error_message=f"Error al guardar los datos de {title.lower()}."
         ),
         title=title,
         description=description

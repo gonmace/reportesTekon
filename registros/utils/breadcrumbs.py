@@ -33,7 +33,7 @@ def generate_registro_breadcrumbs(registro_id, paso_nombre=None, registro_model=
         })
     else:
         # Fallback genérico
-        breadcrumbs.append({'label': 'Registros', 'url_name': 'registros_txtss:list'})
+        breadcrumbs.append({'label': 'Registros', 'url_name': 'reg_txtss:list'})
     
     # Obtener el nombre del sitio del registro
     if registro_id and registro_model:
