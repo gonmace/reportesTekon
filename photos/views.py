@@ -11,6 +11,33 @@ from .models import Photos
 from django.apps import apps
 from django.http import Http404
 
+# Diccionario global para almacenar templates personalizados
+PHOTOS_TEMPLATES = {}
+
+def set_photos_template(app_name, step_name, template_name):
+    """
+    Configura el template personalizado para una combinación específica de app_name y step_name.
+    
+    Args:
+        app_name: Nombre de la aplicación
+        step_name: Nombre del paso/etapa
+        template_name: Nombre del template a usar
+    """
+    template_key = f"{app_name}_{step_name}"
+    PHOTOS_TEMPLATES[template_key] = template_name
+
+def set_photos_template_for_step(step_name, template_name):
+    """
+    Configura el template personalizado para un step_name específico, 
+    independientemente del app_name.
+    
+    Args:
+        step_name: Nombre del paso/etapa
+        template_name: Nombre del template a usar
+    """
+    # Usar un patrón que funcione para cualquier app_name
+    PHOTOS_TEMPLATES[f"*_{step_name}"] = template_name
+
 def get_registro_from_id(registro_id):
     """
     Función helper para obtener el registro basado en el ID.
@@ -63,8 +90,33 @@ def get_app_name_from_registro_id(registro_id):
 
 class ListPhotosView(BreadcrumbsMixin, ListView):
     model = Photos
-    template_name = 'pages/photos_list.html'
     context_object_name = 'photos'
+    template_name = 'photos/photos_main.html'
+    
+    def get_template_names(self):
+        """Retorna el template a usar, priorizando el template personalizado"""
+        # Obtener el template personalizado del diccionario global
+        app_name = self.kwargs.get('app_name')
+        step_name = self.kwargs.get('step_name')
+        paso_nombre = self.kwargs.get('paso_nombre')
+        
+        if not step_name:
+            step_name = paso_nombre
+            
+        # Buscar template personalizado por app_name y step_name
+        if app_name and step_name:
+            # Primero buscar coincidencia exacta
+            template_key = f"{app_name}_{step_name}"
+            if template_key in PHOTOS_TEMPLATES:
+                return [PHOTOS_TEMPLATES[template_key]]
+            
+            # Luego buscar patrón con wildcard
+            wildcard_key = f"*_{step_name}"
+            if wildcard_key in PHOTOS_TEMPLATES:
+                return [PHOTOS_TEMPLATES[wildcard_key]]
+        
+        # Si no hay template personalizado, usar el por defecto
+        return [self.template_name]
 
     def get_queryset(self):
         app_name = self.kwargs.get('app_name')

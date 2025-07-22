@@ -5,14 +5,18 @@ Configuración genérica para aplicaciones de registros.
 from registros.components.registro_config import RegistroConfig, PasoConfig, ElementoConfig, SubElementoConfig
 from typing import Dict, Any, Type
 from django.db import models
+from photos.views import set_photos_template_for_step
+
 
 
 def create_photo_map_config(
     model_class: Type[models.Model],
     form_class: Type,
-    title: str = "Sitio",
-    description: str = "Información general del sitio.",
-    photo_min: int = 4
+    title: str,
+    description: str,
+    photo_min: int = 4,
+    template_form: str = 'components/elemento_form.html',
+    photos_template: str = 'photos/photos_main.html'
 ) -> PasoConfig:
     """
     Crea una configuración de paso para sitio con mapa y fotos.
@@ -23,10 +27,14 @@ def create_photo_map_config(
         title: Título del paso
         description: Descripción del paso
         photo_min: Número mínimo de fotos requeridas
+        template_form: Template para el formulario
+        photos_template: Template para las fotos
     
     Returns:
         PasoConfig configurado
     """
+    # Configurar el template de ListPhotosView dinámicamente
+    set_photos_template_for_step(title.lower(), photos_template)
     return PasoConfig(
         elemento=ElementoConfig(
             nombre='sitio',
@@ -34,7 +42,7 @@ def create_photo_map_config(
             form_class=form_class,
             title=title,
             description=description,
-            template_name='components/elemento_form.html',
+            template_name=template_form,
             success_message="Datos del sitio guardados exitosamente.",
             error_message="Error al guardar los datos del sitio.",
             sub_elementos=[
@@ -54,7 +62,7 @@ def create_photo_map_config(
                         'min_files': photo_min,
                         'allowed_types': ['image/jpeg', 'image/png']
                     },
-                    template_name='components/fotos.html',
+                    template_name=photos_template,
                     css_classes='fotos-container'
                 )
             ]
@@ -69,7 +77,8 @@ def create_photo_config(
     form_class: Type,
     title: str,
     description: str,
-    photo_min: int = 4
+    photo_min: int = 4,
+    photos_template: str = 'photos/photos_main.html'
 ) -> PasoConfig:
     """
     Crea una configuración de paso simple con fotos.
@@ -80,10 +89,13 @@ def create_photo_config(
         title: Título del paso
         description: Descripción del paso
         photo_min: Número mínimo de fotos requeridas
+        photos_template: Template para las fotos
     
     Returns:
         PasoConfig configurado
     """
+    # Configurar el template de ListPhotosView dinámicamente
+    set_photos_template_for_step(title.lower(), photos_template)
     return PasoConfig(
         elemento=ElementoConfig(
             nombre=title.lower(),
@@ -100,7 +112,7 @@ def create_photo_config(
                         'min_files': photo_min,
                         'allowed_types': ['image/jpeg', 'image/png']
                     },
-                    template_name='components/fotos.html',
+                    template_name=photos_template,
                     css_classes='fotos-container'
                 )
             ]

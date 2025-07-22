@@ -12,9 +12,12 @@ PASOS_CONFIG = {
     'sitio': create_photo_map_config(
         model_class=RSitio,
         form_class=RSitioForm,
+        template_form='components/elemento_form.html',
         title='Sitio',
         description='Información general del sitio.',
-        photo_min=4
+        # fotos
+        photo_min=4,
+        photos_template='photos/photos_main.html'
     ),
     'acceso': create_simple_config(
         model_class=RAcceso,
@@ -27,6 +30,7 @@ PASOS_CONFIG = {
         form_class=REmpalmeForm,
         title='Empalme',
         description='Información sobre el empalme.',
+        # fotos
         photo_min=2
     ),
 }

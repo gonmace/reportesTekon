@@ -1,127 +1,71 @@
-# Arquitectura de Elementos Genéricos
+# Sistema de Componentes de Registros
 
-Esta nueva arquitectura proporciona una forma unificada y reutilizable de manejar formularios, sub-elementos (fotos, mapas, tablas, etc.) y la lógica de negocio asociada.
+Este directorio contiene el sistema de componentes para manejar registros de forma declarativa y reutilizable.
 
-## Componentes Principales
+## Archivos Principales
 
-### 1. ElementoRegistro (Base)
-Clase base que proporciona la funcionalidad común para todos los elementos:
+### `base.py`
+Contiene la clase base `ElementoRegistro` que proporciona la funcionalidad común para todos los elementos:
 - Gestión de formularios
 - Manejo de instancias de modelos
-- Sub-elementos configurables
 - Validación y guardado
 - Información de completitud
 
-### 2. SubElemento (Base)
-Clase base para sub-elementos como fotos, mapas, tablas, etc.:
-- Renderizado de templates
-- Obtención de datos específicos
-- Integración con elementos padre
+### `registro_config.py`
+Sistema de configuración declarativa que permite definir registros de forma simple:
 
-### 3. Vistas Genéricas
-- `ElementoView`: Maneja peticiones AJAX
-- `ElementoFormView`: Renderiza formularios
-- `StepsRegistroElementosView`: Vista de pasos usando elementos
+- **`RegistroConfig`**: Configuración completa de un tipo de registro
+- **`PasoConfig`**: Configuración de un paso de registro
+- **`ElementoConfig`**: Configuración de un elemento dentro de un paso
+- **`SubElementoConfig`**: Configuración de sub-elementos (mapa, fotos, etc.)
+- **`ElementoGenerico`**: Elemento genérico que se configura dinámicamente
 
-## Implementación en registros_txtss
+### `utils.py`
+Funciones utilitarias para manejar elementos:
+- `handle_elemento_ajax_request`: Maneja peticiones AJAX para elementos
+- `handle_elemento_form_request`: Maneja peticiones de formulario normales
+- Funciones auxiliares para renderizado y validación
 
-### Elementos Específicos
+## Uso Actual
+
+El sistema se utiliza principalmente en:
+
+1. **`registros/config.py`**: Configuración de registros usando `RegistroConfig`
+2. **`registros/views/elemento_views.py`**: Vistas que usan `ElementoGenerico`
+3. **`registros/views/generic_registro_views.py`**: Vistas genéricas que usan la configuración
+
+## Ejemplo de Configuración
+
 ```python
-# registros_txtss/elementos.py
-class ElementoSitio(ElementoRegistro):
-    model = RSitio
-    form_class = RSitioForm
-    tipo = 'sitio'
-    sub_elementos = {
-        'map': 'SubElementoMap',
-        'photos': 'SubElementoPhotos',
-        'table': 'SubElementoTable',
+from registros.components import RegistroConfig, ElementoConfig, SubElementoConfig
+
+config = RegistroConfig(
+    registro_model=MiModelo,
+    pasos={
+        'sitio': PasoConfig(
+            elemento=ElementoConfig(
+                nombre='sitio',
+                model=RSitio,
+                form_class=RSitioForm,
+                sub_elementos=[
+                    SubElementoConfig(
+                        tipo='mapa',
+                        config={'lat_field': 'lat', 'lon_field': 'lon'}
+                    ),
+                    SubElementoConfig(
+                        tipo='fotos',
+                        config={'min_files': 4}
+                    )
+                ]
+            )
+        )
     }
-```
-
-### URLs
-```python
-# Rutas de elementos
-path("registros/<int:registro_id>/elemento/<str:tipo_elemento>/", ElementoView.as_view(), name="elemento"),
-path("registros/<int:registro_id>/elemento/<str:tipo_elemento>/form/", ElementoFormView.as_view(), name="elemento_form"),
-path("registros/<int:registro_id>/elementos/", StepsRegistroElementosView.as_view(), name="steps_elementos"),
-```
-
-## Uso
-
-### 1. Crear un Elemento
-```python
-from registros_txtss.elementos import ElementoSitio
-
-registro = Registros.objects.get(id=1)
-elemento = ElementoSitio(registro)
-```
-
-### 2. Obtener Formulario
-```python
-form = elemento.get_form()
-```
-
-### 3. Obtener Sub-elementos
-```python
-sub_elementos = elemento.get_all_sub_elementos()
-mapa = elemento.get_sub_elemento('map')
-fotos = elemento.get_sub_elemento('photos')
-```
-
-### 4. Guardar Datos
-```python
-if form.is_valid():
-    elemento.save(form)
-```
-
-### 5. Información de Completitud
-```python
-completeness_info = elemento.get_completeness_info()
+)
 ```
 
 ## Ventajas
 
-1. **Reutilización**: Una sola implementación para múltiples tipos de elementos
-2. **Consistencia**: Interfaz unificada para todos los elementos
-3. **Extensibilidad**: Fácil agregar nuevos tipos de sub-elementos
-4. **Mantenibilidad**: Lógica centralizada y bien organizada
-5. **Flexibilidad**: Configuración por elemento y sub-elemento
-
-## Migración
-
-### Antes (Vista Tradicional)
-```python
-class RSitioView(GenericRegistroView):
-    form_class = RSitioForm
-    
-    def setup(self, request, *args, **kwargs):
-        kwargs['model_class'] = RSitio
-        kwargs['etapa'] = 'sitio'
-        super().setup(request, *args, **kwargs)
-```
-
-### Después (Elemento)
-```python
-# URLs
-path("registros/<int:registro_id>/elemento/sitio/", ElementoView.as_view(), name="elemento_sitio"),
-
-# Uso
-elemento = ElementoSitio(registro)
-form = elemento.get_form()
-sub_elementos = elemento.get_all_sub_elementos()
-```
-
-## Próximos Pasos
-
-1. **Migrar vistas existentes**: Reemplazar las vistas tradicionales con elementos
-2. **Agregar más sub-elementos**: Implementar gráficos, documentos, etc.
-3. **Mejorar templates**: Crear templates específicos para cada tipo de elemento
-4. **Testing**: Agregar tests unitarios para los elementos
-5. **Documentación**: Expandir la documentación con ejemplos prácticos
-
-## URLs de Prueba
-
-- Vista de pasos con elementos: `/txtss/registros/1/elementos/`
-- Formulario de sitio: `/txtss/registros/1/elemento/sitio/form/`
-- API de sitio: `/txtss/registros/1/elemento/sitio/` 
+- **Configuración declarativa**: Define registros sin duplicar código
+- **Reutilización**: Una sola implementación para múltiples tipos
+- **Flexibilidad**: Configuración por elemento y sub-elemento
+- **Mantenibilidad**: Lógica centralizada y bien organizada 
