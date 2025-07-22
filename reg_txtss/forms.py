@@ -6,7 +6,7 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
 from .models import RSitio, RAcceso, REmpalme, RegTxtss
-from registros.forms.utils import get_form_field_css_class, get_field_css_class
+from registros.forms.utils import get_form_field_css_class
 from crispy_forms.layout import Layout, Field, Submit, Div, HTML
 
 class RSitioForm(forms.ModelForm):

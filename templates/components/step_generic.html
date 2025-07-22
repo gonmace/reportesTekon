@@ -44,27 +44,36 @@
       {% if step.elements.map.enabled %}
         <div class="flex items-center gap-1">
           <button id="map-btn-{{step.step_name}}" 
-                  class="btn btn-{{step.elements.map.status}} btn-circle sombra"
+                  
                   title="Ver mapa de {{step.title}}"
+                  {% if step.elements.map.coordinates.coord1 %}
+                  class="btn btn-{{step.elements.map.status}} btn-circle sombra"
                   data-coord1-lat="{{step.elements.map.coordinates.coord1.lat}}" 
                   data-coord1-lon="{{step.elements.map.coordinates.coord1.lon}}" 
                   data-coord1-label="{{step.elements.map.coordinates.coord1.label}}"
                   data-coord1-color="{{step.elements.map.coordinates.coord1.color}}"
                   data-coord1-size="{{step.elements.map.coordinates.coord1.size}}"
-                  {% for i in "23456789" %}
-                  {% with coord_key="coord"|add:i %}
-                  {% if step.elements.map.coordinates|get_item:coord_key %}
-                  data-coord{{i}}-lat="{{step.elements.map.coordinates|get_item:coord_key|get_item:'lat'}}" 
-                  data-coord{{i}}-lon="{{step.elements.map.coordinates|get_item:coord_key|get_item:'lon'}}" 
-                  data-coord{{i}}-label="{{step.elements.map.coordinates|get_item:coord_key|get_item:'label'}}"
-                  data-coord{{i}}-color="{{step.elements.map.coordinates|get_item:coord_key|get_item:'color'}}"
-                  data-coord{{i}}-size="{{step.elements.map.coordinates|get_item:coord_key|get_item:'size'}}"
+                  {% else %}
+                  class="btn btn-disabled btn-circle sombra"
                   {% endif %}
-                  {% endwith %}
-                  {% endfor %}
+                  {% if step.elements.map.coordinates.coord2 %}
+                  data-coord2-lat="{{step.elements.map.coordinates.coord2.lat}}" 
+                  data-coord2-lon="{{step.elements.map.coordinates.coord2.lon}}" 
+                  data-coord2-label="{{step.elements.map.coordinates.coord2.label}}"
+                  data-coord2-color="{{step.elements.map.coordinates.coord2.color}}"
+                  data-coord2-size="{{step.elements.map.coordinates.coord2.size}}"
+                  {% endif %}
+                  {% if step.elements.map.coordinates.coord3 %}
+                  data-coord3-lat="{{step.elements.map.coordinates.coord3.lat}}" 
+                  data-coord3-lon="{{step.elements.map.coordinates.coord3.lon}}" 
+                  data-coord3-label="{{step.elements.map.coordinates.coord3.label}}"
+                  data-coord3-color="{{step.elements.map.coordinates.coord3.color}}"
+                  data-coord3-size="{{step.elements.map.coordinates.coord3.size}}"
+                  {% endif %}
                   data-site-registro="{{step.registro_id}}"
                   data-step-title="{{step.title}}"
-                  data-etapa="{{step.elements.map.etapa}}">
+                  data-etapa="{{step.elements.map.etapa}}"
+                  data-map-type="{% if step.elements.map.coordinates.coord2 %}multi{% else %}single{% endif %}">
             {% include 'svgs/map-marker.svg' %}
           </button>
         </div>
@@ -130,15 +139,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function openMapModal(btn) {
-    // Obtener todas las coordenadas disponibles
+    // Obtener todas las coordenadas disponibles (máximo 3)
     const coordinates = [];
+    const mapType = btn.dataset.mapType || 'single';
     
     // Coordenada 1 (siempre requerida)
     const coord1Lat = btn.dataset.coord1Lat ? parseFloat(btn.dataset.coord1Lat) : null;
     const coord1Lon = btn.dataset.coord1Lon ? parseFloat(btn.dataset.coord1Lon) : null;
     const coord1Label = btn.dataset.coord1Label || 'Punto 1';
-    const coord1Color = btn.dataset.coord1Color || '#3B82F6';
-    const coord1Size = btn.dataset.coord1Size || 'large';
+    const coord1Color = btn.dataset.coord1Color || '#F59E0B';  // Color por defecto del modelo principal
+    const coord1Size = btn.dataset.coord1Size || 'mid';
     
     if (coord1Lat && coord1Lon && !isNaN(coord1Lat) && !isNaN(coord1Lon)) {
         coordinates.push({
@@ -150,23 +160,38 @@ function openMapModal(btn) {
         });
     }
     
-    // Obtener coordenadas adicionales (2-9)
-    for (let i = 2; i <= 9; i++) {
-        const lat = btn.dataset[`coord${i}Lat`] ? parseFloat(btn.dataset[`coord${i}Lat`]) : null;
-        const lon = btn.dataset[`coord${i}Lon`] ? parseFloat(btn.dataset[`coord${i}Lon`]) : null;
-        const label = btn.dataset[`coord${i}Label`] || `Punto ${i}`;
-        const color = btn.dataset[`coord${i}Color`] || '#6B7280';
-        const size = btn.dataset[`coord${i}Size`] || 'mid';
-        
-        if (lat && lon && !isNaN(lat) && !isNaN(lon)) {
-            coordinates.push({
-                lat: lat,
-                lon: lon,
-                label: label,
-                color: color,
-                size: size
-            });
-        }
+    // Coordenada 2 (opcional)
+    const coord2Lat = btn.dataset.coord2Lat ? parseFloat(btn.dataset.coord2Lat) : null;
+    const coord2Lon = btn.dataset.coord2Lon ? parseFloat(btn.dataset.coord2Lon) : null;
+    const coord2Label = btn.dataset.coord2Label || 'Punto 2';
+    const coord2Color = btn.dataset.coord2Color || '#3B82F6';  // Color por defecto del segundo modelo
+    const coord2Size = btn.dataset.coord2Size || 'normal';
+    
+    if (coord2Lat && coord2Lon && !isNaN(coord2Lat) && !isNaN(coord2Lon)) {
+        coordinates.push({
+            lat: coord2Lat,
+            lon: coord2Lon,
+            label: coord2Label,
+            color: coord2Color,
+            size: coord2Size
+        });
+    }
+    
+    // Coordenada 3 (opcional)
+    const coord3Lat = btn.dataset.coord3Lat ? parseFloat(btn.dataset.coord3Lat) : null;
+    const coord3Lon = btn.dataset.coord3Lon ? parseFloat(btn.dataset.coord3Lon) : null;
+    const coord3Label = btn.dataset.coord3Label || 'Punto 3';
+    const coord3Color = btn.dataset.coord3Color || '#10B981';  // Color verde para el tercer punto
+    const coord3Size = btn.dataset.coord3Size || 'normal';
+    
+    if (coord3Lat && coord3Lon && !isNaN(coord3Lat) && !isNaN(coord3Lon)) {
+        coordinates.push({
+            lat: coord3Lat,
+            lon: coord3Lon,
+            label: coord3Label,
+            color: coord3Color,
+            size: coord3Size
+        });
     }
     
     const stepTitle = btn.dataset.stepTitle || 'Paso';
@@ -177,7 +202,10 @@ function openMapModal(btn) {
         return;
     }
     
-    console.log(`Mostrando mapa con ${coordinates.length} punto(s):`, coordinates.map(c => c.label).join(', '));
+    // Determinar el tipo de mapa basado en el número de coordenadas
+    const actualMapType = coordinates.length === 1 ? 'single' : 'multi';
+    
+    console.log(`Mostrando mapa ${actualMapType} con ${coordinates.length} punto(s):`, coordinates.map(c => c.label).join(', '));
     
     // Actualizar el título del modal
     document.getElementById('map-modal-title').textContent = `Mapa de ${stepTitle}`;
@@ -208,7 +236,7 @@ function openMapModal(btn) {
     
     // Inicializar el mapa después de que el modal esté visible
     setTimeout(() => {
-        initMap(coordinates, stepTitle);
+        initMap(coordinates, stepTitle, actualMapType);
     }, 100);
 }
 
@@ -223,15 +251,15 @@ function closeMapModal() {
     }
 }
 
-function initMap(coordinates, stepTitle) {
+function initMap(coordinates, stepTitle, mapType) {
     // Verificar si Leaflet ya está cargado
     if (typeof L === 'undefined') {
         // Cargar Leaflet dinámicamente
         loadLeaflet().then(() => {
-            createMap(coordinates, stepTitle);
+            createMap(coordinates, stepTitle, mapType);
         });
     } else {
-        createMap(coordinates, stepTitle);
+        createMap(coordinates, stepTitle, mapType);
     }
 }
 
@@ -262,7 +290,7 @@ function loadLeaflet() {
     });
 }
 
-function createMap(coordinates, stepTitle) {
+function createMap(coordinates, stepTitle, mapType) {
     const mapContainer = document.getElementById('map-container');
     
     // Destruir el mapa anterior si existe
@@ -277,6 +305,7 @@ function createMap(coordinates, stepTitle) {
     // Guardar las coordenadas actuales para usar en saveMapImage
     window.MapManager.coordinates = coordinates;
     window.MapManager.currentStepTitle = stepTitle;
+    window.MapManager.mapType = mapType;
     
     // Calcular el centro del mapa
     let centerLat, centerLon;
@@ -292,10 +321,20 @@ function createMap(coordinates, stepTitle) {
         centerLon = totalLon / coordinates.length;
     }
     
+    // Determinar zoom inicial según el número de coordenadas
+    let initialZoom = 15;
+    if (coordinates.length === 1) {
+        initialZoom = 16; // Zoom más cercano para un solo punto
+    } else if (coordinates.length === 2) {
+        initialZoom = 14; // Zoom medio para dos puntos
+    } else if (coordinates.length === 3) {
+        initialZoom = 13; // Zoom más amplio para tres puntos
+    }
+    
     // Crear el mapa
     window.MapManager.currentMap = L.map('map-container', {
         zoomControl: false,
-    }).setView([centerLat, centerLon], 15);
+    }).setView([centerLat, centerLon], initialZoom);
     
     // Agregar capa de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -309,12 +348,14 @@ function createMap(coordinates, stepTitle) {
     // Función para obtener dimensiones según el tamaño
     function getMarkerDimensions(size) {
         const sizes = {
+            'tiny': { width: 12, height: 12, border: 1 },
             'small': { width: 16, height: 16, border: 2 },
+            'normal': { width: 20, height: 20, border: 3 },
             'mid': { width: 20, height: 20, border: 3 },
             'large': { width: 24, height: 24, border: 3 },
             'xlarge': { width: 28, height: 28, border: 4 }
         };
-        return sizes[size] || sizes.mid;
+        return sizes[size] || sizes.normal;
     }
     
     // Crear y agregar marcadores para todas las coordenadas
@@ -344,7 +385,7 @@ function createMap(coordinates, stepTitle) {
         bounds.extend([coord.lat, coord.lon]);
     });
     
-    // Dibujar líneas entre puntos consecutivos si hay más de uno
+    // Dibujar líneas entre puntos consecutivos solo para mapas multi-punto
     if (coordinates.length > 1) {
         const lineCoords = coordinates.map(coord => [coord.lat, coord.lon]);
         const line = L.polyline(lineCoords, {
@@ -357,8 +398,8 @@ function createMap(coordinates, stepTitle) {
         // Ajustar el zoom para mostrar todos los puntos
         window.MapManager.currentMap.fitBounds(bounds, { padding: [20, 20] });
     } else {
-        // Ajustar el zoom para mostrar solo el punto
-        window.MapManager.currentMap.setView([centerLat, centerLon], 16);
+        // Para mapas de un solo punto, usar zoom fijo
+        window.MapManager.currentMap.setView([centerLat, centerLon], initialZoom);
     }
     
     // Agregar controles

@@ -156,6 +156,117 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         })
         return context
     
+    def _process_map_config(self, registro, elemento_config, instance):
+        """
+        Procesa la configuración del mapa y obtiene las coordenadas (máximo 3).
+        
+        Args:
+            registro: Instancia del registro principal
+            elemento_config: Configuración del elemento
+            instance: Instancia del modelo del paso actual
+        
+        Returns:
+            dict: Configuración del mapa con coordenadas procesadas (máximo 3)
+        """
+        # Buscar configuración del mapa
+        map_config = None
+        for sub in elemento_config.sub_elementos:
+            if sub.tipo == 'mapa':
+                map_config = sub.config
+                break
+        
+        if not map_config:
+            return {
+                'enabled': False,
+                'status': 'warning',
+                'coordinates': {},
+                'etapa': ''
+            }
+        
+        coordinates = {}
+        coord_index = 1
+        
+        # Obtener configuración de iconos del modelo principal
+        icon_config = map_config.get('icon_config', {})
+        primary_color = icon_config.get('color', '#F59E0B')
+        primary_size = icon_config.get('size', 'mid')
+        
+        # Procesar coordenadas del modelo actual (coord1)
+        if instance and hasattr(instance, map_config.get('lat_field', 'lat')):
+            lat_field = map_config.get('lat_field', 'lat')
+            lon_field = map_config.get('lon_field', 'lon')
+            name_field = map_config.get('name_field', 'name')
+            
+            lat_value = getattr(instance, lat_field, None)
+            lon_value = getattr(instance, lon_field, None)
+            name_value = getattr(instance, name_field, None) if hasattr(instance, name_field) else 'Inspección'
+            
+            if lat_value is not None and lon_value is not None:
+                coordinates[f'coord{coord_index}'] = {
+                    'lat': float(lat_value),
+                    'lon': float(lon_value),
+                    'label': name_value or 'Inspección',
+                    'color': primary_color,
+                    'size': primary_size
+                }
+                coord_index += 1
+        
+        # Procesar coordenadas del segundo modelo si existe (coord2)
+        if 'second_model' in map_config and coord_index <= 3:
+            second_model_config = map_config['second_model']
+            second_model_class = second_model_config['model_class']
+            lat_field = second_model_config['lat_field']
+            lon_field = second_model_config['lon_field']
+            name_field = second_model_config['name_field']
+            relation_field = second_model_config['relation_field']
+            
+            # Obtener configuración de iconos del segundo modelo
+            second_icon_config = second_model_config.get('icon_config', {})
+            second_color = second_icon_config.get('color', '#3B82F6')
+            second_size = second_icon_config.get('size', 'normal')
+            
+            # Obtener la instancia del segundo modelo
+            second_instance = None
+            if relation_field == 'sitio':
+                # Para el modelo Site, usar la relación directa
+                second_instance = getattr(registro, 'sitio', None)
+            else:
+                # Para otros modelos, buscar por relación con el registro
+                try:
+                    second_instance = second_model_class.objects.filter(
+                        **{relation_field: registro}
+                    ).first()
+                except Exception:
+                    pass
+            
+            if second_instance and hasattr(second_instance, lat_field):
+                lat_value = getattr(second_instance, lat_field, None)
+                lon_value = getattr(second_instance, lon_field, None)
+                name_value = getattr(second_instance, name_field, None) if hasattr(second_instance, name_field) else 'Mandato'
+                
+                if lat_value is not None and lon_value is not None:
+                    coordinates[f'coord{coord_index}'] = {
+                        'lat': float(lat_value),
+                        'lon': float(lon_value),
+                        'label': name_value or 'Mandato',
+                        'color': second_color,
+                        'size': second_size
+                    }
+                    coord_index += 1
+        
+        # Procesar coordenadas adicionales si existen (coord3) - para futuras expansiones
+        # Por ahora, solo soportamos 2 coordenadas máximo
+        
+        # Determinar el estado del mapa
+        map_status = 'success' if coordinates else 'warning'
+        
+        return {
+            'enabled': True,
+            'status': map_status,
+            'coordinates': coordinates,
+            'etapa': elemento_config.nombre
+        }
+
     def _generate_steps_context(self, registro):
         """Genera el contexto para cada paso."""
         steps_context = []
@@ -201,6 +312,9 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                     content_type=content_type
                 )
             
+            # Procesar configuración del mapa
+            map_config = self._process_map_config(registro, elemento_config, instance)
+            
             # Verificar completitud
             completeness = elemento.get_completeness_info() if hasattr(elemento, 'get_completeness_info') else None
             if completeness is None:
@@ -239,12 +353,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                         'required': has_photos,
                         'min_count': min_count
                     },
-                    'map': {
-                        'enabled': has_map,
-                        'status': 'success' if has_map and instance else 'warning',
-                        'coordinates': {},  # TODO: Implementar coordenadas
-                        'etapa': step_name
-                    },
+                    'map': map_config,
                     'desfase': {
                         'enabled': False,  # TODO: Implementar si es necesario
                         'distancia': None,
