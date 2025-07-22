@@ -149,7 +149,8 @@ def create_registro_config(
     title: str,
     app_namespace: str,
     list_template: str = "pages/main_generic.html",
-    steps_template: str = "pages/steps_generic.html"
+    steps_template: str = "pages/steps_generic.html",
+    header_title: str = None
 ) -> RegistroConfig:
     """
     Crea una configuración completa de registro.
@@ -175,5 +176,6 @@ def create_registro_config(
         breadcrumbs=[
             {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
             {'label': title}
-        ]
+        ],
+        header_title=header_title
     ) 

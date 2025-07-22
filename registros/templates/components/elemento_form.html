@@ -10,27 +10,6 @@
 
 {% block content %}
 <div class="container mx-auto p-2 md:p-4 bg-base-100 rounded-lg shadow-lg">
-    
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ elemento_config.title|default:elemento.tipo|title }}</h1>
-                {% if registro.sitio %}
-                    <p class="text-gray-600">{{ registro.sitio.name }}</p>
-                {% else %}
-                    <p class="text-gray-600">{{ registro.title }}</p>
-                {% endif %}
-                {% if elemento_config.description %}
-                <p class="text-sm text-gray-500">{{ elemento_config.description }}</p>
-                {% endif %}
-            </div>
-            <div class="flex space-x-2">
-                <a href="{% url 'reg_txtss:steps' registro.id %}" 
-                   class="btn btn-outline btn-primary">
-                    <i class="fas fa-arrow-left"></i> Volver
-                </a>
-            </div>
-        </div>
 
         <!-- Formulario -->
         <div class="mb-6">

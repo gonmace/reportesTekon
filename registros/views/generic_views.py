@@ -104,4 +104,6 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
             'activar_url': self.request.build_absolute_uri(f'/{self.registro_config.app_namespace}/activar/'),
             'modal_template': 'components/activar_registro_form.html',
         })
+        if getattr(self.registro_config, 'header_title', None):
+            context['header_title'] = self.registro_config.header_title
         return context 

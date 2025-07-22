@@ -111,6 +111,8 @@ class GenericRegistroTableListView(LoginRequiredMixin, BreadcrumbsMixin, SingleT
             )(),
         })
         
+        if getattr(self.registro_config, 'header_title', None):
+            context['header_title'] = self.registro_config.header_title
         return context
 
 
@@ -129,6 +131,10 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         """Obtiene la configuración del registro. Debe ser sobrescrito."""
         raise NotImplementedError("Debe implementar get_registro_config()")
     
+    def get_header_title(self):
+        """Obtiene el título del header. Puede ser sobrescrito."""
+        return self.registro_config.header_title or self.registro_config.title
+    
     def get_context_data(self, **kwargs):
         """Obtiene el contexto con los pasos configurados."""
         context = super().get_context_data(**kwargs)
@@ -146,6 +152,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             'title': self.registro_config.title,
             'registro_title': registro.title,  # Agregar título del registro
             'breadcrumbs': self.get_breadcrumbs(),  # Usar breadcrumbs dinámicos
+            'header_title': self.get_header_title(),  # Usar método personalizable
         })
         return context
     
@@ -269,6 +276,10 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
         """Obtiene la configuración del registro. Debe ser sobrescrito."""
         raise NotImplementedError("Debe implementar get_registro_config()")
     
+    def get_header_title(self):
+        """Obtiene el título del header. Puede ser sobrescrito."""
+        return self.registro_config.header_title or self.registro_config.title
+    
     def get(self, request, registro_id, paso_nombre):
         """Maneja las peticiones GET."""
         try:
@@ -297,6 +308,7 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                 'instance': instance,
                 'title': self.registro_config.title,
                 'breadcrumbs': self.get_breadcrumbs(),
+                'header_title': self.get_header_title(),
             }
             
             return render(request, elemento_config.template_name, context)
@@ -354,6 +366,7 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                         'instance': instance,
                         'title': self.registro_config.title,
                         'breadcrumbs': self.get_breadcrumbs(),
+                        'header_title': self.get_header_title(),
                     }
                     return render(request, elemento_config.template_name, context)
                     

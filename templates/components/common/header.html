@@ -16,47 +16,6 @@
                 </h2>
             </div>
             <div class="flex items-center space-x-4 justify-end">
-                {% comment %} <!-- Add Module Selector before Dark Mode Toggle -->
-                <div class="relative">
-                    <button class="modules-dropdown-toggle flex items-center space-x-2 p-2 rounded-lg transition-all duration-200">
-                        <i class="fas fa-th text-secondary"></i>
-                        <span class="hidden md:block text-sm text-secondary">
-                            {{ request.session.active_module|default:"Seleccionar Módulo"|title }}
-                        </span>
-                    </button>
-
-                    <!-- Modules Grid Dropdown -->
-                    {% if request.user.modules.all|length > 1 %}
-                        <div class="modules-dropdown hidden absolute right-0 mt-2 md:w-80 rounded-xl bg-base-100 shadow-lg p-4 z-50">
-                            <h3 class="text-sm font-semibold text-base-content text-center mb-4">
-                                Mis Módulos
-                            </h3>
-                            <div class="grid md:grid-cols-2 gap-4 items-center justify-center">
-                                {% for module in request.user.modules.all %}
-                                    <a href="{% url 'users:swith_module' module.code %}"
-                                       class="flex flex-col items-center p-3 rounded-lg hover:bg-base-200 transition-all duration-200">
-                                        <div class="w-12 h-12 flex items-center justify-center bg-{{ module.color|default:'primary' }}/10 text-{{ module.color|default:'primary' }} rounded-lg mb-2">
-                                            {% if module.name == 'Postes' %}
-                                                <i class="fas fa-bolt text-xl"></i>
-                                            {% elif module.name == 'Torres' %}
-                                                <i class="fas fa-broadcast-tower text-xl"></i>
-                                            {% else %}
-                                                <i class="{{ module.icon|default:'fas fa-cube' }} text-xl"></i>
-                                            {% endif %}
-                                        </div>
-                                        <span class="text-xs text-center font-medium text-base-content">{{ module.name }}</span>
-                                    </a>
-                                {% empty %}
-                                    <div class="col-span-3 text-center py-4">
-                                        <i class="fas fa-cubes text-base-content/60 text-2xl mb-2"></i>
-                                        <p class="text-sm text-base-content/60">No hay módulos asignados</p>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                </div> {% endcomment %}
-
                 <!-- Theme Toggle -->
                 <label class="swap swap-rotate hover:text-warning">
                     <!-- this hidden checkbox controls the state -->

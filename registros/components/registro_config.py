@@ -98,7 +98,8 @@ class RegistroConfig:
         steps_template: str = "registros/steps.html",
         title: str = "Registros",
         app_namespace: str = None,
-        breadcrumbs: list = None
+        breadcrumbs: list = None,
+        header_title: str = None  # <-- Nuevo campo opcional
     ):
         self.registro_model = registro_model
         self.pasos = pasos
@@ -107,6 +108,7 @@ class RegistroConfig:
         self.title = title
         self.app_namespace = app_namespace
         self.breadcrumbs = breadcrumbs or []
+        self.header_title = header_title  # <-- Asignar el nuevo campo
 
 
 class ElementoGenerico(ElementoRegistro):
