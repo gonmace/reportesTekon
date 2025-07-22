@@ -19,7 +19,6 @@ class RegTxtss(RegistroBase):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario', related_name='reg_txtss')
     title = models.CharField(max_length=100, verbose_name='Título')
     description = models.TextField(blank=True, null=True, verbose_name='Descripción')
-    is_deleted = models.BooleanField(default=False)
     history = HistoricalRecords()
     
     class Meta:

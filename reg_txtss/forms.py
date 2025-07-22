@@ -12,7 +12,6 @@ from crispy_forms.layout import Layout, Field, Submit, Div, HTML
 class RSitioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.registro_id = kwargs.pop('registro_id', None)
-        print(f"DEBUG RSitioForm: registro_id = {self.registro_id}")  # Debug
         super().__init__(*args, **kwargs)
         
         self.helper = FormHelper()

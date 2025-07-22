@@ -195,25 +195,24 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 )
             
             # Verificar completitud
-            completeness = elemento.check_completeness() if hasattr(elemento, 'check_completeness') else {
-                'color': 'gray',
-                'is_complete': False,
-                'missing_fields': [],
-                'total_fields': 0,
-                'filled_fields': 0
-            }
+            completeness = elemento.get_completeness_info() if hasattr(elemento, 'get_completeness_info') else None
+            if completeness is None:
+                completeness = {
+                    'color': 'gray',
+                    'is_complete': False,
+                    'missing_fields': [],
+                    'total_fields': 0,
+                    'filled_fields': 0
+                }
 
             # --- Lógica de color para el botón del formulario ---
-            form_color = 'warning'
-            form = elemento.get_form()
-            if form and form.is_bound:
-                if form.is_valid():
-                    form_color = 'success'
-                else:
-                    form_color = 'error'
-            elif instance:
+            if completeness['total_fields'] == 0:
+                form_color = 'error'
+
+            elif completeness['filled_fields'] < completeness['total_fields']:
+                form_color = 'warning'
+            else:
                 form_color = 'success'
-            # --- Fin lógica de color ---
 
             # Generar estructura que espera el template step_generic.html
             step_data = {
