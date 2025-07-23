@@ -20,12 +20,14 @@ class SubElementoConfig:
         tipo: str,
         config: Dict[str, Any] = None,
         template_name: str = None,
-        css_classes: str = ""
+        css_classes: str = "",
+        template_datos_clave: str = None
     ):
         self.tipo = tipo  # 'mapa', 'fotos', etc.
         self.config = config or {}
         self.template_name = template_name
         self.css_classes = css_classes
+        self.template_datos_clave = template_datos_clave
 
 
 class ElementoConfig:

@@ -34,12 +34,20 @@ class StepsRegistroView(GenericRegistroStepsView):
         return REGISTRO_CONFIG
     
     def get_context_data(self, **kwargs):
-        """Obtiene el contexto y establece el registro."""
-        # Establecer el registro antes de llamar a get_context_data de la superclase
+        """Obtiene el contexto y establece el registro, agregando el template de datos clave según el paso actual."""
         registro_id = self.kwargs.get('registro_id')
         self.registro = get_object_or_404(self.registro_config.registro_model, id=registro_id)
-        
         context = super().get_context_data(**kwargs)
+
+        # Determinar el paso actual (puedes ajustar la lógica según tu flujo)
+        paso_actual = self.request.GET.get('paso') or 'sitio'
+        if paso_actual == 'sitio':
+            datos_clave_template = 'components/datos_clave_sitio.html'
+        elif paso_actual == 'empalme':
+            datos_clave_template = 'components/datos_clave_empalme.html'
+        else:
+            datos_clave_template = 'components/datos_clave_txtss.html'
+        context['datos_clave_template'] = datos_clave_template
         return context
     
     def get_header_title(self):

@@ -26,7 +26,7 @@ mandato_map = create_1_point_map_config(
 
 
 sitio_mapa_component = create_2_point_map_config(
-    model_class1=RSitio,
+    model_class1='current',
     lat1='lat',
     lon1='lon', 
     name1='Inspección',
@@ -44,6 +44,8 @@ sitio_mapa_component = create_2_point_map_config(
     icon2_type='marker',
     zoom=15,
     template_name='components/mapa_modal.html',
+    distancia=True,
+    template_datos_clave='components/datos_clave_sitio.html',
 )
 
 sitio_fotos_component = create_photos_config(
@@ -85,6 +87,8 @@ empalme_mapa_component = create_3_point_map_config(
     icon3_type='marker',
     zoom=15,
     template_name='components/mapa_modal.html',
+    distancia=True,
+    template_datos_clave='components/datos_clave_empalme.html',
 )
 
 # Configuración de pasos usando create_custom_config con componentes personalizados

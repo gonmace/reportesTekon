@@ -134,7 +134,9 @@ def create_2_point_map_config(
     # Configuración de iconos para el segundo modelo
     icon2_color='blue',
     icon2_size='normal',
-    icon2_type='marker'
+    icon2_type='marker',
+    distancia=False,
+    template_datos_clave=None
 ) -> SubElementoConfig:
     """
     Crea configuración para un mapa con dos puntos (modelo principal + segundo modelo).
@@ -159,6 +161,8 @@ def create_2_point_map_config(
         icon2_color: Color del icono del segundo modelo
         icon2_size: Tamaño del icono del segundo modelo
         icon2_type: Tipo de icono del segundo modelo
+        distancia: Si True, calcular la distancia entre las dos primeras coordenadas usando geopy
+        template_datos_clave: Template para datos clave adicionales (opcional)
     
     Returns:
         SubElementoConfig configurado para mapa de dos puntos
@@ -193,12 +197,15 @@ def create_2_point_map_config(
             },
             'descripcion_distancia': descripcion_distancia
         })
+    if distancia:
+        map_config['calcular_distancia'] = True
     
     return SubElementoConfig(
         tipo='mapa',
         config=map_config,
         template_name=template_name,
-        css_classes=css_classes
+        css_classes=css_classes,
+        template_datos_clave=template_datos_clave
     )
 
 
@@ -232,7 +239,9 @@ def create_3_point_map_config(
     # Configuración de iconos para el tercer modelo
     icon3_color='green',
     icon3_size='normal',
-    icon3_type='marker'
+    icon3_type='marker',
+    distancia=False,
+    template_datos_clave=None
 ) -> SubElementoConfig:
     """
     Crea configuración para un mapa con tres puntos (modelo principal + segundo modelo + tercer modelo).
@@ -265,6 +274,8 @@ def create_3_point_map_config(
         icon3_color: Color del icono del tercer modelo
         icon3_size: Tamaño del icono del tercer modelo
         icon3_type: Tipo de icono del tercer modelo
+        distancia: Si True, calcular la distancia entre las dos primeras coordenadas usando geopy
+        template_datos_clave: Template para datos clave adicionales (opcional)
     
     Returns:
         SubElementoConfig configurado para mapa de tres puntos
@@ -316,14 +327,17 @@ def create_3_point_map_config(
             }
         })
     
-    if model_class2 or model_class3:
+    if descripcion_distancia:
         map_config['descripcion_distancia'] = descripcion_distancia
+    if distancia:
+        map_config['calcular_distancia'] = True
     
     return SubElementoConfig(
         tipo='mapa',
         config=map_config,
         template_name=template_name,
-        css_classes=css_classes
+        css_classes=css_classes,
+        template_datos_clave=template_datos_clave
     )
 
 

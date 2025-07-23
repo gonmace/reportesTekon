@@ -190,12 +190,24 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         else:
             enabled = has_required_coords
         
-        return {
+        result = {
             'enabled': enabled,
             'status': map_status,
             'coordinates': coordinates,
             'etapa': elemento_config.nombre
         }
+        # Calcular distancia si corresponde
+        if map_config.get('calcular_distancia') and len(coordinates) >= 2:
+            try:
+                from core.utils.coordenadas import calcular_distancia_geopy
+                c1 = coordinates.get('coord1')
+                c2 = coordinates.get('coord2')
+                if c1 and c2:
+                    distancia = calcular_distancia_geopy(c1['lat'], c1['lon'], c2['lat'], c2['lon'])
+                    result['distancia'] = int(distancia)
+            except Exception as e:
+                result['distancia'] = None
+        return result
     
     def _get_map_config(self, elemento_config):
         """Obtiene la configuración del mapa desde los sub-elementos."""
@@ -436,6 +448,13 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             # Procesar configuración del mapa
             map_config = self._process_map_config(registro, elemento_config, instance)
             
+            # Buscar el template de datos clave del subelemento de tipo mapa
+            datos_clave_template = None
+            for sub in getattr(elemento_config, 'sub_elementos', []):
+                if getattr(sub, 'tipo', None) == 'mapa' and getattr(sub, 'template_datos_clave', None):
+                    datos_clave_template = sub.template_datos_clave
+                    break
+            
             # Verificar completitud
             completeness = elemento.get_completeness_info() if hasattr(elemento, 'get_completeness_info') else None
             if completeness is None:
@@ -478,17 +497,12 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                         'required': has_photos,
                         'min_count': min_count
                     },
-                    'map': map_config,
-                    'desfase': {
-                        'enabled': False,  # TODO: Implementar si es necesario
-                        'distancia': None,
-                        'description': '',
-                        'color': 'gray'
-                    }
+                    'map': map_config
                 },
                 'completeness': completeness,
                 'instance': instance,
-                'elemento': elemento
+                'elemento': elemento,
+                'datos_clave_template': datos_clave_template
             }
             
             # Return as tuple (step_name, step_data) to match template expectation
