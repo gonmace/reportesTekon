@@ -335,13 +335,16 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             else:
                 form_color = 'success'
 
+            # Verificar si es un paso solo con componentes (sin formulario)
+            is_component_only = elemento_config.model is None and elemento_config.form_class is None
+            
             # Generar estructura que espera el template step_generic.html
             step_data = {
                 'title': paso_config.title,
                 'step_name': step_name,
                 'registro_id': registro.id,
                 'elements': {
-                    'form': {
+                    'form': None if is_component_only else {
                         'url': f'/{self.registro_config.app_namespace}/{registro.id}/{step_name}/',
                         'color': form_color
                     },

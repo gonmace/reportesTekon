@@ -12,13 +12,18 @@
     {{step.title|title}}
   </div>
   
-  <!-- Botón del formulario (siempre presente) -->
+  <!-- Botón del formulario o círculo blanco -->
   <div class="timeline-middle">
+    {% if step.elements.form %}
     <a href="{{step.elements.form.url}}"
       class="btn btn-{{step.elements.form.color}} btn-circle p-1 sombra"
       title="Editar {{step.title}}">
       {% include 'svgs/notes.svg' %}
     </a>
+    {% else %}
+    <div class="btn btn-circle btn-disabled p-1 sombra bg-white border-2 border-gray-300"></div>
+    {% endif %}
+        
   </div>
   
   <!-- Elementos adicionales -->
@@ -27,34 +32,31 @@
       
       <!-- Fotos -->
       {% if step.elements.photos.enabled %}
-        <div class="flex items-center gap-1 ml-3">
-          <a class="btn btn-{{step.elements.photos.color}} btn-circle sombra" 
+        <div class="flex items-center gap-1 ml-2">
+          <a class="btn btn-{{step.elements.photos.color}} btn-circle sombra photo-counter" 
              href="{% get_registro_photos_url step.step_name step.registro_id app_namespace='reg_txtss' %}"
-             title="Fotos de {{step.title}}">
+             title="Fotos de {{step.title}}"
+             data-photo-count="{{step.elements.photos.count}}"
+             data-photo-required="{% if step.elements.photos.required %}true{% else %}false{% endif %}"
+             data-photo-min-count="{{step.elements.photos.min_count}}">
             {% include 'svgs/photo-camera.svg' %}
           </a>
-          <span class="text-sm">{{step.elements.photos.count}}</span>
-          {% if step.elements.photos.required and step.elements.photos.count < step.elements.photos.min_count %}
-            <span class="text-xs text-error">*</span>
-          {% endif %}
         </div>
       {% endif %}
       
       <!-- Mapa -->
       {% if step.elements.map.enabled %}
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1 ml-2">
           <button id="map-btn-{{step.step_name}}" 
-                  
-                  title="Ver mapa de {{step.title}}"
-                  {% if step.elements.map.coordinates.coord1 %}
                   class="btn btn-{{step.elements.map.status}} btn-circle sombra"
+                  title="Mapa de {{step.title}}"
+                  {% if step.elements.map.coordinates.coord1 %}
                   data-coord1-lat="{{step.elements.map.coordinates.coord1.lat}}" 
                   data-coord1-lon="{{step.elements.map.coordinates.coord1.lon}}" 
                   data-coord1-label="{{step.elements.map.coordinates.coord1.label}}"
                   data-coord1-color="{{step.elements.map.coordinates.coord1.color}}"
                   data-coord1-size="{{step.elements.map.coordinates.coord1.size}}"
                   {% else %}
-                  class="btn btn-disabled btn-circle sombra"
                   {% endif %}
                   {% if step.elements.map.coordinates.coord2 %}
                   data-coord2-lat="{{step.elements.map.coordinates.coord2.lat}}" 
@@ -73,7 +75,7 @@
                   data-site-registro="{{step.registro_id}}"
                   data-step-title="{{step.title}}"
                   data-etapa="{{step.elements.map.etapa}}"
-                  data-map-type="{% if step.elements.map.coordinates.coord2 %}multi{% else %}single{% endif %}">
+                  data-map-type="{% if step.elements.map.coordinates.coord2 or step.elements.map.coordinates.coord3 %}multi{% else %}single{% endif %}">
             {% include 'svgs/map-marker.svg' %}
           </button>
         </div>

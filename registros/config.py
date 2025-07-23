@@ -508,6 +508,56 @@ def create_custom_config(
     )
 
 
+def create_component_only_config(
+    title: str,
+    description: str,
+    sub_elementos: List[SubElementoConfig] = None,
+    template_name: str = 'components/component_only.html',
+    success_message: str = None,
+    error_message: str = None
+) -> PasoConfig:
+    """
+    Crea una configuración que solo muestra componentes (sin formulario).
+    Ideal para pasos que solo necesitan mostrar mapas, fotos u otros componentes.
+    
+    Args:
+        title: Título del paso
+        description: Descripción del paso
+        sub_elementos: Lista de sub-elementos (mapa, fotos, etc.) - máximo 1 elemento
+        template_name: Template para mostrar solo componentes
+        success_message: Mensaje de éxito personalizado
+        error_message: Mensaje de error personalizado
+    
+    Returns:
+        PasoConfig configurado sin formulario
+    
+    Raises:
+        ValueError: Si se proporcionan más de un sub_elemento
+    """
+    # Validar que solo se proporcione un subelemento
+    if sub_elementos and len(sub_elementos) > 1:
+        raise ValueError("create_component_only_config solo acepta un sub_elemento. Se proporcionaron {} elementos.".format(len(sub_elementos)))
+    
+    # Crear un elemento config sin modelo ni formulario
+    elemento = ElementoConfig(
+        nombre='component_only',
+        model=None,  # Sin modelo
+        form_class=None,  # Sin formulario
+        title=title,
+        description=description,
+        template_name=template_name,
+        success_message=success_message or "Componente mostrado correctamente.",
+        error_message=error_message or "Error al mostrar el componente.",
+        sub_elementos=sub_elementos or []
+    )
+    
+    return PasoConfig(
+        elemento=elemento,
+        title=title,
+        description=description
+    )
+
+
 # ============================================================================
 # CONFIGURACIÓN DE REGISTRO COMPLETO
 # ============================================================================

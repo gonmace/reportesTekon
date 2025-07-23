@@ -12,7 +12,8 @@ from registros.config import (
     create_registro_config,
     create_single_point_map_config,
     create_multi_point_map_config,
-    create_photos_config
+    create_photos_config,
+    create_component_only_config
 )
 from django.db import models
 
@@ -504,3 +505,272 @@ def ejemplo_configuracion_rapida():
     )
     
     return [config1, config2, config3, config4, config5] 
+
+
+# ============================================================================
+# EJEMPLO 9: Configuración solo con componentes (sin formulario)
+# ============================================================================
+
+def ejemplo_component_only_config():
+    """
+    Ejemplo de configuración que solo muestra componentes sin formulario.
+    Útil para pasos informativos o de visualización.
+    """
+    from .models import Site
+    from .forms import SiteForm
+    
+    # Crear componente de mapa para mostrar información del mandato
+    mandato_mapa_component = create_multi_point_map_config(
+        model_class1=Site,  # Modelo del sitio/mandato
+        lat1='lat_base',
+        lon1='lon_base',
+        name1='Mandato',
+        icon1_color='blue',
+        icon1_size='large',
+        zoom=15
+    )
+    
+    # Configuración que solo muestra el mapa del mandato
+    paso_config = create_component_only_config(
+        title='Información del Mandato',
+        description='Visualice la ubicación del mandato en el mapa.',
+        sub_elementos=[mandato_mapa_component]  # Solo un componente
+    )
+    
+    return paso_config
+
+
+def ejemplo_component_only_with_photos():
+    """
+    Ejemplo de configuración que solo muestra fotos sin formulario.
+    Útil para galerías o visualizaciones.
+    """
+    from .models import Documentacion
+    from .forms import DocumentacionForm
+    
+    # Crear componente de fotos para mostrar galería
+    galeria_fotos_component = create_photos_config(
+        photo_min=0,  # Sin mínimo para solo visualización
+        photos_template='photos/photos_gallery.html'
+    )
+    
+    # Configuración que solo muestra la galería de fotos
+    paso_config = create_component_only_config(
+        title='Galería de Fotos',
+        description='Visualice las fotos del registro.',
+        sub_elementos=[galeria_fotos_component]  # Solo un componente
+    )
+    
+    return paso_config
+
+
+# ============================================================================
+# EJEMPLO 10: Configuración completa con componente only
+# ============================================================================
+
+def ejemplo_registro_con_component_only():
+    """
+    Ejemplo de registro completo que incluye un paso solo con componentes.
+    """
+    from registros.config import (
+        create_simple_config,
+        create_component_only_config,
+        create_multi_point_map_config,
+        create_registro_config
+    )
+    from .models import RegistroPrincipal, Sitio, Documentacion
+    from .forms import RegistroForm, SitioForm, DocumentacionForm
+    
+    # Paso 1: Información básica
+    paso1 = create_simple_config(
+        model_class=RegistroPrincipal,
+        form_class=RegistroForm,
+        title="Información General",
+        description="Datos básicos del registro"
+    )
+    
+    # Paso 2: Visualización del mandato (solo componente)
+    mandato_mapa = create_multi_point_map_config(
+        model_class1=Sitio,
+        lat1='lat_base',
+        lon1='lon_base',
+        name1='Mandato',
+        icon1_color='blue'
+    )
+    
+    paso2 = create_component_only_config(
+        title="Ubicación del Mandato",
+        description="Visualice la ubicación del mandato en el mapa",
+        sub_elementos=[mandato_mapa]
+    )
+    
+    # Paso 3: Documentación
+    paso3 = create_simple_config(
+        model_class=Documentacion,
+        form_class=DocumentacionForm,
+        title="Documentación",
+        description="Suba la documentación requerida"
+    )
+    
+    # Configuración completa del registro
+    pasos_config = {
+        'informacion': paso1,
+        'mandato': paso2,  # Paso solo con componente
+        'documentacion': paso3
+    }
+    
+    registro_config = create_registro_config(
+        registro_model=RegistroPrincipal,
+        pasos_config=pasos_config,
+        title="Registro con Componente Only",
+        app_namespace="mi_app"
+    )
+    
+    return registro_config
+
+
+# ============================================================================
+# FUNCIÓN DE AYUDA ACTUALIZADA PARA INCLUIR COMPONENT ONLY
+# ============================================================================
+
+def crear_configuracion_rapida_actualizada(
+    model_class=None,
+    form_class=None,
+    title="",
+    description="",
+    tipo_config="simple",
+    incluir_mapa=False,
+    incluir_fotos=False,
+    incluir_multi_mapa=False,
+    photo_min=4,
+    lat_field='lat',
+    lon_field='lon',
+    name_field='name',
+    zoom=15,
+    second_model_class=None,
+    **kwargs
+):
+    """
+    Función de ayuda actualizada para crear configuraciones rápidas incluyendo component_only.
+    
+    Args:
+        model_class: Clase del modelo (None para component_only)
+        form_class: Clase del formulario (None para component_only)
+        title: Título del paso
+        description: Descripción del paso
+        tipo_config: Tipo de configuración ('simple', 'component_only', 'custom')
+        incluir_mapa: Si incluir mapa de un punto
+        incluir_fotos: Si incluir fotos
+        incluir_multi_mapa: Si incluir mapa de múltiples puntos
+        photo_min: Número mínimo de fotos
+        lat_field: Campo de latitud
+        lon_field: Campo de longitud
+        name_field: Campo de nombre
+        zoom: Nivel de zoom del mapa
+        second_model_class: Modelo para mapa múltiple
+        **kwargs: Argumentos adicionales
+    
+    Returns:
+        PasoConfig configurado
+    """
+    if tipo_config == "component_only":
+        # Crear configuración solo con componentes
+        sub_elementos = []
+        
+        if incluir_multi_mapa:
+            mapa_component = create_multi_point_map_config(
+                model_class1='current',
+                lat1=lat_field,
+                lon1=lon_field,
+                name1=name_field,
+                model_class2=second_model_class,
+                lat2=kwargs.get('lat2', 'lat'),
+                lon2=kwargs.get('lon2', 'lon'),
+                name2=kwargs.get('name2', 'name'),
+                second_model_relation_field=kwargs.get('second_model_relation_field', 'registro'),
+                descripcion_distancia=kwargs.get('descripcion_distancia', 'Distancia entre puntos'),
+                zoom=zoom
+            )
+            sub_elementos.append(mapa_component)
+        elif incluir_mapa:
+            mapa_component = create_single_point_map_config(
+                lat_field=lat_field,
+                lon_field=lon_field,
+                name_field=name_field,
+                zoom=zoom
+            )
+            sub_elementos.append(mapa_component)
+        elif incluir_fotos:
+            fotos_component = create_photos_config(
+                photo_min=photo_min,
+                photos_template=kwargs.get('photos_template', 'photos/photos_main.html')
+            )
+            sub_elementos.append(fotos_component)
+        
+        return create_component_only_config(
+            title=title,
+            description=description,
+            sub_elementos=sub_elementos
+        )
+    else:
+        # Usar la función original para otros tipos
+        return crear_configuracion_rapida(
+            model_class=model_class,
+            form_class=form_class,
+            title=title,
+            description=description,
+            incluir_mapa=incluir_mapa,
+            incluir_fotos=incluir_fotos,
+            incluir_multi_mapa=incluir_multi_mapa,
+            photo_min=photo_min,
+            lat_field=lat_field,
+            lon_field=lon_field,
+            name_field=name_field,
+            zoom=zoom,
+            second_model_class=second_model_class,
+            **kwargs
+        )
+
+
+# Ejemplo de uso de la función actualizada:
+def ejemplo_configuracion_rapida_actualizada():
+    """
+    Ejemplo de uso de la función de configuración rápida actualizada.
+    """
+    from .models import MiModelo, PuntoReferencia
+    from .forms import MiFormulario
+    
+    # Solo formulario
+    config1 = crear_configuracion_rapida_actualizada(
+        MiModelo, MiFormulario, "Paso 1", "Descripción 1"
+    )
+    
+    # Solo componente de mapa (sin formulario)
+    config2 = crear_configuracion_rapida_actualizada(
+        title="Visualización de Mapa",
+        description="Descripción del mapa",
+        tipo_config="component_only",
+        incluir_mapa=True,
+        lat_field='latitud',
+        lon_field='longitud'
+    )
+    
+    # Solo componente de fotos (sin formulario)
+    config3 = crear_configuracion_rapida_actualizada(
+        title="Galería de Fotos",
+        description="Descripción de la galería",
+        tipo_config="component_only",
+        incluir_fotos=True,
+        photo_min=0
+    )
+    
+    # Solo componente de mapa múltiple (sin formulario)
+    config4 = crear_configuracion_rapida_actualizada(
+        title="Mapa de Referencia",
+        description="Descripción del mapa múltiple",
+        tipo_config="component_only",
+        incluir_multi_mapa=True,
+        second_model_class=PuntoReferencia
+    )
+    
+    return [config1, config2, config3, config4] 

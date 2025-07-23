@@ -60,9 +60,9 @@ class ElementoConfig:
         self.css_classes = css_classes or {}
         self.sub_elementos = sub_elementos or []
         
-        # Validar que se proporcione al menos fields o form_class
-        if not self.fields and not self.form_class:
-            raise ValueError("Debe proporcionar 'fields' o 'form_class'")
+        # Validar que se proporcione al menos fields, form_class, o sub_elementos
+        if not self.fields and not self.form_class and not self.sub_elementos:
+            raise ValueError("Debe proporcionar 'fields', 'form_class', o 'sub_elementos'")
 
 
 class PasoConfig:

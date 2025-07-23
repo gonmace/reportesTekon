@@ -350,4 +350,144 @@ La nueva estructura es compatible con la anterior. Los cambios principales son:
 - **Componentes modulares** (`create_map_component`, `create_photos_component`)
 - **Funciones de ayuda** para casos comunes
 - **`create_flexible_config()`** para configuraciones dinámicas
-- **Mejor organización** y más opciones de personalización 
+- **Mejor organización** y más opciones de personalización
+
+## 🎯 **Configuración Solo con Componentes**
+
+### **`create_component_only_config()` - Sin Formulario**
+Esta función permite crear pasos que solo muestran componentes (mapa, fotos, etc.) sin formulario:
+
+```python
+from registros.config import create_component_only_config, create_multi_point_map_config
+
+# Crear componente de mapa
+mandato_mapa = create_multi_point_map_config(
+    model_class1=Site,
+    lat1='lat_base',
+    lon1='lon_base',
+    name1='Mandato',
+    icon1_color='blue'
+)
+
+# Configuración solo con componente (sin formulario)
+paso = create_component_only_config(
+    title='Información del Mandato',
+    description='Visualice la ubicación del mandato en el mapa.',
+    sub_elementos=[mandato_mapa]  # Solo un componente
+)
+```
+
+### **Características de `create_component_only_config()`**
+- ✅ **Sin formulario**: No requiere modelo ni formulario
+- ✅ **Un solo componente**: Solo acepta un sub_elemento
+- ✅ **Template personalizable**: Usa `components/component_only.html` por defecto
+- ✅ **Validación**: Lanza error si se proporcionan múltiples componentes
+- ✅ **Navegación**: Incluye botones de navegación automáticamente
+
+### **Casos de Uso Comunes**
+1. **Visualización de mapas**: Mostrar ubicaciones sin edición
+2. **Galerías de fotos**: Visualizar fotos existentes
+3. **Información de referencia**: Mostrar datos del mandato
+4. **Dashboards**: Visualizaciones informativas
+
+### **Ejemplo Completo**
+```python
+from registros.config import (
+    create_component_only_config,
+    create_multi_point_map_config,
+    create_photos_config,
+    create_registro_config
+)
+
+# Paso 1: Información básica (con formulario)
+paso1 = create_simple_config(
+    model_class=RegistroPrincipal,
+    form_class=RegistroForm,
+    title="Información General",
+    description="Datos básicos del registro"
+)
+
+# Paso 2: Visualización del mandato (solo componente)
+mandato_mapa = create_multi_point_map_config(
+    model_class1=Site,
+    lat1='lat_base',
+    lon1='lon_base',
+    name1='Mandato',
+    icon1_color='blue'
+)
+
+paso2 = create_component_only_config(
+    title="Ubicación del Mandato",
+    description="Visualice la ubicación del mandato en el mapa",
+    sub_elementos=[mandato_mapa]
+)
+
+# Paso 3: Documentación (con formulario)
+paso3 = create_simple_config(
+    model_class=Documentacion,
+    form_class=DocumentacionForm,
+    title="Documentación",
+    description="Suba la documentación requerida"
+)
+
+# Configuración completa
+registro_config = create_registro_config(
+    registro_model=RegistroPrincipal,
+    pasos_config={
+        'informacion': paso1,
+        'mandato': paso2,  # Paso solo con componente
+        'documentacion': paso3
+    },
+    title="Registro con Componente Only",
+    app_namespace="mi_app"
+)
+```
+
+### **Template Personalizado**
+El template `components/component_only.html` incluye:
+- Título y descripción del paso
+- Renderizado automático de sub-elementos
+- Botones de navegación (Atrás, Actualizar)
+- Estilos responsivos con DaisyUI
+- Soporte para diferentes tipos de componentes
+
+### **Validaciones**
+```python
+# ✅ Correcto - Un solo componente
+paso = create_component_only_config(
+    title='Título',
+    description='Descripción',
+    sub_elementos=[mi_componente]
+)
+
+# ❌ Error - Múltiples componentes
+paso = create_component_only_config(
+    title='Título',
+    description='Descripción',
+    sub_elementos=[componente1, componente2]  # ValueError
+)
+```
+
+### **Integración con Funciones de Ayuda**
+```python
+from registros.config_examples import crear_configuracion_rapida_actualizada
+
+# Solo componente de mapa
+config = crear_configuracion_rapida_actualizada(
+    title="Visualización de Mapa",
+    description="Descripción del mapa",
+    tipo_config="component_only",
+    incluir_mapa=True,
+    lat_field='latitud',
+    lon_field='longitud'
+)
+
+# Solo componente de fotos
+config = crear_configuracion_rapida_actualizada(
+    title="Galería de Fotos",
+    description="Descripción de la galería",
+    tipo_config="component_only",
+    incluir_fotos=True,
+    photo_min=0
+)
+``` 

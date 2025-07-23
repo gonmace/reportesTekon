@@ -7,18 +7,22 @@ from registros.config import (
     create_registro_config,
     create_multi_point_map_config,
     create_photos_config,
-    create_custom_config
+    create_custom_config,
+    create_component_only_config
 )
 from .models import RegTxtss, RSitio, RAcceso, REmpalme
 from .forms import RSitioForm, RAccesoForm, REmpalmeForm
 from core.models.sites import Site
 
+mandato_map = create_multi_point_map_config(
+    model_class1=Site,
+    lat1='lat_base',
+    lon1='lon_base',
+    name1='Mandato',
+    icon1_color='blue',
+)
 
-# Crear componentes personalizados para el paso 'sitio'
-# Configuración de mapa multi-punto (máximo 3 coordenadas):
-# - coord1: Punto de inspección (RSitio)
-# - coord2: Punto de mandato (Site)
-# - coord3: Futuras expansiones
+
 sitio_mapa_component = create_multi_point_map_config(
     model_class1='current',
     lat1='lat',
@@ -53,6 +57,11 @@ empalme_fotos_component = create_photos_config(
 
 # Configuración de pasos usando create_custom_config con componentes personalizados
 PASOS_CONFIG = {
+    'mandato': create_component_only_config(
+        title='Mandato',
+        description='Información sobre el mandato.',
+        sub_elementos=[mandato_map]
+    ),
     'sitio': create_custom_config(
         model_class=RSitio,
         form_class=RSitioForm,
