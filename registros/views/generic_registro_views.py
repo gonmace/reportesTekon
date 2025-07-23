@@ -348,7 +348,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                     'photos': {
                         'enabled': has_photos,
                         'url': f'/{self.registro_config.app_namespace}/{registro.id}/{step_name}/photos/' if has_photos else '',
-                        'color': 'success' if has_photos and photo_count >= min_count else 'warning',
+                        'color': 'success' if has_photos and photo_count >= min_count else 'warning' if has_photos and photo_count > 0 else 'error',
                         'count': photo_count,
                         'required': has_photos,
                         'min_count': min_count

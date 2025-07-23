@@ -156,7 +156,7 @@ def create_multi_point_map_config(
 
 def create_photos_config(
     photo_min: int = 4,
-    allowed_types: List[str] = None,
+    allowed_types: List[str] = ['image/jpeg', 'image/png'],
     photos_template: str = 'photos/photos_main.html',
     css_classes: str = 'fotos-container'
 ) -> SubElementoConfig:
@@ -172,8 +172,6 @@ def create_photos_config(
     Returns:
         SubElementoConfig configurado para fotos
     """
-    if allowed_types is None:
-        allowed_types = ['image/jpeg', 'image/png']
     
     return SubElementoConfig(
         tipo='fotos',
