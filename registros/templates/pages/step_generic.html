@@ -76,7 +76,13 @@
                   data-step-title="{{step.title}}"
                   data-etapa="{{step.elements.map.etapa}}"
                   data-map-type="{% if step.elements.map.coordinates.coord2 or step.elements.map.coordinates.coord3 %}multi{% else %}single{% endif %}">
-            {% include 'svgs/map-marker.svg' %}
+            {% if step.elements.map.coordinates.coord3 %}
+              {% include 'svgs/map-marker-3.svg' %}
+            {% elif step.elements.map.coordinates.coord2 %}
+              {% include 'svgs/map-marker-2.svg' %}
+            {% else %}
+              {% include 'svgs/map-marker.svg' %}
+            {% endif %}
           </button>
         </div>
       {% endif %}
