@@ -239,7 +239,7 @@
       // Determinar zoom inicial según el número de coordenadas
       let initialZoom = 15;
       if (coordinates.length === 1) {
-          initialZoom = 16; // Zoom más cercano para un solo punto
+          initialZoom = 20; // Zoom máximo para un solo punto
       } else if (coordinates.length === 2) {
           initialZoom = 14; // Zoom medio para dos puntos
       } else if (coordinates.length === 3) {
@@ -341,7 +341,7 @@
       
       if (window.MapManager.coordinates.length === 1) {
           // Solo un punto - zoom fijo para mejor visualización
-          optimalZoom = 16;
+          optimalZoom = 20;
           console.log('Solo un punto - Zoom fijo:', optimalZoom);
       } else {
           // Múltiples puntos - calcular la distancia máxima entre puntos

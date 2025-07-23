@@ -16,7 +16,7 @@ def create_single_point_map_config(
     lat_field: str = 'lat',
     lon_field: str = 'lon',
     name_field: str = 'name',
-    zoom: int = 15,
+    zoom: int = 20,
     template_name: str = 'components/mapa.html',  # Template extraído de step_generic.html
     css_classes: str = 'mapa-container',
     icon_color: str = 'red',
@@ -66,7 +66,7 @@ def create_1_point_map_config(
     lat1='lat',
     lon1='lon', 
     name1='name',
-    zoom=15,
+    zoom=20,
     template_name='components/mapa.html',  # Template extraído de step_generic.html
     css_classes='mapa-container',
     # Configuración de iconos para el primer modelo
@@ -467,7 +467,7 @@ def create_map_only_config(
     lat_field: str = 'lat',
     lon_field: str = 'lon',
     name_field: str = 'name',
-    zoom: int = 15,
+    zoom: int = 20,
     template_form: str = 'components/elemento_form.html',
     map_template: str = 'components/mapa.html'
 ) -> PasoConfig:
@@ -570,7 +570,7 @@ def create_photo_map_config(
     lat_field: str = 'lat',
     lon_field: str = 'lon',
     name_field: str = 'name',
-    zoom: int = 15,
+    zoom: int = 20,
     # Parámetros para mapa con dos modelos
     second_model_class: Type[models.Model] = None,
     second_model_lat_field: str = 'lat',

@@ -135,7 +135,7 @@ def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2
     # Calcular centro y zoom automáticamente
     if len(puntos) == 1:
         centro_lat, centro_lon = puntos[0]
-        zoom_auto = 20  # Zoom máximo de Google Maps
+        zoom_auto = 20  # Zoom máximo de Google Maps para un solo punto
     else:
         # Calcular bounds
         lats = [p[0] for p in puntos]
