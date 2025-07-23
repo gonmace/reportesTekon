@@ -61,7 +61,59 @@ def create_single_point_map_config(
     )
 
 
-def create_multi_point_map_config(
+def create_1_point_map_config(
+    model_class1='current',
+    lat1='lat',
+    lon1='lon', 
+    name1='name',
+    zoom=15,
+    template_name='components/mapa.html',  # Template extraído de step_generic.html
+    css_classes='mapa-container',
+    # Configuración de iconos para el primer modelo
+    icon1_color='red',
+    icon1_size='normal',
+    icon1_type='marker'
+) -> SubElementoConfig:
+    """
+    Crea configuración para un mapa con un solo punto.
+    
+    Args:
+        model_class1: Clase del primer modelo o 'current' para el modelo actual
+        lat1: Campo de latitud del primer modelo
+        lon1: Campo de longitud del primer modelo
+        name1: Campo de nombre del primer modelo
+        zoom: Nivel de zoom del mapa
+        template_name: Template del mapa
+        css_classes: Clases CSS para el contenedor
+        icon1_color: Color del icono del primer modelo (red, blue, green, yellow, etc.)
+        icon1_size: Tamaño del icono del primer modelo (tiny, small, normal, mid, large)
+        icon1_type: Tipo de icono del primer modelo (marker, circle, etc.)
+    
+    Returns:
+        SubElementoConfig configurado para mapa de un punto
+    """
+    map_config = {
+        'lat_field': lat1,
+        'lon_field': lon1,
+        'name_field': name1,
+        'zoom': zoom,
+        'type': 'single_point',
+        'icon_config': {
+            'color': icon1_color,
+            'size': icon1_size,
+            'type': icon1_type
+        }
+    }
+    
+    return SubElementoConfig(
+        tipo='mapa',
+        config=map_config,
+        template_name=template_name,
+        css_classes=css_classes
+    )
+
+
+def create_2_point_map_config(
     model_class1='current',
     lat1='lat',
     lon1='lon', 
@@ -85,7 +137,7 @@ def create_multi_point_map_config(
     icon2_type='marker'
 ) -> SubElementoConfig:
     """
-    Crea configuración para un mapa con múltiples puntos (modelo principal + segundo modelo).
+    Crea configuración para un mapa con dos puntos (modelo principal + segundo modelo).
     
     Args:
         model_class1: Clase del primer modelo o 'current' para el modelo actual
@@ -109,14 +161,14 @@ def create_multi_point_map_config(
         icon2_type: Tipo de icono del segundo modelo
     
     Returns:
-        SubElementoConfig configurado para mapa de múltiples puntos
+        SubElementoConfig configurado para mapa de dos puntos
     """
     map_config = {
         'lat_field': lat1,
         'lon_field': lon1,
         'name_field': name1,
         'zoom': zoom,
-        'type': 'multi_point',
+        'type': 'two_point',
         'icon_config': {
             'color': icon1_color,
             'size': icon1_size,
@@ -141,6 +193,131 @@ def create_multi_point_map_config(
             },
             'descripcion_distancia': descripcion_distancia
         })
+    
+    return SubElementoConfig(
+        tipo='mapa',
+        config=map_config,
+        template_name=template_name,
+        css_classes=css_classes
+    )
+
+
+def create_3_point_map_config(
+    model_class1='current',
+    lat1='lat',
+    lon1='lon', 
+    name1='name',
+    model_class2=None,
+    lat2='lat',
+    lon2='lon', 
+    name2='name',
+    model_class3=None,
+    lat3='lat',
+    lon3='lon', 
+    name3='name',
+    second_model_relation_field='registro',
+    third_model_relation_field='registro',
+    descripcion_distancia='Distancia entre puntos',
+    zoom=15,
+    template_name='components/mapa.html',  # Template extraído de step_generic.html
+    css_classes='mapa-container',
+    # Configuración de iconos para el primer modelo
+    icon1_color='red',
+    icon1_size='normal',
+    icon1_type='marker',
+    # Configuración de iconos para el segundo modelo
+    icon2_color='blue',
+    icon2_size='normal',
+    icon2_type='marker',
+    # Configuración de iconos para el tercer modelo
+    icon3_color='green',
+    icon3_size='normal',
+    icon3_type='marker'
+) -> SubElementoConfig:
+    """
+    Crea configuración para un mapa con tres puntos (modelo principal + segundo modelo + tercer modelo).
+    
+    Args:
+        model_class1: Clase del primer modelo o 'current' para el modelo actual
+        lat1: Campo de latitud del primer modelo
+        lon1: Campo de longitud del primer modelo
+        name1: Campo de nombre del primer modelo
+        model_class2: Clase del segundo modelo para el mapa
+        lat2: Campo de latitud del segundo modelo
+        lon2: Campo de longitud del segundo modelo
+        name2: Campo de nombre del segundo modelo
+        model_class3: Clase del tercer modelo para el mapa
+        lat3: Campo de latitud del tercer modelo
+        lon3: Campo de longitud del tercer modelo
+        name3: Campo de nombre del tercer modelo
+        second_model_relation_field: Campo de relación con el registro (FK) para el segundo modelo
+        third_model_relation_field: Campo de relación con el registro (FK) para el tercer modelo
+        descripcion_distancia: Descripción para el cálculo de distancia
+        zoom: Nivel de zoom del mapa
+        template_name: Template del mapa
+        css_classes: Clases CSS para el contenedor
+        icon1_color: Color del icono del primer modelo (red, blue, green, yellow, etc.)
+        icon1_size: Tamaño del icono del primer modelo (tiny, small, normal, mid, large)
+        icon1_type: Tipo de icono del primer modelo (marker, circle, etc.)
+        icon2_color: Color del icono del segundo modelo
+        icon2_size: Tamaño del icono del segundo modelo
+        icon2_type: Tipo de icono del segundo modelo
+        icon3_color: Color del icono del tercer modelo
+        icon3_size: Tamaño del icono del tercer modelo
+        icon3_type: Tipo de icono del tercer modelo
+    
+    Returns:
+        SubElementoConfig configurado para mapa de tres puntos
+    """
+    map_config = {
+        'lat_field': lat1,
+        'lon_field': lon1,
+        'name_field': name1,
+        'zoom': zoom,
+        'type': 'three_point',
+        'icon_config': {
+            'color': icon1_color,
+            'size': icon1_size,
+            'type': icon1_type
+        }
+    }
+    
+    # Agregar configuración del segundo modelo si se proporciona
+    if model_class2:
+        map_config.update({
+            'second_model': {
+                'model_class': model_class2,
+                'lat_field': lat2,
+                'lon_field': lon2,
+                'name_field': name2,
+                'relation_field': second_model_relation_field,
+                'icon_config': {
+                    'color': icon2_color,
+                    'size': icon2_size,
+                    'type': icon2_type
+                }
+            }
+        })
+    
+    # Agregar configuración del tercer modelo si se proporciona
+    if model_class3:
+        map_config.update({
+            'third_model': {
+                'model_class': model_class3,
+                'lat_field': lat3,
+                'lon_field': lon3,
+                'name_field': name3,
+                'relation_field': third_model_relation_field,
+                'icon_config': {
+                    'color': icon3_color,
+                    'size': icon3_size,
+                    'type': icon3_type
+                }
+            }
+        })
+    
+    if model_class2 or model_class3:
+        map_config['descripcion_distancia'] = descripcion_distancia
     
     return SubElementoConfig(
         tipo='mapa',
@@ -418,7 +595,7 @@ def create_photo_map_config(
     
     # Crear configuración de mapa
     if second_model_class:
-        map_config = create_multi_point_map_config(
+        map_config = create_2_point_map_config(
             model_class1=model_class,
             lat1=lat_field,
             lon1=lon_field,
@@ -508,7 +685,7 @@ def create_custom_config(
     )
 
 
-def create_component_only_config(
+def create_sub_element_only_config(
     title: str,
     description: str,
     sub_elementos: List[SubElementoConfig] = None,
@@ -536,7 +713,7 @@ def create_component_only_config(
     """
     # Validar que solo se proporcione un subelemento
     if sub_elementos and len(sub_elementos) > 1:
-        raise ValueError("create_component_only_config solo acepta un sub_elemento. Se proporcionaron {} elementos.".format(len(sub_elementos)))
+        raise ValueError("create_sub_element_only_config solo acepta un sub_elemento. Se proporcionaron {} elementos.".format(len(sub_elementos)))
     
     # Crear un elemento config sin modelo ni formulario
     elemento = ElementoConfig(

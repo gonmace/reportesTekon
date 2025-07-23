@@ -26,9 +26,9 @@ El template `components/mapa.html` ha sido extraído de `step_generic.html` (lí
 
 ### **Configuración Básica**
 ```python
-from registros.config import create_multi_point_map_config
+from registros.config import create_2_point_map_config
 
-sitio_mapa_component = create_multi_point_map_config(
+sitio_mapa_component = create_2_point_map_config(
     model_class1='current',
     lat1='lat',
     lon1='lon', 
@@ -90,7 +90,7 @@ templates/
 
 ### **Modificar Colores de Marcadores**
 ```python
-sitio_mapa_component = create_multi_point_map_config(
+sitio_mapa_component = create_2_point_map_config(
     # ... otros parámetros ...
     icon1_color='#FF6B6B',  # Color personalizado
     icon2_color='#4ECDC4',  # Color personalizado
@@ -99,7 +99,7 @@ sitio_mapa_component = create_multi_point_map_config(
 
 ### **Modificar Tamaños de Marcadores**
 ```python
-sitio_mapa_component = create_multi_point_map_config(
+sitio_mapa_component = create_2_point_map_config(
     # ... otros parámetros ...
     icon1_size='xlarge',  # Marcador extra grande
     icon2_size='small',   # Marcador pequeño
@@ -108,7 +108,7 @@ sitio_mapa_component = create_multi_point_map_config(
 
 ### **Modificar Zoom**
 ```python
-sitio_mapa_component = create_multi_point_map_config(
+sitio_mapa_component = create_2_point_map_config(
     # ... otros parámetros ...
     zoom=18,  # Zoom más cercano
 )

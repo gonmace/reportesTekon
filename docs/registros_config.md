@@ -354,14 +354,14 @@ La nueva estructura es compatible con la anterior. Los cambios principales son:
 
 ## 🎯 **Configuración Solo con Componentes**
 
-### **`create_component_only_config()` - Sin Formulario**
+### **`create_sub_element_only_config()` - Sin Formulario**
 Esta función permite crear pasos que solo muestran componentes (mapa, fotos, etc.) sin formulario:
 
 ```python
-from registros.config import create_component_only_config, create_multi_point_map_config
+from registros.config import create_sub_element_only_config, create_1_point_map_config
 
 # Crear componente de mapa
-mandato_mapa = create_multi_point_map_config(
+mandato_mapa = create_1_point_map_config(
     model_class1=Site,
     lat1='lat_base',
     lon1='lon_base',
@@ -370,14 +370,14 @@ mandato_mapa = create_multi_point_map_config(
 )
 
 # Configuración solo con componente (sin formulario)
-paso = create_component_only_config(
+paso = create_sub_element_only_config(
     title='Información del Mandato',
     description='Visualice la ubicación del mandato en el mapa.',
     sub_elementos=[mandato_mapa]  # Solo un componente
 )
 ```
 
-### **Características de `create_component_only_config()`**
+### **Características de `create_sub_element_only_config()`**
 - ✅ **Sin formulario**: No requiere modelo ni formulario
 - ✅ **Un solo componente**: Solo acepta un sub_elemento
 - ✅ **Template personalizable**: Usa `components/component_only.html` por defecto
@@ -393,8 +393,8 @@ paso = create_component_only_config(
 ### **Ejemplo Completo**
 ```python
 from registros.config import (
-    create_component_only_config,
-    create_multi_point_map_config,
+    create_sub_element_only_config,
+    create_1_point_map_config,
     create_photos_config,
     create_registro_config
 )
@@ -408,7 +408,7 @@ paso1 = create_simple_config(
 )
 
 # Paso 2: Visualización del mandato (solo componente)
-mandato_mapa = create_multi_point_map_config(
+mandato_mapa = create_1_point_map_config(
     model_class1=Site,
     lat1='lat_base',
     lon1='lon_base',
@@ -416,7 +416,7 @@ mandato_mapa = create_multi_point_map_config(
     icon1_color='blue'
 )
 
-paso2 = create_component_only_config(
+paso2 = create_sub_element_only_config(
     title="Ubicación del Mandato",
     description="Visualice la ubicación del mandato en el mapa",
     sub_elementos=[mandato_mapa]
@@ -454,14 +454,14 @@ El template `components/component_only.html` incluye:
 ### **Validaciones**
 ```python
 # ✅ Correcto - Un solo componente
-paso = create_component_only_config(
+paso = create_sub_element_only_config(
     title='Título',
     description='Descripción',
     sub_elementos=[mi_componente]
 )
 
 # ❌ Error - Múltiples componentes
-paso = create_component_only_config(
+paso = create_sub_element_only_config(
     title='Título',
     description='Descripción',
     sub_elementos=[componente1, componente2]  # ValueError

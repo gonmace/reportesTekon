@@ -5,16 +5,18 @@ Configuración declarativa para registros TX/TSS.
 from registros.config import (
     create_simple_config, 
     create_registro_config,
-    create_multi_point_map_config,
+    create_1_point_map_config,
+    create_2_point_map_config,
+    create_3_point_map_config,
     create_photos_config,
     create_custom_config,
-    create_component_only_config
+    create_sub_element_only_config
 )
 from .models import RegTxtss, RSitio, RAcceso, REmpalme
 from .forms import RSitioForm, RAccesoForm, REmpalmeForm
 from core.models.sites import Site
 
-mandato_map = create_multi_point_map_config(
+mandato_map = create_1_point_map_config(
     model_class1=Site,
     lat1='lat_base',
     lon1='lon_base',
@@ -23,7 +25,7 @@ mandato_map = create_multi_point_map_config(
 )
 
 
-sitio_mapa_component = create_multi_point_map_config(
+sitio_mapa_component = create_2_point_map_config(
     model_class1='current',
     lat1='lat',
     lon1='lon', 
@@ -57,7 +59,7 @@ empalme_fotos_component = create_photos_config(
 
 # Configuración de pasos usando create_custom_config con componentes personalizados
 PASOS_CONFIG = {
-    'mandato': create_component_only_config(
+    'mandato': create_sub_element_only_config(
         title='Mandato',
         description='Información sobre el mandato.',
         sub_elementos=[mandato_map]

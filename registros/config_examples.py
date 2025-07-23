@@ -11,9 +11,11 @@ from registros.config import (
     create_custom_config,
     create_registro_config,
     create_single_point_map_config,
-    create_multi_point_map_config,
+    create_1_point_map_config,
+    create_2_point_map_config,
+    create_3_point_map_config,
     create_photos_config,
-    create_component_only_config
+    create_sub_element_only_config
 )
 from django.db import models
 
@@ -124,8 +126,8 @@ def ejemplo_config_with_multi_point_map():
     from .models import Sitio, PuntoReferencia
     from .forms import SitioForm
     
-    # Crear componente de mapa multi-punto
-    mapa_component = create_multi_point_map_config(
+    # Crear componente de mapa de dos puntos
+    mapa_component = create_2_point_map_config(
         model_class1='current',
         lat1='latitud',
         lon1='longitud',
@@ -251,8 +253,8 @@ def ejemplo_flexible_config():
         sub_elementos=[mapa_fotos_component, fotos_mapa_component]
     )
     
-    # Formulario con mapa de múltiples puntos
-    multi_mapa_component = create_multi_point_map_config(
+    # Formulario con mapa de dos puntos
+    multi_mapa_component = create_2_point_map_config(
         model_class1='current',
         lat1='latitud',
         lon1='longitud',
@@ -389,8 +391,8 @@ def crear_configuracion_rapida(
         PasoConfig configurado
     """
     if incluir_multi_mapa:
-        # Crear componente de mapa multi-punto
-        mapa_component = create_multi_point_map_config(
+        # Crear componente de mapa de dos puntos
+        mapa_component = create_2_point_map_config(
             model_class1='current',
             lat1=lat_field,
             lon1=lon_field,
@@ -520,7 +522,7 @@ def ejemplo_component_only_config():
     from .forms import SiteForm
     
     # Crear componente de mapa para mostrar información del mandato
-    mandato_mapa_component = create_multi_point_map_config(
+    mandato_mapa_component = create_1_point_map_config(
         model_class1=Site,  # Modelo del sitio/mandato
         lat1='lat_base',
         lon1='lon_base',
@@ -531,7 +533,7 @@ def ejemplo_component_only_config():
     )
     
     # Configuración que solo muestra el mapa del mandato
-    paso_config = create_component_only_config(
+    paso_config = create_sub_element_only_config(
         title='Información del Mandato',
         description='Visualice la ubicación del mandato en el mapa.',
         sub_elementos=[mandato_mapa_component]  # Solo un componente
@@ -555,7 +557,7 @@ def ejemplo_component_only_with_photos():
     )
     
     # Configuración que solo muestra la galería de fotos
-    paso_config = create_component_only_config(
+    paso_config = create_sub_element_only_config(
         title='Galería de Fotos',
         description='Visualice las fotos del registro.',
         sub_elementos=[galeria_fotos_component]  # Solo un componente
@@ -574,8 +576,8 @@ def ejemplo_registro_con_component_only():
     """
     from registros.config import (
         create_simple_config,
-        create_component_only_config,
-        create_multi_point_map_config,
+        create_sub_element_only_config,
+        create_1_point_map_config,
         create_registro_config
     )
     from .models import RegistroPrincipal, Sitio, Documentacion
@@ -590,7 +592,7 @@ def ejemplo_registro_con_component_only():
     )
     
     # Paso 2: Visualización del mandato (solo componente)
-    mandato_mapa = create_multi_point_map_config(
+    mandato_mapa = create_1_point_map_config(
         model_class1=Sitio,
         lat1='lat_base',
         lon1='lon_base',
@@ -598,7 +600,7 @@ def ejemplo_registro_con_component_only():
         icon1_color='blue'
     )
     
-    paso2 = create_component_only_config(
+    paso2 = create_sub_element_only_config(
         title="Ubicación del Mandato",
         description="Visualice la ubicación del mandato en el mapa",
         sub_elementos=[mandato_mapa]
@@ -678,7 +680,7 @@ def crear_configuracion_rapida_actualizada(
         sub_elementos = []
         
         if incluir_multi_mapa:
-            mapa_component = create_multi_point_map_config(
+            mapa_component = create_2_point_map_config(
                 model_class1='current',
                 lat1=lat_field,
                 lon1=lon_field,
@@ -707,7 +709,7 @@ def crear_configuracion_rapida_actualizada(
             )
             sub_elementos.append(fotos_component)
         
-        return create_component_only_config(
+        return create_sub_element_only_config(
             title=title,
             description=description,
             sub_elementos=sub_elementos
