@@ -158,7 +158,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
     
     def _process_map_config(self, registro, elemento_config, instance):
         """
-        Procesa la configuración del mapa y obtiene las coordenadas (máximo 3).
+        Procesa la configuración del mapa y obtiene las coordenadas.
         
         Args:
             registro: Instancia del registro principal
@@ -166,212 +166,227 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             instance: Instancia del modelo del paso actual
         
         Returns:
-            dict: Configuración del mapa con coordenadas procesadas (máximo 3)
+            dict: Configuración del mapa con coordenadas procesadas
         """
         # Buscar configuración del mapa
-        map_config = None
-        for sub in elemento_config.sub_elementos:
-            if sub.tipo == 'mapa':
-                map_config = sub.config
-                break
-        
+        map_config = self._get_map_config(elemento_config)
         if not map_config:
-            return {
-                'enabled': False,
-                'status': 'warning',
-                'coordinates': {},
-                'etapa': ''
-            }
+            return self._get_disabled_map_config()
         
-        coordinates = {}
-        coord_index = 1
+        # Obtener coordenadas
+        coordinates = self._get_coordinates(registro, map_config, instance)
         
-        # Obtener configuración de iconos del modelo principal
-        icon_config = map_config.get('icon_config', {})
-        primary_color = icon_config.get('color', '#F59E0B')
-        primary_size = icon_config.get('size', 'mid')
+        # Determinar estado del mapa
+        map_status = self._determine_map_status(map_config, coordinates, registro, elemento_config)
         
-        # Procesar coordenadas del modelo actual (coord1)
-        # Para mapas de 1 punto sin modelo principal (como mandato), usar el modelo especificado
-        if instance and hasattr(instance, map_config.get('lat_field', 'lat')):
-            # Caso normal: modelo del paso actual
-            lat_field = map_config.get('lat_field', 'lat')
-            lon_field = map_config.get('lon_field', 'lon')
-            name_field = map_config.get('name_field', 'name')
-            
-            lat_value = getattr(instance, lat_field, None)
-            lon_value = getattr(instance, lon_field, None)
-            name_value = getattr(instance, name_field, None) if hasattr(instance, name_field) else 'Inspección'
-            
-            if lat_value is not None and lon_value is not None:
-                coordinates[f'coord{coord_index}'] = {
-                    'lat': float(lat_value),
-                    'lon': float(lon_value),
-                    'label': name_value or 'Inspección',
-                    'color': primary_color,
-                    'size': primary_size
-                }
-                coord_index += 1
-        elif not instance and map_config.get('type') == 'single_point':
-            # Caso especial: mapa de 1 punto sin modelo principal (como mandato)
-            # Usar el modelo Site directamente desde el registro
-            if hasattr(registro, 'sitio') and registro.sitio:
-                site_instance = registro.sitio
-                lat_field = map_config.get('lat_field', 'lat_base')
-                lon_field = map_config.get('lon_field', 'lon_base')
-                name_field = map_config.get('name_field', 'name')
-                
-                lat_value = getattr(site_instance, lat_field, None)
-                lon_value = getattr(site_instance, lon_field, None)
-                name_value = getattr(site_instance, name_field, None) if hasattr(site_instance, name_field) else 'Mandato'
-                
-                if lat_value is not None and lon_value is not None:
-                    coordinates[f'coord{coord_index}'] = {
-                        'lat': float(lat_value),
-                        'lon': float(lon_value),
-                        'label': name_value or 'Mandato',
-                        'color': primary_color,
-                        'size': primary_size
-                    }
-                    coord_index += 1
-        
-        # Procesar coordenadas del segundo modelo si existe (coord2)
-        if 'second_model' in map_config and coord_index <= 3:
-            second_model_config = map_config['second_model']
-            second_model_class = second_model_config['model_class']
-            lat_field = second_model_config['lat_field']
-            lon_field = second_model_config['lon_field']
-            name_field = second_model_config['name_field']
-            relation_field = second_model_config['relation_field']
-            
-            # Obtener configuración de iconos del segundo modelo
-            second_icon_config = second_model_config.get('icon_config', {})
-            second_color = second_icon_config.get('color', '#3B82F6')
-            second_size = second_icon_config.get('size', 'normal')
-            
-            # Obtener la instancia del segundo modelo
-            second_instance = None
-            if relation_field == 'sitio':
-                # Para el modelo Site, usar la relación directa
-                second_instance = getattr(registro, 'sitio', None)
-            else:
-                # Para otros modelos, buscar por relación con el registro
-                try:
-                    second_instance = second_model_class.objects.filter(
-                        **{relation_field: registro}
-                    ).first()
-                except Exception:
-                    pass
-            
-            if second_instance and hasattr(second_instance, lat_field):
-                lat_value = getattr(second_instance, lat_field, None)
-                lon_value = getattr(second_instance, lon_field, None)
-                name_value = getattr(second_instance, name_field, None) if hasattr(second_instance, name_field) else 'Mandato'
-                
-                if lat_value is not None and lon_value is not None:
-                    coordinates[f'coord{coord_index}'] = {
-                        'lat': float(lat_value),
-                        'lon': float(lon_value),
-                        'label': name_value or 'Mandato',
-                        'color': second_color,
-                        'size': second_size
-                    }
-                    coord_index += 1
-        
-        # Procesar coordenadas del tercer modelo si existe (coord3)
-        if 'third_model' in map_config and coord_index <= 3:
-            third_model_config = map_config['third_model']
-            third_model_class = third_model_config['model_class']
-            lat_field = third_model_config['lat_field']
-            lon_field = third_model_config['lon_field']
-            name_field = third_model_config['name_field']
-            relation_field = third_model_config['relation_field']
-            
-            # Obtener configuración de iconos del tercer modelo
-            third_icon_config = third_model_config.get('icon_config', {})
-            third_color = third_icon_config.get('color', '#10B981')
-            third_size = third_icon_config.get('size', 'normal')
-            
-            # Obtener la instancia del tercer modelo
-            third_instance = None
-            try:
-                third_instance = third_model_class.objects.filter(
-                    **{relation_field: registro}
-                ).first()
-            except Exception:
-                pass
-            
-            if third_instance and hasattr(third_instance, lat_field):
-                lat_value = getattr(third_instance, lat_field, None)
-                lon_value = getattr(third_instance, lon_field, None)
-                name_value = getattr(third_instance, name_field, None) if hasattr(third_instance, name_field) else 'Punto 3'
-                
-                if lat_value is not None and lon_value is not None:
-                    coordinates[f'coord{coord_index}'] = {
-                        'lat': float(lat_value),
-                        'lon': float(lon_value),
-                        'label': name_value or 'Punto 3',
-                        'color': third_color,
-                        'size': third_size
-                    }
-                    coord_index += 1
-        
-        # Determinar el estado del mapa basándose en el tipo de configuración
-        map_type = map_config.get('type', 'single_point')
-        
-        # Validar que todas las coordenadas requeridas estén disponibles
-        required_coords = 1  # Por defecto, al menos 1 coordenada
-        if map_type == 'two_point' and 'second_model' in map_config:
-            required_coords = 2
-        elif map_type == 'three_point':
-            required_coords = 3
-            if 'second_model' in map_config:
-                required_coords = 2
-            if 'third_model' in map_config:
-                required_coords = 3
-        
-        # El mapa está habilitado si tiene todas las coordenadas requeridas
+        # Para mapas de 2 y 3 puntos, siempre mantener habilitado pero cambiar el estado
+        required_coords = self._get_required_coords(map_config)
         has_required_coords = len(coordinates) >= required_coords
         
-        # Verificar si ya existe una imagen guardada del mapa
-        has_saved_image = False
-        if has_required_coords:
-            try:
-                from core.models.google_maps import GoogleMapsImage
-                from django.contrib.contenttypes.models import ContentType
-                
-                content_type = ContentType.objects.get_for_model(type(registro))
-                has_saved_image = GoogleMapsImage.objects.filter(
-                    content_type=content_type,
-                    object_id=registro.id,
-                    etapa=elemento_config.nombre
-                ).exists()
-            except Exception:
-                has_saved_image = False
-        
-        # Determinar el estado del mapa
-        if not has_required_coords:
-            map_status = 'warning'  # Sin coordenadas
-        elif map_type == 'single_point' and has_required_coords:
-            # Para mapas de 1 punto: rojo si tiene coordenadas pero no imagen, verde si tiene imagen
-            map_status = 'error' if not has_saved_image else 'success'
-        elif map_type == 'two_point' and has_required_coords:
-            # Para mapas de 2 puntos: rojo si tiene coordenadas pero no imagen, verde si tiene imagen
-            map_status = 'error' if not has_saved_image else 'success'
+        # Si es mapa de 2 o 3 puntos, siempre mantener enabled=True
+        map_type = map_config.get('type', 'single_point')
+        if map_type in ['two_point', 'three_point']:
+            enabled = True
         else:
-            # Para mapas de 3 puntos: verde si tiene todas las coordenadas
-            map_status = 'success'
-        
-
-        
-
+            enabled = has_required_coords
         
         return {
-            'enabled': True,
+            'enabled': enabled,
             'status': map_status,
             'coordinates': coordinates,
             'etapa': elemento_config.nombre
         }
+    
+    def _get_map_config(self, elemento_config):
+        """Obtiene la configuración del mapa desde los sub-elementos."""
+        for sub in elemento_config.sub_elementos:
+            if sub.tipo == 'mapa':
+                return sub.config
+        return None
+    
+    def _get_disabled_map_config(self):
+        """Retorna configuración para mapa deshabilitado."""
+        return {
+            'enabled': False,
+            'status': 'warning',
+            'coordinates': {},
+            'etapa': ''
+        }
+    
+    def _get_coordinates(self, registro, map_config, instance):
+        """Obtiene todas las coordenadas del mapa."""
+        coordinates = {}
+        coord_index = 1
+        
+        # Coordenada 1: modelo actual o sitio
+        coord1 = self._get_coordinate_1(map_config, instance, registro)
+        if coord1:
+            coordinates[f'coord{coord_index}'] = coord1
+            coord_index += 1
+        
+        # Coordenada 2: segundo modelo
+        if 'second_model' in map_config:
+            coord2 = self._get_coordinate_2(map_config, registro)
+            if coord2:
+                coordinates[f'coord{coord_index}'] = coord2
+                coord_index += 1
+        
+        # Coordenada 3: tercer modelo
+        if 'third_model' in map_config:
+            coord3 = self._get_coordinate_3(map_config, registro)
+            if coord3:
+                coordinates[f'coord{coord_index}'] = coord3
+        
+        return coordinates
+    
+    def _get_coordinate_1(self, map_config, instance, registro):
+        """Obtiene la primera coordenada (modelo actual o sitio)."""
+        if instance and hasattr(instance, map_config.get('lat_field', 'lat')):
+            # Modelo del paso actual
+            return self._extract_coordinate(
+                instance, 
+                map_config.get('lat_field', 'lat'),
+                map_config.get('lon_field', 'lon'),
+                map_config.get('name_field', 'name'),
+                'Inspección',
+                map_config.get('icon_config', {})
+            )
+        elif not instance and map_config.get('type') == 'single_point':
+            # Modelo Site (mandato)
+            if hasattr(registro, 'sitio') and registro.sitio:
+                return self._extract_coordinate(
+                    registro.sitio,
+                    map_config.get('lat_field', 'lat_base'),
+                    map_config.get('lon_field', 'lon_base'),
+                    map_config.get('name_field', 'name'),
+                    'Mandato',
+                    map_config.get('icon_config', {})
+                )
+        return None
+    
+    def _get_coordinate_2(self, map_config, registro):
+        """Obtiene la segunda coordenada."""
+        second_config = map_config['second_model']
+        second_instance = self._get_related_instance(
+            registro, 
+            second_config['model_class'], 
+            second_config['relation_field']
+        )
+        
+        if second_instance:
+            return self._extract_coordinate(
+                second_instance,
+                second_config['lat_field'],
+                second_config['lon_field'],
+                second_config['name_field'],
+                'Mandato',
+                second_config.get('icon_config', {})
+            )
+        return None
+    
+    def _get_coordinate_3(self, map_config, registro):
+        """Obtiene la tercera coordenada."""
+        third_config = map_config['third_model']
+        third_instance = self._get_related_instance(
+            registro,
+            third_config['model_class'],
+            third_config['relation_field']
+        )
+        
+        if third_instance:
+            return self._extract_coordinate(
+                third_instance,
+                third_config['lat_field'],
+                third_config['lon_field'],
+                third_config['name_field'],
+                'Punto 3',
+                third_config.get('icon_config', {})
+            )
+        return None
+    
+    def _get_related_instance(self, registro, model_class, relation_field):
+        """Obtiene la instancia relacionada."""
+        if relation_field == 'sitio':
+            return getattr(registro, 'sitio', None)
+        
+        try:
+            return model_class.objects.filter(**{relation_field: registro}).first()
+        except Exception:
+            return None
+    
+    def _extract_coordinate(self, instance, lat_field, lon_field, name_field, default_name, icon_config):
+        """Extrae coordenadas de una instancia."""
+        if not hasattr(instance, lat_field):
+            return None
+        
+        lat_value = getattr(instance, lat_field, None)
+        lon_value = getattr(instance, lon_field, None)
+        name_value = getattr(instance, name_field, None) if hasattr(instance, name_field) else default_name
+        
+        if lat_value is not None and lon_value is not None:
+            return {
+                'lat': float(lat_value),
+                'lon': float(lon_value),
+                'label': name_value or default_name,
+                'color': icon_config.get('color', '#F59E0B'),
+                'size': icon_config.get('size', 'mid')
+            }
+        return None
+    
+    def _get_required_coords(self, map_config):
+        """Determina cuántas coordenadas son requeridas."""
+        map_type = map_config.get('type', 'single_point')
+        
+        if map_type == 'single_point':
+            return 1
+        elif map_type == 'two_point' and 'second_model' in map_config:
+            return 2
+        elif map_type == 'three_point':
+            return 3
+        
+        return 1
+    
+    def _determine_map_status(self, map_config, coordinates, registro, elemento_config):
+        """Determina el estado del mapa."""
+        required_coords = self._get_required_coords(map_config)
+        has_required_coords = len(coordinates) >= required_coords
+        
+        map_type = map_config.get('type', 'single_point')
+        
+        # Para mapas de 2 y 3 puntos sin coordenadas completas, usar 'disabled'
+        if map_type in ['two_point', 'three_point'] and not has_required_coords:
+            return 'disabled'
+        
+        if not has_required_coords:
+            return 'warning'
+        
+        # Verificar si existe imagen guardada
+        has_saved_image = self._check_saved_image(registro, elemento_config)
+        
+        if map_type == 'single_point':
+            return 'error' if not has_saved_image else 'success'
+        elif map_type == 'two_point':
+            return 'error' if not has_saved_image else 'success'
+        elif map_type == 'three_point':
+            # Para mapas de 3 puntos: error si no tiene imagen guardada, success si la tiene
+            return 'error' if not has_saved_image else 'success'
+        else:
+            return 'success'
+    
+    def _check_saved_image(self, registro, elemento_config):
+        """Verifica si existe una imagen guardada del mapa."""
+        try:
+            from core.models.google_maps import GoogleMapsImage
+            from django.contrib.contenttypes.models import ContentType
+            
+            content_type = ContentType.objects.get_for_model(type(registro))
+            return GoogleMapsImage.objects.filter(
+                content_type=content_type,
+                object_id=registro.id,
+                etapa=elemento_config.nombre
+            ).exists()
+        except Exception:
+            return False
 
     def _generate_steps_context(self, registro):
         """Genera el contexto para cada paso."""

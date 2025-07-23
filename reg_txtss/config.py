@@ -26,7 +26,7 @@ mandato_map = create_1_point_map_config(
 
 
 sitio_mapa_component = create_2_point_map_config(
-    model_class1='current',
+    model_class1=RSitio,
     lat1='lat',
     lon1='lon', 
     name1='Inspección',
