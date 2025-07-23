@@ -68,6 +68,7 @@ empalme_mapa_component = create_3_point_map_config(
     icon1_color='green',
     icon1_size='large',
     icon1_type='marker',
+    
     model_class2=RSitio,
     lat2='lat',
     lon2='lon', 
@@ -76,6 +77,7 @@ empalme_mapa_component = create_3_point_map_config(
     icon2_color='red',
     icon2_size='normal',
     icon2_type='marker',
+    
     model_class3=Site,
     lat3='lat_base',
     lon3='lon_base', 
@@ -85,6 +87,7 @@ empalme_mapa_component = create_3_point_map_config(
     icon3_color='blue',
     icon3_size='normal',
     icon3_type='marker',
+    
     zoom=15,
     template_name='components/mapa_modal.html',
     distancia=True,

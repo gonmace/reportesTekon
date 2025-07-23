@@ -79,14 +79,29 @@
 
 </article>
 
+<!-- Ejemplo de uso de tabla reutilizable -->
+<article id="tabla-ejemplo">
+  <h2>Tabla de Equipos</h2>
+  {% include "reportes/partials/tabla.html" with tabla=tabla_equipos %}
+</article>
 
+<!-- Ejemplo de uso de lista reutilizable -->
+<article id="lista-ejemplo">
+  <h2>Lista de Materiales</h2>
+  {% include "reportes/partials/lista.html" with lista=lista_materiales %}
+</article>
 
+<!-- Ejemplo de uso de imagen reutilizable -->
+<article id="imagen-ejemplo">
+  <h2>Foto del Sitio</h2>
+  {% include "reportes/partials/imagen.html" with imagen=imagen_sitio %}
+</article>
 
-
-
-
-
-
+<!-- Ejemplo de uso de mapa reutilizable -->
+<article id="mapa-ejemplo">
+  <h2>Mapa de Ubicación</h2>
+  {% include "reportes/partials/mapa.html" with mapa=mapa_ubicacion %}
+</article>
 
 
 <article id="datos-tecnicos">

@@ -253,6 +253,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
     
     def _get_coordinate_1(self, map_config, instance, registro):
         """Obtiene la primera coordenada (modelo actual o sitio)."""
+        name1 = map_config.get('name_field', 'Inspección')
         if instance and hasattr(instance, map_config.get('lat_field', 'lat')):
             # Modelo del paso actual
             return self._extract_coordinate(
@@ -260,7 +261,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 map_config.get('lat_field', 'lat'),
                 map_config.get('lon_field', 'lon'),
                 map_config.get('name_field', 'name'),
-                'Inspección',
+                name1,
                 map_config.get('icon_config', {})
             )
         elif not instance and map_config.get('type') == 'single_point':
@@ -271,14 +272,15 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                     map_config.get('lat_field', 'lat_base'),
                     map_config.get('lon_field', 'lon_base'),
                     map_config.get('name_field', 'name'),
-                    'Mandato',
+                    name1,
                     map_config.get('icon_config', {})
                 )
         return None
-    
+
     def _get_coordinate_2(self, map_config, registro):
         """Obtiene la segunda coordenada."""
         second_config = map_config['second_model']
+        name2 = second_config.get('name_field', 'Mandato')
         second_instance = self._get_related_instance(
             registro, 
             second_config['model_class'], 
@@ -291,14 +293,15 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 second_config['lat_field'],
                 second_config['lon_field'],
                 second_config['name_field'],
-                'Mandato',
+                name2,
                 second_config.get('icon_config', {})
             )
         return None
-    
+
     def _get_coordinate_3(self, map_config, registro):
         """Obtiene la tercera coordenada."""
         third_config = map_config['third_model']
+        name3 = third_config.get('name_field', 'Punto 3')
         third_instance = self._get_related_instance(
             registro,
             third_config['model_class'],
@@ -311,7 +314,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 third_config['lat_field'],
                 third_config['lon_field'],
                 third_config['name_field'],
-                'Punto 3',
+                name3,
                 third_config.get('icon_config', {})
             )
         return None

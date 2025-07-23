@@ -104,7 +104,34 @@ def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2
     # Si no hay puntos válidos, retornar None
     if not puntos:
         return None
-    
+
+    # --- NUEVO: cálculo de zoom preciso basado en bounds y tamaño de imagen ---
+    def calcular_zoom_google_maps(bounds, image_width, image_height):
+        WORLD_DIM = {'height': 256, 'width': 256}
+        ZOOM_MAX = 21
+
+        def lat_rad(lat):
+            sin = math.sin(lat * math.pi / 180)
+            rad_x2 = math.log((1 + sin) / (1 - sin)) / 2
+            return max(min(rad_x2, math.pi), -math.pi) / 2
+
+        def zoom(map_px, world_px, fraction):
+            if fraction == 0:
+                return ZOOM_MAX
+            return math.floor(math.log(map_px / world_px / fraction) / math.log(2))
+
+        min_lat, min_lon = bounds[0]
+        max_lat, max_lon = bounds[1]
+
+        lat_fraction = (lat_rad(max_lat) - lat_rad(min_lat)) / math.pi
+        lon_fraction = (max_lon - min_lon) / 360.0
+
+        lat_zoom = zoom(image_height, WORLD_DIM['height'], lat_fraction)
+        lon_zoom = zoom(image_width, WORLD_DIM['width'], lon_fraction)
+
+        return min(lat_zoom, lon_zoom, ZOOM_MAX)
+    # --- FIN NUEVO ---
+
     # Calcular centro y zoom automáticamente
     if len(puntos) == 1:
         centro_lat, centro_lon = puntos[0]
@@ -115,30 +142,18 @@ def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2
         lons = [p[1] for p in puntos]
         centro_lat = (min(lats) + max(lats)) / 2
         centro_lon = (min(lons) + max(lons)) / 2
-        
-        # Calcular zoom basándose en el span
-        max_span = max(max(lats) - min(lats), max(lons) - min(lons))
-        
-        # Calcular zoom máximo posible pero asegurando visibilidad de todos los puntos
-        if max_span < 0.00001:  # Extremadamente cerca (menos de ~1 metro)
-            zoom_auto = 20  # Zoom máximo
-        elif max_span < 0.0001:  # Muy cerca (menos de ~10 metros)
-            zoom_auto = 20  # Zoom máximo
-        elif max_span < 0.0005:  # Cerca (menos de ~50 metros)
-            zoom_auto = 19  # Zoom muy alto
-        elif max_span < 0.001:   # Cerca (menos de ~100 metros)
-            zoom_auto = 18  # Zoom alto
-        elif max_span < 0.005:   # Moderado (menos de ~500 metros)
-            zoom_auto = 17  # Zoom alto-medio
-        elif max_span < 0.01:    # Moderado (menos de ~1 km)
-            zoom_auto = 16  # Zoom medio-alto
-        elif max_span < 0.05:    # Lejos (menos de ~5 km)
-            zoom_auto = 15  # Zoom medio
-        elif max_span < 0.1:     # Lejos (menos de ~10 km)
-            zoom_auto = 14  # Zoom medio-bajo
-        else:                    # Muy lejos (más de 10 km)
-            zoom_auto = 13  # Zoom bajo pero visible
-    
+        bounds = ((min(lats), min(lons)), (max(lats), max(lons)))
+        # Obtener tamaño de imagen en píxeles
+        try:
+            image_width, image_height = [int(x) for x in tamano.lower().split('x')]
+        except Exception:
+            image_width, image_height = 1200, 600
+        # Calcular zoom preciso
+        zoom_auto = calcular_zoom_google_maps(bounds, image_width, image_height)
+        # Limitar zoom mínimo para evitar imágenes "vacías"
+        if zoom_auto < 1:
+            zoom_auto = 1
+
     # Usar zoom automático si no se especifica uno
     if zoom is None:
         zoom = zoom_auto
