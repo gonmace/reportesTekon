@@ -47,43 +47,23 @@
       <!-- Mapa -->
       {% if step.elements.map.enabled %}
         <div class="flex items-center gap-1 ml-2">
-          <button id="map-btn-{{step.step_name}}" 
-                  class="btn btn-{{step.elements.map.status}} btn-circle sombra"
-                  title="Mapa de {{step.title}}"
-                  {% if step.elements.map.coordinates.coord1 %}
-                  data-coord1-lat="{{step.elements.map.coordinates.coord1.lat}}" 
-                  data-coord1-lon="{{step.elements.map.coordinates.coord1.lon}}" 
-                  data-coord1-label="{{step.elements.map.coordinates.coord1.label}}"
-                  data-coord1-color="{{step.elements.map.coordinates.coord1.color}}"
-                  data-coord1-size="{{step.elements.map.coordinates.coord1.size}}"
-                  {% else %}
-                  {% endif %}
-                  {% if step.elements.map.coordinates.coord2 %}
-                  data-coord2-lat="{{step.elements.map.coordinates.coord2.lat}}" 
-                  data-coord2-lon="{{step.elements.map.coordinates.coord2.lon}}" 
-                  data-coord2-label="{{step.elements.map.coordinates.coord2.label}}"
-                  data-coord2-color="{{step.elements.map.coordinates.coord2.color}}"
-                  data-coord2-size="{{step.elements.map.coordinates.coord2.size}}"
-                  {% endif %}
-                  {% if step.elements.map.coordinates.coord3 %}
-                  data-coord3-lat="{{step.elements.map.coordinates.coord3.lat}}" 
-                  data-coord3-lon="{{step.elements.map.coordinates.coord3.lon}}" 
-                  data-coord3-label="{{step.elements.map.coordinates.coord3.label}}"
-                  data-coord3-color="{{step.elements.map.coordinates.coord3.color}}"
-                  data-coord3-size="{{step.elements.map.coordinates.coord3.size}}"
-                  {% endif %}
-                  data-site-registro="{{step.registro_id}}"
-                  data-step-title="{{step.title}}"
-                  data-etapa="{{step.elements.map.etapa}}"
-                  data-map-type="{% if step.elements.map.coordinates.coord2 or step.elements.map.coordinates.coord3 %}multi{% else %}single{% endif %}">
-            {% if step.elements.map.coordinates.coord3 %}
-              {% include 'svgs/map-marker-3.svg' %}
-            {% elif step.elements.map.coordinates.coord2 %}
-              {% include 'svgs/map-marker-2.svg' %}
-            {% else %}
-              {% include 'svgs/map-marker.svg' %}
-            {% endif %}
-          </button>
+          {% comment %}
+          Lógica separada por tipo de mapa:
+          - Mapa de 1 punto: necesita coord1
+          - Mapa de 2 puntos: necesita coord1 y coord2  
+          - Mapa de 3 puntos: necesita coord1, coord2 y coord3
+          {% endcomment %}
+          
+          {% if step.elements.map.coordinates.coord3 %}
+            {% comment %} Mapa de 3 puntos {% endcomment %}
+            {% include 'components/map_3_point.html' %}
+          {% elif step.elements.map.coordinates.coord2 %}
+            {% comment %} Mapa de 2 puntos {% endcomment %}
+            {% include 'components/map_2_point.html' %}
+          {% else %}
+            {% comment %} Mapa de 1 punto {% endcomment %}
+            {% include 'components/map_1_point.html' %}
+          {% endif %}
         </div>
       {% endif %}
       

@@ -1,0 +1,28 @@
+{% comment %} Mapa de 2 puntos: necesita coord1 y coord2 {% endcomment %}
+{% if step.elements.map.coordinates.coord1 and step.elements.map.coordinates.coord2 %}
+  <button id="map-btn-{{step.step_name}}" 
+          class="btn btn-{{step.elements.map.status}} btn-circle sombra"
+          title="Mapa de {{step.title}}"
+          data-coord1-lat="{{step.elements.map.coordinates.coord1.lat}}" 
+          data-coord1-lon="{{step.elements.map.coordinates.coord1.lon}}" 
+          data-coord1-label="{{step.elements.map.coordinates.coord1.label}}"
+          data-coord1-color="{{step.elements.map.coordinates.coord1.color}}"
+          data-coord1-size="{{step.elements.map.coordinates.coord1.size}}"
+          data-coord2-lat="{{step.elements.map.coordinates.coord2.lat}}" 
+          data-coord2-lon="{{step.elements.map.coordinates.coord2.lon}}" 
+          data-coord2-label="{{step.elements.map.coordinates.coord2.label}}"
+          data-coord2-color="{{step.elements.map.coordinates.coord2.color}}"
+          data-coord2-size="{{step.elements.map.coordinates.coord2.size}}"
+          data-site-registro="{{step.registro_id}}"
+          data-step-title="{{step.title}}"
+          data-etapa="{{step.elements.map.etapa}}"
+          data-map-type="multi">
+    {% include 'svgs/map-marker-2.svg' %}
+  </button>
+{% else %}
+  <button id="map-btn-{{step.step_name}}" 
+          class="btn btn-disabled btn-circle sombra"
+          title="Mapa de {{step.title}}">
+    {% include 'svgs/map-marker-2.svg' %}
+  </button>
+{% endif %} 

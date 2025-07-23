@@ -43,6 +43,11 @@
       // Agregar event listeners para todos los botones de mapa
       document.querySelectorAll('[id^="map-btn-"]').forEach(function(btn) {
           btn.addEventListener('click', function() {
+              // Verificar si el botón está deshabilitado
+              if (this.classList.contains('btn-disabled')) {
+                  console.log('Botón de mapa deshabilitado - no se pueden abrir mapas sin coordenadas válidas');
+                  return;
+              }
               openMapModal(this);
           });
       });

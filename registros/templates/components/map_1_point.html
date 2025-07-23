@@ -1,0 +1,23 @@
+{% comment %} Mapa de 1 punto: necesita coord1 {% endcomment %}
+{% if step.elements.map.coordinates.coord1 %}
+  <button id="map-btn-{{step.step_name}}" 
+          class="btn btn-{{step.elements.map.status}} btn-circle sombra"
+          title="Mapa de {{step.title}}"
+          data-coord1-lat="{{step.elements.map.coordinates.coord1.lat}}" 
+          data-coord1-lon="{{step.elements.map.coordinates.coord1.lon}}" 
+          data-coord1-label="{{step.elements.map.coordinates.coord1.label}}"
+          data-coord1-color="{{step.elements.map.coordinates.coord1.color}}"
+          data-coord1-size="{{step.elements.map.coordinates.coord1.size}}"
+          data-site-registro="{{step.registro_id}}"
+          data-step-title="{{step.title}}"
+          data-etapa="{{step.elements.map.etapa}}"
+          data-map-type="single">
+    {% include 'svgs/map-marker.svg' %}
+  </button>
+{% else %}
+  <button id="map-btn-{{step.step_name}}" 
+          class="btn btn-disabled btn-circle sombra"
+          title="Mapa de {{step.title}}">
+    {% include 'svgs/map-marker.svg' %}
+  </button>
+{% endif %} 

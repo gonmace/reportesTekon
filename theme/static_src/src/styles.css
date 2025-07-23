@@ -134,4 +134,8 @@
     content: attr(data-photo-count);
     @apply absolute -top-1 -right-1 bg-base-100 text-xs text-base-content rounded-full w-4 h-4 flex items-center justify-center border border-base-300;
   }
+
+  .timeline .btn {
+    @apply !btn-lg;
+  }
 }

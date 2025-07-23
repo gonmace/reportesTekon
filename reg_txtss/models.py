@@ -91,6 +91,8 @@ class RAcceso(PasoBase):
 class REmpalme(PasoBase):
     """Paso Empalme para registros TX/TSS."""
     registro = models.ForeignKey(RegTxtss, on_delete=models.CASCADE, verbose_name='Registro')
+    lat = models.FloatField(validators=[validar_latitud], verbose_name='Latitud Empalme', null=True, blank=True)
+    lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Empalme', null=True, blank=True)
     proveedor = models.CharField(max_length=100, verbose_name='Proveedor')
     capacidad = models.CharField(max_length=100, verbose_name='Capacidad')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')

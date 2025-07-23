@@ -129,6 +129,21 @@ class ElementoGenerico(ElementoRegistro):
             return self.elemento_config.model.objects.filter(registro=self.registro)
         return None
 
+    def get_or_create(self):
+        """Obtiene la instancia existente o crea una nueva."""
+        try:
+            queryset = self.get_queryset()
+            if queryset:
+                return queryset.first()
+            else:
+                # Si no existe, crear una nueva instancia
+                if self.elemento_config and self.elemento_config.model:
+                    instance = self.elemento_config.model.objects.create(registro=self.registro)
+                    return instance
+        except Exception:
+            pass
+        return None
+
     def get_form(self, data=None, files=None):
         """Crea un formulario dinámicamente basado en la configuración."""
         if not self.elemento_config:

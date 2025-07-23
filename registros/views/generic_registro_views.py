@@ -192,7 +192,9 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         primary_size = icon_config.get('size', 'mid')
         
         # Procesar coordenadas del modelo actual (coord1)
+        # Para mapas de 1 punto sin modelo principal (como mandato), usar el modelo especificado
         if instance and hasattr(instance, map_config.get('lat_field', 'lat')):
+            # Caso normal: modelo del paso actual
             lat_field = map_config.get('lat_field', 'lat')
             lon_field = map_config.get('lon_field', 'lon')
             name_field = map_config.get('name_field', 'name')
@@ -210,6 +212,28 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                     'size': primary_size
                 }
                 coord_index += 1
+        elif not instance and map_config.get('type') == 'single_point':
+            # Caso especial: mapa de 1 punto sin modelo principal (como mandato)
+            # Usar el modelo Site directamente desde el registro
+            if hasattr(registro, 'sitio') and registro.sitio:
+                site_instance = registro.sitio
+                lat_field = map_config.get('lat_field', 'lat_base')
+                lon_field = map_config.get('lon_field', 'lon_base')
+                name_field = map_config.get('name_field', 'name')
+                
+                lat_value = getattr(site_instance, lat_field, None)
+                lon_value = getattr(site_instance, lon_field, None)
+                name_value = getattr(site_instance, name_field, None) if hasattr(site_instance, name_field) else 'Mandato'
+                
+                if lat_value is not None and lon_value is not None:
+                    coordinates[f'coord{coord_index}'] = {
+                        'lat': float(lat_value),
+                        'lon': float(lon_value),
+                        'label': name_value or 'Mandato',
+                        'color': primary_color,
+                        'size': primary_size
+                    }
+                    coord_index += 1
         
         # Procesar coordenadas del segundo modelo si existe (coord2)
         if 'second_model' in map_config and coord_index <= 3:
@@ -254,11 +278,93 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                     }
                     coord_index += 1
         
-        # Procesar coordenadas adicionales si existen (coord3) - para futuras expansiones
-        # Por ahora, solo soportamos 2 coordenadas máximo
+        # Procesar coordenadas del tercer modelo si existe (coord3)
+        if 'third_model' in map_config and coord_index <= 3:
+            third_model_config = map_config['third_model']
+            third_model_class = third_model_config['model_class']
+            lat_field = third_model_config['lat_field']
+            lon_field = third_model_config['lon_field']
+            name_field = third_model_config['name_field']
+            relation_field = third_model_config['relation_field']
+            
+            # Obtener configuración de iconos del tercer modelo
+            third_icon_config = third_model_config.get('icon_config', {})
+            third_color = third_icon_config.get('color', '#10B981')
+            third_size = third_icon_config.get('size', 'normal')
+            
+            # Obtener la instancia del tercer modelo
+            third_instance = None
+            try:
+                third_instance = third_model_class.objects.filter(
+                    **{relation_field: registro}
+                ).first()
+            except Exception:
+                pass
+            
+            if third_instance and hasattr(third_instance, lat_field):
+                lat_value = getattr(third_instance, lat_field, None)
+                lon_value = getattr(third_instance, lon_field, None)
+                name_value = getattr(third_instance, name_field, None) if hasattr(third_instance, name_field) else 'Punto 3'
+                
+                if lat_value is not None and lon_value is not None:
+                    coordinates[f'coord{coord_index}'] = {
+                        'lat': float(lat_value),
+                        'lon': float(lon_value),
+                        'label': name_value or 'Punto 3',
+                        'color': third_color,
+                        'size': third_size
+                    }
+                    coord_index += 1
+        
+        # Determinar el estado del mapa basándose en el tipo de configuración
+        map_type = map_config.get('type', 'single_point')
+        
+        # Validar que todas las coordenadas requeridas estén disponibles
+        required_coords = 1  # Por defecto, al menos 1 coordenada
+        if map_type == 'two_point' and 'second_model' in map_config:
+            required_coords = 2
+        elif map_type == 'three_point':
+            required_coords = 3
+            if 'second_model' in map_config:
+                required_coords = 2
+            if 'third_model' in map_config:
+                required_coords = 3
+        
+        # El mapa está habilitado si tiene todas las coordenadas requeridas
+        has_required_coords = len(coordinates) >= required_coords
+        
+        # Verificar si ya existe una imagen guardada del mapa
+        has_saved_image = False
+        if has_required_coords:
+            try:
+                from core.models.google_maps import GoogleMapsImage
+                from django.contrib.contenttypes.models import ContentType
+                
+                content_type = ContentType.objects.get_for_model(type(registro))
+                has_saved_image = GoogleMapsImage.objects.filter(
+                    content_type=content_type,
+                    object_id=registro.id,
+                    etapa=elemento_config.nombre
+                ).exists()
+            except Exception:
+                has_saved_image = False
         
         # Determinar el estado del mapa
-        map_status = 'success' if coordinates else 'warning'
+        if not has_required_coords:
+            map_status = 'warning'  # Sin coordenadas
+        elif map_type == 'single_point' and has_required_coords:
+            # Para mapas de 1 punto: rojo si tiene coordenadas pero no imagen, verde si tiene imagen
+            map_status = 'error' if not has_saved_image else 'success'
+        elif map_type == 'two_point' and has_required_coords:
+            # Para mapas de 2 puntos: rojo si tiene coordenadas pero no imagen, verde si tiene imagen
+            map_status = 'error' if not has_saved_image else 'success'
+        else:
+            # Para mapas de 3 puntos: verde si tiene todas las coordenadas
+            map_status = 'success'
+        
+
+        
+
         
         return {
             'enabled': True,
@@ -329,11 +435,12 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             # --- Lógica de color para el botón del formulario ---
             if completeness['total_fields'] == 0:
                 form_color = 'error'
-
+            elif completeness['filled_fields'] == 0:
+                form_color = 'error'  # Sin campos llenos = rojo
             elif completeness['filled_fields'] < completeness['total_fields']:
-                form_color = 'warning'
+                form_color = 'warning'  # Algunos campos llenos = amarillo
             else:
-                form_color = 'success'
+                form_color = 'success'  # Todos los campos llenos = verde
 
             # Verificar si es un paso solo con componentes (sin formulario)
             is_component_only = elemento_config.model is None and elemento_config.form_class is None
