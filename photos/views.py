@@ -152,7 +152,9 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
             etapa = 'sitio'
         else:
             try:
-                model_class = apps.get_model(app_name, f"R{step_name.capitalize()}")
+                # Usar el app_label real del registro, no el app_name mapeado
+                app_label = registro._meta.app_label
+                model_class = apps.get_model(app_label, f"R{step_name.capitalize()}")
             except LookupError:
                 raise Http404("Modelo de etapa no encontrado")
             etapa = model_class.get_etapa()
@@ -165,15 +167,37 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
         content_type = ContentType.objects.get_for_model(model_class)
 
         if object_id is None:
-            model_class = type(registro)
-            content_type = ContentType.objects.get_for_model(model_class)
-            object_id = registro.id
+            # Si no existe el objeto de la etapa, no deberíamos mostrar fotos
+            # porque las fotos están asociadas al objeto de la etapa específica
+            return Photos.objects.none()
 
+        # Buscar fotos asociadas al modelo específico de la etapa
         queryset = Photos.objects.filter(
-            app=app_name,
+            app=registro._meta.app_label,
             object_id=object_id,
-            etapa=etapa
+            etapa=etapa,
+            content_type=content_type
         )
+        
+        # Si no hay fotos, buscar también en el registro principal (compatibilidad con fotos existentes)
+        if queryset.count() == 0 and step_name != 'sitio':
+            registro_content_type = ContentType.objects.get_for_model(type(registro))
+            queryset = Photos.objects.filter(
+                app=registro._meta.app_label,
+                object_id=registro.id,
+                etapa=etapa,
+                content_type=registro_content_type
+            )
+        
+        # Debug: imprimir información para diagnóstico
+        print(f"DEBUG - ListPhotosView.get_queryset:")
+        print(f"  app: {registro._meta.app_label}")
+        print(f"  object_id: {object_id}")
+        print(f"  etapa: {etapa}")
+        print(f"  step_name: {step_name}")
+        print(f"  registro_id: {registro_id}")
+        print(f"  queryset count: {queryset.count()}")
+        
         return queryset
 
     def get_breadcrumbs(self):
@@ -271,7 +295,31 @@ class UploadPhotosView(View):
                 }, status=400)
             descripcion = request.POST.get('descripcion', '')
             from django.contrib.contenttypes.models import ContentType
-            content_type = ContentType.objects.get_for_model(type(registro))
+            
+            # Determinar el content_type y object_id según la etapa
+            if step_name == 'sitio':
+                model_class = type(registro)
+                content_type = ContentType.objects.get_for_model(model_class)
+                object_id = registro.id
+            else:
+                try:
+                    app_label = registro._meta.app_label
+                    model_class = apps.get_model(app_label, f"R{step_name.capitalize()}")
+                    content_type = ContentType.objects.get_for_model(model_class)
+                    try:
+                        etapa_obj = model_class.objects.get(registro_id=registro_id)
+                        object_id = etapa_obj.id
+                    except model_class.DoesNotExist:
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'No existe el registro de la etapa {step_name}. Debes crear primero el registro.'
+                        }, status=400)
+                except LookupError:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Modelo de etapa {step_name} no encontrado'
+                    }, status=400)
+            
             if not app_name:
                 app_name = get_app_name_from_registro(registro)
             photos_creadas = []
@@ -280,9 +328,9 @@ class UploadPhotosView(View):
                     photo = Photos.objects.create(
                         imagen=file,
                         descripcion=descripcion,
-                        app=app_name,
+                        app=registro._meta.app_label,  # Usar el app_label real del registro
                         content_type=content_type,
-                        object_id=registro.id,
+                        object_id=object_id,
                         etapa=step_name
                     )
                     photos_creadas.append({
@@ -347,9 +395,17 @@ class UpdatePhotoView(View):
             from django.contrib.contenttypes.models import ContentType
             content_type = ContentType.objects.get_for_model(model_class)
             try:
-                photo = Photos.objects.get(id=photo_id, app=app_name, object_id=object_id, etapa=etapa)
+                photo = Photos.objects.get(id=photo_id, app=registro._meta.app_label, object_id=object_id, etapa=etapa)
             except Photos.DoesNotExist:
-                return JsonResponse({'success': False, 'message': 'Foto no encontrada'}, status=404)
+                # Si no se encuentra, buscar en el registro principal (compatibilidad con fotos existentes)
+                if step_name != 'sitio':
+                    registro_content_type = ContentType.objects.get_for_model(type(registro))
+                    try:
+                        photo = Photos.objects.get(id=photo_id, app=registro._meta.app_label, object_id=registro.id, etapa=etapa, content_type=registro_content_type)
+                    except Photos.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': 'Foto no encontrada'}, status=404)
+                else:
+                    return JsonResponse({'success': False, 'message': 'Foto no encontrada'}, status=404)
             photo.descripcion = descripcion
             photo.save()
             return JsonResponse({'success': True, 'message': 'Descripción actualizada correctamente'})
@@ -392,7 +448,13 @@ class ReorderPhotosView(View):
             from django.contrib.contenttypes.models import ContentType
             content_type = ContentType.objects.get_for_model(model_class)
             for index, photo_id in enumerate(orden):
-                Photos.objects.filter(id=photo_id, app=app_name, object_id=object_id, etapa=etapa).update(orden=index)
+                # Intentar actualizar en el modelo específico de la etapa
+                updated = Photos.objects.filter(id=photo_id, app=registro._meta.app_label, object_id=object_id, etapa=etapa).update(orden=index)
+                
+                # Si no se actualizó, intentar en el registro principal (compatibilidad con fotos existentes)
+                if updated == 0 and step_name != 'sitio':
+                    registro_content_type = ContentType.objects.get_for_model(type(registro))
+                    Photos.objects.filter(id=photo_id, app=registro._meta.app_label, object_id=registro.id, etapa=etapa, content_type=registro_content_type).update(orden=index)
             return JsonResponse({'success': True, 'message': 'Orden actualizado correctamente'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': f'Error al reordenar: {str(e)}'}, status=400)
@@ -436,9 +498,17 @@ class DeletePhotoView(View):
             from django.contrib.contenttypes.models import ContentType
             content_type = ContentType.objects.get_for_model(model_class)
             try:
-                photo = Photos.objects.get(id=photo_id, app=app_name, object_id=object_id, etapa=etapa)
+                photo = Photos.objects.get(id=photo_id, app=registro._meta.app_label, object_id=object_id, etapa=etapa)
             except Photos.DoesNotExist:
-                return JsonResponse({'success': False, 'message': 'Foto no encontrada'}, status=404)
+                # Si no se encuentra, buscar en el registro principal (compatibilidad con fotos existentes)
+                if step_name != 'sitio':
+                    registro_content_type = ContentType.objects.get_for_model(type(registro))
+                    try:
+                        photo = Photos.objects.get(id=photo_id, app=registro._meta.app_label, object_id=registro.id, etapa=etapa, content_type=registro_content_type)
+                    except Photos.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': 'Foto no encontrada'}, status=404)
+                else:
+                    return JsonResponse({'success': False, 'message': 'Foto no encontrada'}, status=404)
             photo.delete()
             return JsonResponse({'success': True, 'message': 'Foto eliminada correctamente'})
         except Exception as e:
