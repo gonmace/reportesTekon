@@ -9,9 +9,22 @@
     content: element(page-header);
   }
   @bottom-center {
-    content: element(page-footer);
+    background: #000;
+    content: '';
+    display: block;
+    height: .02cm;
+    opacity: .5;
+    width: 100%;
+  }
+  @bottom-right {
+    content: counter(page) " / " counter(pages);
+    font-size: 10pt;
+    margin-bottom: 1cm;
+    text-align: center;
+    white-space: nowrap;
   }
 }
+
 html {
     color: #000;
     font-family: Nunito;
@@ -133,21 +146,8 @@ section.datos dl dd {
     padding: 0 0.5rem;
   }
   
-  
 
-/* Pie de página */
-#page-footer {
-  position: running(page-footer);
-  border-top: 1px solid #ccc;
-  font-size: 10pt;
-  padding-top: 0.5em;
-  color: #777;
-  text-align: center;
-}
 
-.page-number::before {
-  content: "Página " counter(page);
-}
 
 /* Tipografía */
 

@@ -35,6 +35,7 @@ class RegistroPDFView(WeasyTemplateView):
     pdf_options = {
         'default-font-family': 'Arial',
         'default-font-size': 12,
+        'enable-local-file-access': True,
     }
     pdf_stylesheets = [str(Path(settings.BASE_DIR) / 'static/css/weasyprint.css')]
 
