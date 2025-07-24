@@ -3,12 +3,12 @@ from simple_history.models import HistoricalRecords
 
 class Site(models.Model):
     pti_cell_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="PTI ID", unique=True)
-    operator_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Op. ID")
-    name = models.CharField(max_length=100, verbose_name="Nombre", unique=True)
-    lat_base = models.FloatField(null=True, blank=True, verbose_name="Lat. Base", unique=True)
-    lon_base = models.FloatField(null=True, blank=True, verbose_name="Lon. Base", unique=True)
-    alt = models.IntegerField(null=True, blank=True, verbose_name="Alt. (m)")
-    region = models.CharField(max_length=100, blank=True, null=True, verbose_name="Region")
+    operator_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Operador ID")
+    name = models.CharField(max_length=100, verbose_name="Nombre del sitio", unique=True)
+    lat_base = models.FloatField(null=True, blank=True, verbose_name="Latitud Mandato", unique=True)
+    lon_base = models.FloatField(null=True, blank=True, verbose_name="Longitud Mandato", unique=True)
+    alt = models.IntegerField(null=True, blank=True, verbose_name="Altura (m)")
+    region = models.CharField(max_length=100, blank=True, null=True, verbose_name="Región")
     comuna = models.CharField(max_length=100, blank=True, null=True, verbose_name="Comuna")
     is_deleted = models.BooleanField(default=False)
     history = HistoricalRecords()

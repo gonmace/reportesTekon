@@ -34,7 +34,7 @@ def calcular_distancia_entre_puntos(lat_1, lon_1, lat_2, lon_2):
     """Alias para calcular_distancia_geopy para compatibilidad."""
     return calcular_distancia_geopy(lat_1, lon_1, lat_2, lon_2)
 
-def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2, tamano="1200x600"):
+def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2, tamano="400x400"):
     """
     Función genérica para obtener imagen de Google Maps con cualquier número de coordenadas.
     
@@ -147,7 +147,7 @@ def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2
         try:
             image_width, image_height = [int(x) for x in tamano.lower().split('x')]
         except Exception:
-            image_width, image_height = 1200, 600
+            image_width, image_height = 640, 640
         # Calcular zoom preciso
         zoom_auto = calcular_zoom_google_maps(bounds, image_width, image_height)
         # Limitar zoom mínimo para evitar imágenes "vacías"
@@ -168,8 +168,14 @@ def obtener_imagen_google_maps(coordenadas, zoom=None, maptype="hybrid", scale=2
         "scale": scale,
         "key": api_key,
         "markers": markers,
+        
     }
-    
+    print("=================")
+    print(markers)
+    print("=================")
+    blue_color = 0x4285F4
+    blue = 0x0000FF
+    yellow_color = 0xFBBC05
     try:
         response = requests.get(base_url, params=params, timeout=30)
         if response.status_code == 200:

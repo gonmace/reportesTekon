@@ -36,102 +36,198 @@
   <h2>Datos Generales.</h2>
   <section class="datos">
     <dl>
-      <dt>Codigo de Sitio PTI:</dt>
-      <dd>{{ registro.sitio.pti_cell_id }}</dd>
-      <dt>Codigo Operador:</dt>
-      <dd>{{ registro.sitio.operator_id }}</dd>
-      <dt>Nombre del Sitio:</dt>
-      <dd>{{ registro.sitio.name }}</dd>
-      <dt>Región:</dt>
-      <dd>{{ registro.sitio.region }}</dd>
-      <dt>Comuna:</dt>
-      <dd>{{ registro.sitio.comuna }}</dd>
-      <dt>Altura de la Antena:</dt>
-      <dd>{{ registro.sitio.alt }} m.</dd>
-      <dt>Fecha de la Visita:</dt>
-      <dd>{{ registro.fecha_visita }}</dd>
-      <dt>Responsable Técnico:</dt>
-      <dd>{{ registro.visitante.nombre }}</dd>
+      {% for key, value in datos_generales.items %}
+        <dt>{{ key }}</dt>
+        <dd>{{ value }}</dd>
+      {% endfor %}
     </dl>
   </section>
 
   <h2>INSPECCIÓN DE SITIO.</h2>
   <section class="datos">
     <dl>
-      <dt>Responsable Técnico:</dt>
-      <dd>{{ registro.user.first_name }} {{ registro.user.last_name }}</dd>
-      <dt>Fecha de la Visita:</dt>
-      <dd>{{ registro.fecha_visita }}</dd>
+      {% for key, value in inspeccion_sitio.items %}
+        <dt>{{ key }}</dt>
+        <dd>{{ value }}</dd>
+      {% endfor %}
     </dl>
   </section>
-
-  <h2>DATOS GEOGRÁFICOS.</h2>
-  <section id="datos">
-    <dl>
-      <dt>Responsable Técnico:</dt>
-      <dd>{{ registro.user.first_name }} {{ registro.user.last_name }}</dd>
-      <dt>Fecha de la Visita:</dt>
-      <dd>{{ registro.fecha_visita }}</dd>
-    </dl>
-  </section>
-
-
 
 </article>
 
 <!-- Ejemplo de uso de tabla reutilizable -->
-<article id="tabla-ejemplo">
-  <h2>Tabla de Equipos</h2>
-  {% include "reportes/partials/tabla.html" with tabla=tabla_equipos %}
+<article id="tabla-datos-geograficos">
+  <h2>Datos Geográficos.</h2>
+    {% include "reportes/partials/tabla.html" with tabla=datos_geograficos %}
 </article>
 
-<!-- Ejemplo de uso de lista reutilizable -->
-<article id="lista-ejemplo">
-  <h2>Lista de Materiales</h2>
-  {% include "reportes/partials/lista.html" with lista=lista_materiales %}
+<!-- Mapa del sitio -->
+{% if google_sitio_image.src %}
+<article id="mapa-sitio">
+  <h2>Inspección del Sitio</h2>
+  
+  <div style="display: flex; flex-direction: row; gap: 8px; align-items: center;">
+    <div style="width: 75%;">
+      <img src="{{ google_sitio_image.src }}" 
+           alt="{{ google_sitio_image.alt }}" 
+           style="width: 420px; height: 420px; display: block; object-fit: cover; border-radius: 5px;">
+      <p style="text-align: center; font-size: 10pt; color: #666;">Desfase Mandato-Inspección: {{ google_sitio_image.desfase }}
+        <svg width="12" height="12" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6" cy="6" r="6" fill="{{ google_sitio_image.desfase_color }}"/>
+        </svg>
+      </p>
+    </div>
+    <!-- Iconos de la imagen del sitio -->
+    <div style="display: flex; flex-direction: column; gap: 4px; align-items: left; width: 35%;">
+
+      <div class="icono-texto">
+        <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" xml:space="preserve" viewBox="0 0 12 15" style="fill:currentColor">
+          <g id="layer1" transform="translate(-99.2 -141)" style="fill:currentColor">
+              <g id="g2"  transform="matrix(.5 0 0 .5 96.6 140)" style="fill:{{ google_sitio_image.icon1_color }}">
+                  <g id="SVGRepo_iconCarrier">
+                      <path id="path1" d="M16.2 2.3a11 11 0 0 0-8.4 18l8.4 10 8.5-10 .3-.4a11 11 0 0 0-8.8-17.6z" />
+                  </g>
+              </g>
+          </g>
+        </svg>
+        <h4>{{ google_sitio_image.name1 }}</h4>
+      </div>
+
+      <!-- Iconos de la imagen de Mandato -->
+      <div class="icono-texto">
+        <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" xml:space="preserve" viewBox="0 0 12 15" style="fill:currentColor">
+          <g id="layer1" transform="translate(-99.2 -141)" style="fill:currentColor">
+              <g id="g2"  transform="matrix(.5 0 0 .5 96.6 140)" style="fill:{{ google_sitio_image.icon2_color }}">
+                  <g id="SVGRepo_iconCarrier">
+                      <path id="path1" d="M16.2 2.3a11 11 0 0 0-8.4 18l8.4 10 8.5-10 .3-.4a11 11 0 0 0-8.8-17.6z" />
+                  </g>
+              </g>
+          </g>
+        </svg>
+        <h4>{{ google_sitio_image.name2 }}</h4>
+      </div>
+
+      <!-- Desfase Mandato-Inspección -->
+      {% comment %} <div class="icono-texto">
+        <h4>Desfase M-I:</h4>
+        <h4>{{ google_sitio_image.desfase }}</h4>
+        
+          <svg width="12" height="12" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="6" cy="6" r="6" fill="{{ google_sitio_image.desfase_color }}"/>
+          </svg>
+        
+      </div> {% endcomment %}
+
+    </div>
+  </div>
+  
+</article>
+{% endif %}
+
+<div style="break-before: page;"></div>
+
+<!-- Registro del Sitio -->
+<article class="content-registro">
+  <section>
+    {% for key, value in registro_sitio.items %}
+    {% if value != '' %}
+      <p><strong>{{ key }}</strong> {{ value }}</p>
+    {% endif %}
+  {% endfor %}
+  </section>
 </article>
 
-<!-- Ejemplo de uso de imagen reutilizable -->
-<article id="imagen-ejemplo">
-  <h2>Foto del Sitio</h2>
-  {% include "reportes/partials/imagen.html" with imagen=imagen_sitio %}
+<!-- Fotos del Sitio -->
+{% if registro_sitio_fotos.fotos %}
+<article class="content-registro">
+  <h2>Fotos del Sitio</h2>
+  <section>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+      {% for foto in registro_sitio_fotos.fotos %}
+        <div style="text-align: center; margin-bottom: 15px;">
+          <img src="{{ foto.src }}" 
+               alt="{{ foto.alt }}" 
+               style="width: 200px; height: 150px; object-fit: cover; border: 1px solid #ccc; border-radius: 5px;">
+          {% if foto.descripcion %}
+            <p style="margin-top: 5px; font-size: 10pt; color: #666;">{{ foto.descripcion }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</article>
+{% endif %}
+
+<!-- Registro Acceso -->
+<article class="content-registro">
+  <h2>Acceso al Sitio</h2>
+  <section>
+    {% for key, value in registro_acceso.items %}
+    {% if value != '' %}
+      <p><strong>{{ key }}</strong> {{ value }}</p>
+    {% endif %}
+  {% endfor %}
 </article>
 
-<!-- Ejemplo de uso de mapa reutilizable -->
-<article id="mapa-ejemplo">
-  <h2>Mapa de Ubicación</h2>
-  {% include "reportes/partials/mapa.html" with mapa=mapa_ubicacion %}
-</article>
 
 
-<article id="datos-tecnicos">
-<h2>Datos Técnicos.</h2>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Elemento</th>
-      <th>Descripción</th>
-      <th>Observaciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Antena</td>
-      <td>Antena de 18 dBi, 5.8 GHz</td>
-      <td>Instalada en torre de 25m</td>
-    </tr>
-    <tr>
-      <td>Router</td>
-      <td>RB3011UiAS</td>
-      <td>Configuración completada</td>
-    </tr>
-  </tbody>
-</table>
+
+<!-- Mapa del empalme -->
+{% if google_empalme_image.src %}
+<article id="mapa-empalme">
+  
+  <div style="display: flex; flex-direction: row; gap: 8px; align-items: center;">
+    <div style="width: 70%;">
+      <img src="{{ google_empalme_image.src }}" 
+           alt="{{ google_empalme_image.alt }}" 
+           style="width: 100%; height: auto; display: block;">
+    </div>
+    <!-- Iconos de la imagen del sitio -->
+    <div style="display: flex; flex-direction: column; gap: 4px; align-items: left; width: 30%;">
+
+      <div class="icono-texto">
+        <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" xml:space="preserve" viewBox="0 0 12 15" style="fill:currentColor">
+          <g id="layer1" transform="translate(-99.2 -141)" style="fill:currentColor">
+              <g id="g2"  transform="matrix(.5 0 0 .5 96.6 140)" style="fill:{{ google_empalme_image.icon1_color }}">
+                  <g id="SVGRepo_iconCarrier">
+                      <path id="path1" d="M16.2 2.3a11 11 0 0 0-8.4 18l8.4 10 8.5-10 .3-.4a11 11 0 0 0-8.8-17.6z" />
+                  </g>
+              </g>
+          </g>
+        </svg>
+        <h4>{{ google_empalme_image.name1 }}</h4>
+      </div>
+
+      <!-- Iconos de la imagen de Mandato -->
+      <div class="icono-texto">
+        <svg xmlns="http://www.w3.org/2000/svg" height="25px" width="25px" xml:space="preserve" viewBox="0 0 12 15" style="fill:currentColor">
+          <g id="layer1" transform="translate(-99.2 -141)" style="fill:currentColor">
+              <g id="g2"  transform="matrix(.5 0 0 .5 96.6 140)" style="fill:{{ google_empalme_image.icon2_color }}">
+                  <g id="SVGRepo_iconCarrier">
+                      <path id="path1" d="M16.2 2.3a11 11 0 0 0-8.4 18l8.4 10 8.5-10 .3-.4a11 11 0 0 0-8.8-17.6z" />
+                  </g>
+              </g>
+          </g>
+        </svg>
+        <h4>{{ google_empalme_image.name2 }}</h4>
+      </div>
+
+      <!-- Desfase Mandato-Inspección -->
+      <div class="icono-texto">
+        <h4>Desfase M-I:</h4>
+        <h4>{{ google_empalme_image.desfase }}</h4>
+        
+          <svg width="12" height="12" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="6" cy="6" r="6" fill="{{ google_empalme_image.desfase_color }}"/>
+          </svg>
+        
+      </div>
+
+    </div>
+  </div>
+  
 </article>
-<article id="firma">
-<h2>3. Firma</h2>
-<p class="mt-2">__________________________</p>
-<p class="mb-2">Responsable Técnico</p>
+{% endif %}
 
 </body>
 </html>

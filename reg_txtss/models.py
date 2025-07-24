@@ -43,8 +43,8 @@ class RSitio(PasoBase):
     lat = models.FloatField(validators=[validar_latitud], verbose_name='Latitud Inspeccion')
     lon = models.FloatField(validators=[validar_longitud], verbose_name='Longitud Inspeccion')
     altura = models.CharField(max_length=100, verbose_name='Altura Torre')
-    dimensiones = models.CharField(max_length=100)
-    deslindes = models.CharField(max_length=100)
+    dimensiones = models.CharField(max_length=100, verbose_name='Dimensiones del Sitio')
+    deslindes = models.CharField(max_length=100, verbose_name='Deslindes')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
     
     class Meta:

@@ -1,6 +1,10 @@
 """
 Configuración declarativa para registros TX/TSS.
 """
+# Rojo	    rgb(255, 64, 64)	#FF4040	0xFF4040
+# Amarillo	rgb(255, 255, 68)	#FFFF44	0xFFFF44
+# Azul     	rgb(0, 84, 255)	    #0054FF	0x0054FF
+# Cyan 	    rgb(87, 247, 247)	#57F7F7	0x57F7F7
 
 from registros.config import (
     create_simple_config, 
@@ -21,7 +25,7 @@ mandato_map = create_1_point_map_config(
     lat1='lat_base',
     lon1='lon_base',
     name1='Mandato',
-    icon1_color='blue',
+    icon1_color='#0054FF',
 )
 
 
@@ -30,8 +34,8 @@ sitio_mapa_component = create_2_point_map_config(
     lat1='lat',
     lon1='lon', 
     name1='Inspección',
-    icon1_color='red',
-    icon1_size='large',
+    icon1_color='#FFFF44',
+    icon1_size='mid',
     icon1_type='marker',
     model_class2=Site,
     lat2='lat_base',
@@ -39,7 +43,7 @@ sitio_mapa_component = create_2_point_map_config(
     name2='Mandato',
     second_model_relation_field='sitio',
     descripcion_distancia='Desfase Mandato-Inspección',
-    icon2_color='blue',
+    icon2_color='#0054FF',
     icon2_size='normal',
     icon2_type='marker',
     zoom=15,
@@ -65,16 +69,16 @@ empalme_mapa_component = create_3_point_map_config(
     lat1='lat',
     lon1='lon', 
     name1='Empalme',
-    icon1_color='green',
-    icon1_size='large',
+    icon1_color='#FF4040',
+    icon1_size='mid',
     icon1_type='marker',
     
     model_class2=RSitio,
     lat2='lat',
     lon2='lon', 
-    name2='Sitio',
+    name2='Inspección',
     second_model_relation_field='registro',
-    icon2_color='red',
+    icon2_color='#FFFF44',
     icon2_size='normal',
     icon2_type='marker',
     
@@ -84,8 +88,8 @@ empalme_mapa_component = create_3_point_map_config(
     name3='Mandato',
     third_model_relation_field='sitio',
     descripcion_distancia='Distancia entre puntos',
-    icon3_color='blue',
-    icon3_size='normal',
+    icon3_color='#0054FF',
+    icon3_size='tiny',
     icon3_type='marker',
     
     zoom=15,

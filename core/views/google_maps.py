@@ -50,7 +50,7 @@ class GoogleMapsAPIView(LoginRequiredMixin, View):
             "zoom": 15,
             "maptype": "hybrid",
             "scale": 2,
-            "tamano": "1200x600"
+            "tamano": "640x640"
         }
         
         Response JSON:
@@ -66,7 +66,7 @@ class GoogleMapsAPIView(LoginRequiredMixin, View):
                 "zoom": 15,
                 "maptype": "hybrid",
                 "scale": 2,
-                "tamano": "1200x600",
+                "tamano": "640x640",
                 "coordenadas": [...]
             }
         }
@@ -118,7 +118,7 @@ class GoogleMapsAPIView(LoginRequiredMixin, View):
             zoom = data.get('zoom', 15)
             maptype = data.get('maptype', 'hybrid')
             scale = data.get('scale', 2)
-            tamano = data.get('tamano', '1200x600')
+            tamano = data.get('tamano', '640x640')
             
             # Generar imagen usando Google Maps API
             imagen_bytes = obtener_imagen_google_maps(

@@ -413,7 +413,7 @@
       requestData.zoom = optimalZoom;  // Zoom calculado según el número de puntos
       requestData.maptype = 'hybrid';
       requestData.scale = 2;
-      requestData.tamano = '1200x600';  // Formato rectangular panorámico para mejor visualización
+      requestData.tamano = '640x640';  // Formato rectangular panorámico para mejor visualización
       
       // Obtener el token CSRF del meta tag
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
