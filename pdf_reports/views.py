@@ -29,7 +29,7 @@ def convert_lon_to_dms(lon):
 
 
 class RegistroPDFView(WeasyTemplateView):
-    template_name = 'reportes/txtss.html'
+    template_name = 'reportes_txtss/txtss.html'
     # pdf_attachment = True
     # pdf_filename = 'registro_individual.pdf'
     pdf_options = {
@@ -193,7 +193,9 @@ class RegistroPDFView(WeasyTemplateView):
                 'icon3_color': empalme_icon3_color,
                 'name3': empalme_name3
             },
-
+            'registro_empalme_fotos': {
+                'fotos': self._get_empalme_photos(registro)
+            },
         })
         return context
 
@@ -228,13 +230,44 @@ class RegistroPDFView(WeasyTemplateView):
         
         return fotos_list
 
+    def _get_empalme_photos(self, registro):
+        """
+        Obtiene todas las fotos relacionadas con el registro_empalme.
+        Para la etapa 'empalme', las fotos se asocian al registro principal (RegTxtss).
+        """
+        from photos.models import Photos
+        from django.contrib.contenttypes.models import ContentType
+        
+        # Obtener el ContentType del modelo del registro principal
+        registro_content_type = ContentType.objects.get_for_model(registro)
+        
+        # Obtener todas las fotos para este registro, etapa 'empalme' y app 'reg_txtss'
+        fotos = Photos.objects.filter(
+            content_type=registro_content_type,
+            object_id=registro.id,
+            etapa='empalme',
+            app='reg_txtss'
+        ).order_by('orden', '-created_at')
+        
+        # Convertir a formato para el template
+        fotos_list = []
+        for foto in fotos:
+            fotos_list.append({
+                'src': foto.imagen.url,
+                'alt': foto.descripcion or f'Foto del empalme {registro.sitio.pti_cell_id}',
+                'descripcion': foto.descripcion,
+                'orden': foto.orden
+            })
+        
+        return fotos_list
+
 def preview_registro_individual(request, registro_id):
     # Crear una instancia temporal de la vista para reutilizar get_context_data
     view = RegistroPDFView()
     view.kwargs = {'registro_id': registro_id}
     context = view.get_context_data()
     
-    print('--------------------------------')
-    print(context)
-    print('--------------------------------')
-    return render(request, 'reportes/txtss.html', context)
+    # print('--------------------------------')
+    # print(context)
+    # print('--------------------------------')
+    return render(request, 'reportes_txtss/txtss.html', context)

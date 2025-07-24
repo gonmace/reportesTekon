@@ -190,31 +190,90 @@ section.datos dl dd {
   max-width: 95%;
 }
 
-.icono-texto {
-  display: flex;
-  flex-direction: row;
-  justify-content: start;
-  gap: 4px;
-  align-items: center;
+section.content-registro {
+  margin: 1em;
+
 }
 
-.icono-texto h4 {
-  margin: 0.2rem 0 0 0;
-}
-
-article.content-registro section{
-  margin-left: 1rem;
-}
-
-article.content-registro section p {
+section.content-registro p {
   margin: 0.4em 0;
   line-height: 1.4;
   display: flex;
   align-items: baseline;
 }
 
-article.content-registro section p strong {
+section.content-registro p strong {
   min-width: 150px;
   flex-shrink: 0;
   margin-right: 10px;
 }
+
+/* Imagenes */
+.content-imagenes p {
+  margin-left: 1em;
+  margin-bottom: 1em;
+}
+
+section.imagenes p {
+  margin-left: 1em;
+  margin-bottom: 1em;
+}
+
+section.imagenes div {
+  display: inline-block; 
+  margin: 0 5px 15px 5px; 
+  width: 300px; 
+  vertical-align: top;
+  text-align: center;
+}
+
+section.imagenes div img {
+  width: 300px; 
+  height: auto; 
+  object-fit: cover; 
+  display: block;
+}
+
+section.imagenes div img p {
+  margin-top: 4px; 
+  font-size: 10pt; 
+  color: #666; 
+  text-align: center;
+}
+
+img {
+  border: 1px solid #000; 
+  border-radius: 5px; 
+}
+
+
+/* mapas */
+section.mapas {
+  display: flex; 
+  flex-direction: row; 
+  gap: 4px; 
+  align-items: center;
+}
+
+section.mapas .mapa-imagen img{
+  width: 420px;
+  height: 420px;
+  display: block;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+section.mapas .mapa-leyenda-caption{
+  text-align: center;
+  font-size: 10pt;
+  color: #666;
+}
+
+section.mapas .mapa-leyenda{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: left;
+}
+
+
