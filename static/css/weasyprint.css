@@ -1,9 +1,15 @@
+/* ========================================
+   FONTS & TYPOGRAPHY
+   ======================================== */
 @font-face {
   font-family: "Nunito";
   font-weight: 200;
   src: url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
 }
 
+/* ========================================
+   PAGE SETUP & PRINT STYLES
+   ======================================== */
 @page {
   @top-center {
     content: element(page-header);
@@ -25,82 +31,57 @@
   }
 }
 
+/* ========================================
+   BASE STYLES
+   ======================================== */
 html {
     color: #000;
     font-family: Nunito;
     font-size: 11pt;
     font-weight: 400;
     line-height: 1.2;
-  }
+}
 
 body {
     margin: 0;
-    }
+}
 
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
 h1 {
     font-size: 12pt;
     text-transform: uppercase;
     margin: 0cm 0cm;
     page: no-chapter;
     width: 100%;
-    }
+}
 
 h2, h3, h4 {
     font-size: 11pt;
     font-weight: 500;
-    }
+}
 
 h2 {
     text-transform: uppercase;
-    /* text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: #e60000; */
     color: #e60000;
     padding-bottom: 0.2em;
     string-set: heading content();
-    }
+}
 
 h3 {
     text-transform: uppercase;
     font-size: 11pt;
     margin-top: 1.5em;
-    }
+}
           
 p {
     margin: 0.5em 0;
-    }
+}
 
-
-
-/* #datos-generales section {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 1cm 0;
-    } */
-
-.datos {
-    flex: 1 75%;
-    margin: 0;
-    padding-left: 1cm;
-    }
-
-section.datos dl {
-    display: flex;
-    flex-wrap: wrap;
-    }
-section.datos dl dt {
-    font-weight: 300;
-    width: 30%;
-    }
-section.datos dl dd {
-    flex: 1 70%;
-    font-weight: 500;
-    margin: 0;
-    padding: 0;
-    }
-
-
-
+/* ========================================
+   HEADER & PAGE STRUCTURE
+   ======================================== */
 #page-header {
   padding-bottom: 1rem;
   border-bottom: 0.5px solid #000;
@@ -110,53 +91,71 @@ section.datos dl dd {
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
-  }
+}
   
-  .header-logo.left {
+.header-logo.left {
     width: 20%;
     text-align: center;
     vertical-align: middle;
-  }
+}
   
-  .header-logo.right {
+.header-logo.right {
     width: 20%;
     text-align: center;
     vertical-align: middle;
-  }
+}
   
-  /* Estilo general para SVGs (por si no se aplica otro más específico) */
-  .header-logo svg {
+/* Estilo general para SVGs (por si no se aplica otro más específico) */
+.header-logo svg {
     max-width: 100%;
     vertical-align: middle;
-  }
+}
   
-  /* Logo izquierdo: más grande */
-  .header-logo.left svg {
+/* Logo izquierdo: más grande */
+.header-logo.left svg {
     height: 40px;
-  }
+}
   
-  /* Logo derecho: más pequeño */
-  .header-logo.right svg {
+/* Logo derecho: más pequeño */
+.header-logo.right svg {
     height: 28px; /* ajusta a tu gusto */
-  }
+}
 
-  .header-title {
+.header-title {
     text-align: center;
     vertical-align: middle;
     padding: 0 0.5rem;
-  }
-  
+}
 
+/* ========================================
+   DATA SECTIONS
+   ======================================== */
+.datos {
+    flex: 1 75%;
+    margin: 0;
+    padding-left: 1cm;
+}
 
+section.datos dl {
+    display: flex;
+    flex-wrap: wrap;
+}
 
-/* Tipografía */
+section.datos dl dt {
+    font-weight: 300;
+    width: 30%;
+}
 
+section.datos dl dd {
+    flex: 1 70%;
+    font-weight: 500;
+    margin: 0;
+    padding: 0;
+}
 
-
-
-
-
-/* Tabla */
+/* ========================================
+   TABLES
+   ======================================== */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -173,15 +172,6 @@ section.datos dl dd {
   background-color: #f2f2f2;
 }
 
-/* Utilitarias */
-.mt-2 {
-  margin-top: 1rem;
-}
-
-.mb-2 {
-  margin-bottom: 1rem;
-}
-
 /* Centrado usando margin auto (funciona mejor en WeasyPrint) */
 .table-centered {
   margin: 0 auto;
@@ -190,9 +180,11 @@ section.datos dl dd {
   max-width: 95%;
 }
 
+/* ========================================
+   CONTENT REGISTRY SECTIONS
+   ======================================== */
 section.content-registro {
   margin: 1em;
-
 }
 
 section.content-registro p {
@@ -208,10 +200,12 @@ section.content-registro p strong {
   margin-right: 10px;
 }
 
-/* Imagenes */
-.content-imagenes p {
-  margin-left: 1em;
-  margin-bottom: 1em;
+/* ========================================
+   IMAGES & PHOTO SECTIONS
+   ======================================== */
+section.imagenes {
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 section.imagenes p {
@@ -219,7 +213,18 @@ section.imagenes p {
   margin-bottom: 1em;
 }
 
-section.imagenes div {
+section.imagenes .foto-titulo {
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+section.imagenes .foto-titulo p {
+  margin: 0;
+  font-size: 11pt;
+  font-weight: 500;
+}
+
+section.imagenes div:not(.foto-titulo) {
   display: inline-block; 
   margin: 0 5px 15px 5px; 
   width: 300px; 
@@ -246,34 +251,37 @@ img {
   border-radius: 5px; 
 }
 
-
-/* mapas */
-section.mapas {
-  display: flex; 
-  flex-direction: row; 
-  gap: 4px; 
-  align-items: center;
+/* ========================================
+   MAPS & LOCATION SECTIONS
+   ======================================== */
+.mapa-table {
+  width: 100%;
+  border-collapse: separate;
+  margin-bottom: 1em;
 }
 
-section.mapas .mapa-imagen img{
-  width: 420px;
-  height: 420px;
-  display: block;
-  object-fit: cover;
+.mapa-img-cell {
+  width: 65%;
+  vertical-align: top;
+  padding-right: 10px;
+}
+
+.mapa-leyenda-cell {
+  width: 35%;
+  vertical-align: top;
+  padding-left: 10px;
+}
+
+.mapa-table img {
+  width: 100%;
+  height: auto;
   border-radius: 5px;
+  border: 1px solid #000;
 }
 
-section.mapas .mapa-leyenda-caption{
+.mapa-leyenda-caption {
   text-align: center;
   font-size: 10pt;
   color: #666;
+  margin-top: 0.5em;
 }
-
-section.mapas .mapa-leyenda{
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: left;
-}
-
-
