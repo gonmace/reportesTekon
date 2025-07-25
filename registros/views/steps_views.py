@@ -158,6 +158,10 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         """Obtiene el título del header. Puede ser sobrescrito."""
         return self.registro_config.header_title or self.registro_config.title
     
+    def get_pdf_url(self, registro_id):
+        """Obtiene la URL para generar el PDF. Debe ser sobrescrito."""
+        return None
+    
     def get_context_data(self, **kwargs):
         """Obtiene el contexto con los pasos configurados."""
         context = super().get_context_data(**kwargs)
@@ -173,6 +177,9 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         
         # Generar contexto de pasos
         steps_context = self._generate_steps_context(registro)
+        
+        # Generar URL del PDF
+        pdf_url = self.get_pdf_url(registro_id)
         
         context.update({
             'registro': registro,
@@ -190,6 +197,8 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 description_default=f'Registro {self.registro_config.title} activado desde el formulario'
             )(),
             'activar_url': f'/{self.registro_config.app_namespace}/activar/',
+            'pdf_url': pdf_url,  # Agregar URL del PDF
+            'allow_multiple_per_site': getattr(self.registro_config, 'allow_multiple_per_site', False),  # Agregar configuración de múltiples registros
         })
         return context
     

@@ -8,6 +8,7 @@
 
 {% block content %}
 
+{% if allow_multiple_per_site and registros_sitio|length > 1 %}
 <!-- Selector de fecha para múltiples registros del mismo sitio -->
 <div class="mb-6 p-4 bg-base-100 rounded-lg shadow-sm border sombra">
     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -15,7 +16,6 @@
             <span class="text-sm font-medium text-base-content">Seleccionar fecha:</span>
         </div>
         <div class="flex items-center gap-2">
-            {% if registros_sitio|length > 1 %}
             <select id="fecha-selector" class="select select-bordered select-sm" onchange="cambiarRegistro(this.value)">
                 {% for reg in registros_sitio %}
                     <option value="{{ reg.id }}" {% if reg.id == registro.id %}selected{% endif %}>
@@ -23,7 +23,6 @@
                     </option>
                 {% endfor %}
             </select>
-            {% endif %}
             <button class="btn btn-primary btn-sm" id="activar-registro-btn" type="button">
                 <i class="fa-solid fa-plus"></i>
                 Nueva Fecha
@@ -31,6 +30,32 @@
         </div>
     </div>
 </div>
+{% elif allow_multiple_per_site %}
+<!-- Solo botón Nueva Fecha cuando permite múltiples pero no hay otros registros -->
+<div class="mb-6 p-4 bg-base-100 rounded-lg shadow-sm border sombra">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-base-content">Registros del sitio:</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button class="btn btn-primary btn-sm" id="activar-registro-btn" type="button">
+                <i class="fa-solid fa-plus"></i>
+                Nueva Fecha
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Botón de PDF -->
+{% if pdf_url %}
+<div class="mb-4 flex justify-end">
+    <a href="{{ pdf_url }}" target="_blank" class="btn btn-secondary btn-sm" title="Generar PDF">
+        <i class="fa-solid fa-file-pdf"></i>
+        PDF
+    </a>
+</div>
+{% endif %}
 
 <ul class="timeline timeline-vertical">
     {% for step_name, step in steps %}

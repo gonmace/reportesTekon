@@ -65,6 +65,10 @@ class StepsRegistroView(GenericRegistroStepsView):
                 return operador_id
         
         return super().get_header_title()
+    
+    def get_pdf_url(self, registro_id):
+        """Obtiene la URL para generar el PDF."""
+        return reverse('reg_txtss:pdf', kwargs={'registro_id': registro_id})
 
 
 class ElementoRegistroView(GenericElementoView):

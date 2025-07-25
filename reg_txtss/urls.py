@@ -9,6 +9,7 @@ from .views import (
     ElementoRegistroView,
     ActivarRegistroView
 )
+from .pdf_views import RegTxtssPDFView, preview_reg_txtss_individual
 
 app_name = 'reg_txtss'
 
@@ -25,4 +26,7 @@ urlpatterns = [
     # Elementos específicos de cada paso
     path('<int:registro_id>/<str:paso_nombre>/', ElementoRegistroView.as_view(), name='elemento'),
     
+    # PDF
+    path('pdf/<int:registro_id>/', RegTxtssPDFView.as_view(), name='pdf'),
+    path('preview/<int:registro_id>/', preview_reg_txtss_individual, name='preview'),
 ] 

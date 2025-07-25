@@ -47,16 +47,24 @@ class RegistroStepsView(LoginRequiredMixin, BreadcrumbsMixin, TemplateView):
         steps_config = self.get_steps_config()
         steps_context = self._generate_steps_context(registro, steps_config)
         
+        # Generar URL del PDF
+        pdf_url = self.get_pdf_url(registro_id)
+        
         context.update({
             'registro': registro,
             'steps': steps_context,
             'steps_config': steps_config,
+            'pdf_url': pdf_url,
         })
         return context
     
     def get_steps_config(self) -> Dict[str, Dict[str, Any]]:
         """Obtiene la configuración de pasos. Debe ser sobrescrito."""
         return {}
+    
+    def get_pdf_url(self, registro_id):
+        """Obtiene la URL para generar el PDF. Debe ser sobrescrito."""
+        return None
     
     def _generate_steps_context(self, registro, steps_config):
         """Genera el contexto para cada paso."""
