@@ -182,6 +182,12 @@ reg_nombre/
 - Configuración del menú incluida
 - Comandos exactos para migraciones
 
+### 6. **PDF Automático**
+- Templates de PDF generados automáticamente
+- Vistas de PDF con WeasyTemplateView
+- URLs para generar y previsualizar PDF
+- Integración con mapas y fotos
+
 ## 🔄 Próximos Pasos
 
 ### 1. **Integración Automática**

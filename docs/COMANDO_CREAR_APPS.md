@@ -110,6 +110,12 @@ reg_nombre/
 - Integración con el sistema de diseño
 - Breadcrumbs y navegación
 
+### ✅ PDF Automático
+- Templates de PDF generados automáticamente
+- Vistas de PDF con WeasyTemplateView
+- URLs para generar y previsualizar PDF
+- Integración con mapas y fotos
+
 ### ✅ Manejo de Errores
 - Validación de nombres de aplicación
 - Detección de aplicaciones existentes
@@ -132,6 +138,7 @@ Al crear la aplicación, el comando muestra automáticamente:
 4. Ejecutar: python manage.py makemigrations reg_nombre
 5. Ejecutar: python manage.py migrate
 6. Crear superusuario si no existe: python manage.py createsuperuser
+7. ✅ PDF automático: Templates y vistas generados automáticamente
 ```
 
 ### Archivo SETUP.md Generado
@@ -143,7 +150,8 @@ Cada aplicación creada incluye un archivo `SETUP.md` con:
 3. **Configuración del Menú** - Código exacto para el menú lateral
 4. **Comandos de Migración** - Comandos exactos a ejecutar
 5. **Verificación de Funcionamiento** - Pasos para probar
-6. **Notas Técnicas** - Información sobre la estructura
+6. **Generación de PDF** - URLs para generar y previsualizar PDF
+7. **Notas Técnicas** - Información sobre la estructura
 
 ### Ejemplo de SETUP.md
 
