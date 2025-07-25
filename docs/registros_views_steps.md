@@ -52,14 +52,23 @@ class StepsRegistroView(BaseStepsView):
 
 ### 1. Crear la Vista Específica
 
-```python
-# registrostxtss/views/mi_vista_pasos.py
-from registrostxtss.views.base_steps_view import BaseStepsView
-from django.shortcuts import get_object_or_404
-from registrostxtss.models.main_registrostxtss import RegistrosTxTss
+### ⚠️ **Método Obsoleto - Usar Comando Automático**
 
-class MiVistaPasosView(BaseStepsView):
-    template_name = 'pages/mi_vista_pasos.html'
+**En lugar de crear manualmente, usar el comando:**
+```bash
+python manage.py create_registro_app reg_nombre --pasos paso1 paso2 paso3
+```
+
+### Método Manual (Solo para casos especiales)
+
+```python
+# reg_nombre/views.py
+from registros.views.generic_registro_views import GenericRegistroStepsView
+from django.shortcuts import get_object_or_404
+from .models import RegNombre
+
+class MiVistaPasosView(GenericRegistroStepsView):
+    template_name = 'reg_nombre/steps.html'
     
     def get_breadcrumbs(self):
         """Breadcrumbs específicos para esta vista"""
@@ -71,46 +80,44 @@ class MiVistaPasosView(BaseStepsView):
         # Agregar breadcrumb del sitio
         registro_id = self.kwargs.get('registro_id')
         if registro_id:
-            registro_txtss = get_object_or_404(RegistrosTxTss, id=registro_id)
-            sitio_cod = registro_txtss.sitio.pti_cell_id or registro_txtss.sitio.operator_id
+            registro = get_object_or_404(RegNombre, id=registro_id)
+            sitio_cod = registro.sitio.pti_cell_id or registro.sitio.operator_id
             breadcrumbs.append({'label': sitio_cod})
         
         return self._resolve_breadcrumbs(breadcrumbs)
     
-    def get_steps_config(self):
+    def get_registro_config(self):
         """Configuración de los pasos para esta vista"""
-        from registrostxtss.r_mi_modelo.models import RMiModelo
-        from registrostxtss.r_otro_modelo.models import ROtroModelo
-        
-        return {
-            'paso1': {
-                'model_class': RMiModelo,
-                'has_photos': True,
-                'min_photo_count': 3
-            },
-            'paso2': {
-                'model_class': ROtroModelo,
-                'has_photos': False
-            },
-            'paso3': {
-                'model_class': RTercerModelo,
-                'has_photos': True,
-                'min_photo_count': 5
-            }
-        }
+        from .config import REGISTRO_CONFIG
+        return REGISTRO_CONFIG
 ```
 
-### 2. Agregar la URL
+### 2. Configurar en config.py
 
 ```python
-# registrostxtss/urls.py
-from django.urls import path
-from .views.mi_vista_pasos import MiVistaPasosView
+# reg_nombre/config.py
+from registros.config import create_custom_config
 
-urlpatterns = [
-    # ... otras URLs ...
-    path('mi-vista/<int:registro_id>/', MiVistaPasosView.as_view(), name='mi_vista_pasos'),
-]
+PASOS_CONFIG = {
+    'paso1': create_custom_config(
+        model_class=Paso1,
+        form_class=Paso1Form,
+        title='Paso 1',
+        description='Descripción del paso 1'
+    ),
+    'paso2': create_custom_config(
+        model_class=Paso2,
+        form_class=Paso2Form,
+        title='Paso 2',
+        description='Descripción del paso 2'
+    ),
+    'paso3': create_custom_config(
+        model_class=Paso3,
+        form_class=Paso3Form,
+        title='Paso 3',
+        description='Descripción del paso 3'
+    )
+}
 ```
 
 ### 3. Crear el Template

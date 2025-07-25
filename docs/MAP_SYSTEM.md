@@ -250,10 +250,10 @@ Para agregar soporte para nuevos modelos, actualizar el método `_get_model_clas
 
 ```python
 model_mapping = {
-    'rsitio': 'registrostxtss.r_sitio.models.RSitio',
-    'racceso': 'registrostxtss.r_acceso.models.RAcceso',
-    'rempalme': 'registrostxtss.r_empalme.models.REmpalme',
-    'nuevo_modelo': 'registrostxtss.nuevo_app.models.NuevoModelo',
+    'rsitio': 'reg_nombre.models.RSitio',
+'racceso': 'reg_nombre.models.RAcceso',
+'rempalme': 'reg_nombre.models.REmpalme',
+'nuevo_modelo': 'reg_nombre.models.NuevoModelo',
 }
 ```
 

@@ -133,7 +133,7 @@ Si no existe una URL específica, el sistema genera URLs genéricas:
 Para que funcione correctamente, asegúrate de que tus URLs sigan estos patrones:
 
 ```python
-# registrostxtss/urls.py
+# reg_nombre/urls.py
 urlpatterns = [
     # Formularios
     path('sitio/<int:registro_id>/', RSitioView.as_view(), name='r_sitio'),

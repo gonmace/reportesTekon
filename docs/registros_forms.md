@@ -24,10 +24,19 @@ Versión de bajo nivel para casos avanzados.
 
 ## Uso Básico
 
+### ⚠️ **Método Obsoleto - Usar Comando Automático**
+
+**En lugar de crear manualmente, usar el comando:**
+```bash
+python manage.py create_registro_app reg_nombre --pasos mi_formulario
+```
+
+### Método Manual (Solo para casos especiales)
+
 ### Opción 1: Completamente Genérico (Recomendado)
 
 ```python
-from registrostxtss.forms.utils import get_form_field_css_class_simple
+from registros.forms.utils import get_form_field_css_class_simple
 
 class MiFormulario(forms.Form):
     nombre = forms.CharField(required=True, label='Nombre')
@@ -52,7 +61,7 @@ class MiFormulario(forms.Form):
 ### Opción 2: Con Clases Específicas (Opcional)
 
 ```python
-from registrostxtss.forms.utils import get_form_field_css_class
+from registros.forms.utils import get_form_field_css_class
 
 class MiFormulario(forms.Form):
     nombre = forms.CharField(required=True, label='Nombre')
@@ -94,7 +103,7 @@ class MiFormulario(forms.Form):
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit
-from registrostxtss.forms.utils import get_form_field_css_class_simple
+from registros.forms.utils import get_form_field_css_class_simple
 from .models import MiModelo
 
 class MiModeloForm(forms.ModelForm):

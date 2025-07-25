@@ -203,15 +203,24 @@ La configuración actual incluye tres steps:
 
 ## Cómo Agregar un Nuevo Step
 
+### ⚠️ **Método Obsoleto - Usar Comando Automático**
+
+**En lugar de crear manualmente, usar el comando:**
+```bash
+python manage.py create_registro_app reg_nombre --pasos nuevo_step
+```
+
+### Método Manual (Solo para casos especiales)
+
 ### 1. Crear el Modelo
 ```python
-# registrostxtss/nuevo_step/models.py
+# reg_nombre/models.py
 from django.db import models
-from core.models import BaseModel
-from registrostxtss.models.registrostxtss import RegistrosTxTss
+from registros.models.base import RegistroBase
+from registros.models.paso import PasoBase
 
-class NuevoStep(BaseModel):
-    registro = models.ForeignKey(RegistrosTxTss, on_delete=models.CASCADE)
+class NuevoStep(PasoBase):
+    registro = models.ForeignKey(RegNombre, on_delete=models.CASCADE)
     # ... otros campos
     
     @staticmethod
@@ -225,7 +234,7 @@ class NuevoStep(BaseModel):
 
 ### 2. Crear el Formulario
 ```python
-# registrostxtss/nuevo_step/form.py
+# reg_nombre/forms.py
 from django import forms
 from .models import NuevoStep
 
@@ -237,66 +246,34 @@ class NuevoStepForm(forms.ModelForm):
 
 ### 3. Crear la Vista
 ```python
-# registrostxtss/nuevo_step/views.py
-from registrostxtss.views.generic_views import GenericRegistroView
+# reg_nombre/views.py
+from registros.views.generic_registro_views import GenericElementoView
 from .models import NuevoStep
-from .form import NuevoStepForm
+from .forms import NuevoStepForm
 
-class NuevoStepView(GenericRegistroView):
+class NuevoStepView(GenericElementoView):
     form_class = NuevoStepForm
     
-    def setup(self, request, *args, **kwargs):
-        kwargs['model_class'] = NuevoStep
-        kwargs['etapa'] = 'nuevo_step'
-        super().setup(request, *args, **kwargs)
+    def get_registro_config(self):
+        return REGISTRO_CONFIG
 ```
 
-### 4. Agregar URL
+### 4. Configurar en config.py
 ```python
-# registrostxtss/urls.py
-from .nuevo_step.views import NuevoStepView
+# reg_nombre/config.py
+from registros.config import create_custom_config
 
-urlpatterns = [
-    # ... otras URLs
-    path("registrostxtss/<int:registro_id>/nuevo_step/", NuevoStepView.as_view(), name="r_nuevo_step"),
-]
+PASOS_CONFIG = {
+    # ... steps existentes
+    'nuevo_step': create_custom_config(
+        model_class=NuevoStep,
+        form_class=NuevoStepForm,
+        title='Nuevo Step',
+        description='Descripción del nuevo step',
+        template_form='components/elemento_form.html'
+    )
+}
 ```
-
-### 5. Configurar en StepsRegistroView
-```python
-# registrostxtss/views/base_steps_view.py
-def get_steps_config(self):
-    from registrostxtss.nuevo_step.models import NuevoStep
-    
-    return {
-        # ... steps existentes
-        'nuevo_step': {
-            'model_class': NuevoStep,
-            'elements': {
-                'form': True,
-                'photos': {
-                    'enabled': True,
-                    'min_count': 2,
-                    'required': False
-                },
-                'map': {
-                    'enabled': True,
-                    'coordinates': {
-                        'coordinates_1': {
-                            'model': 'current',
-                            'lat': 'lat',
-                            'lon': 'lon',
-                            'label': 'Nuevo Punto',
-                            'color': '#10B981',
-                            'size': 'large'
-                        }
-                    }
-                }
-            },
-            'order': 4,
-            'title': 'Nuevo Step',
-            'description': 'Descripción del nuevo step'
-        }
     }
 ```
 

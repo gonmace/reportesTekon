@@ -17,11 +17,12 @@ La clase `CompletenessChecker` es una utilidad genérica para verificar si los r
 ### 1. Importar la clase
 
 ```python
-from registrostxtss.models.completeness_checker import (
+from registros.models.completeness_checker import (
     CompletenessChecker, 
     check_model_completeness, 
     check_instance_completeness
 )
+```
 ```
 
 ### 2. Verificar por ID del modelo
@@ -48,7 +49,7 @@ result = CompletenessChecker.check_completeness_by_instance(instance)
 ### 4. En modelos Django
 
 ```python
-from registrostxtss.models.completeness_checker import check_model_completeness
+from registros.models.completeness_checker import check_model_completeness
 
 class MiModelo(BaseModel):
     # ... campos del modelo ...
@@ -84,11 +85,11 @@ La función retorna un diccionario con la siguiente estructura:
 ## Ejemplo de Uso Completo
 
 ```python
-from registrostxtss.models.completeness_checker import check_model_completeness
-from registrostxtss.r_empalme.models import REmpalme
+from registros.models.completeness_checker import check_model_completeness
+from reg_nombre.models import MiModelo
 
-# Verificar completitud de un empalme
-result = check_model_completeness(REmpalme, 123)
+# Verificar completitud de un modelo
+result = check_model_completeness(MiModelo, 123)
 
 if result['is_complete']:
     print(f"✅ Registro completo ({result['filled_fields']}/{result['total_fields']} campos)")

@@ -13,16 +13,25 @@ Esta vista genérica permite crear vistas para cualquier modelo de registro de m
 
 ## Uso Básico
 
+### ⚠️ **Método Obsoleto - Usar Comando Automático**
+
+**En lugar de crear manualmente, usar el comando:**
+```bash
+python manage.py create_registro_app reg_nombre --pasos mi_modelo
+```
+
+### Método Manual (Solo para casos especiales)
+
 ### 1. Crear un formulario específico
 
 ```python
-# registrostxtss/r_mi_modelo/form.py
+# reg_nombre/forms.py
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div, HTML
-from registrostxtss.r_mi_modelo.models import RMiModelo
+from .models import MiModelo
 
-class RMiModeloForm(forms.ModelForm):
+class MiModeloForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.registro_id = kwargs.pop('registro_id', None)
         super().__init__(*args, **kwargs)
@@ -42,7 +51,7 @@ class RMiModeloForm(forms.ModelForm):
         )
     
     class Meta:
-        model = RMiModelo
+        model = MiModelo
         fields = ['registro', 'campo_especifico_1', 'campo_especifico_2']
         labels = {
             'campo_especifico_1': 'Mi Campo 1',
@@ -53,40 +62,43 @@ class RMiModeloForm(forms.ModelForm):
 ### 2. Crear una vista específica
 
 ```python
-# registrostxtss/r_mi_modelo/views.py
-from registrostxtss.views.generic_views import GenericRegistroView
-from registrostxtss.r_mi_modelo.models import RMiModelo
-from registrostxtss.r_mi_modelo.form import RMiModeloForm
+# reg_nombre/views.py
+from registros.views.generic_registro_views import GenericElementoView
+from .models import MiModelo
+from .forms import MiModeloForm
 
-class RMiModeloView(GenericRegistroView):
-    form_class = RMiModeloForm
+class MiModeloView(GenericElementoView):
+    form_class = MiModeloForm
     
-    def setup(self, request, *args, **kwargs):
-        kwargs['model_class'] = RMiModelo
-        kwargs['etapa'] = 'mi_etapa'
-        super().setup(request, *args, **kwargs)
+    def get_registro_config(self):
+        return REGISTRO_CONFIG
 ```
 
-### 3. Agregar la URL
+### 3. Configurar en config.py
 
 ```python
-# registrostxtss/urls.py
-from django.urls import path
-from .r_mi_modelo.views import RMiModeloView
+# reg_nombre/config.py
+from registros.config import create_custom_config
 
-urlpatterns = [
-    path('mi-modelo/<int:registro_id>/', RMiModeloView.as_view(), name='r_mi_modelo'),
-]
+PASOS_CONFIG = {
+    'mi_modelo': create_custom_config(
+        model_class=MiModelo,
+        form_class=MiModeloForm,
+        title='Mi Modelo',
+        description='Descripción del modelo',
+        template_form='components/elemento_form.html'
+    )
+}
 ```
 
 ### 4. Registrar el modelo en admin (opcional)
 
 ```python
-# registrostxtss/admin.py
+# reg_nombre/admin.py
 from django.contrib import admin
-from .r_mi_modelo.models import RMiModelo
+from .models import MiModelo
 
-admin.site.register(RMiModelo)
+admin.site.register(MiModelo)
 ```
 
 ## URLs Genéricas con Templatetags
