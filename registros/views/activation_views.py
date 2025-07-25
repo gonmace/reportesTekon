@@ -36,13 +36,15 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
     
     def form_valid(self, form):
         try:
-            # Verificar si ya existe un registro para este sitio y usuario
+            # Verificar si ya existe un registro para este sitio, usuario y fecha
             sitio = form.cleaned_data['sitio']
             user = form.cleaned_data['user']
+            fecha = form.cleaned_data['fecha']
             
             existing_registro = self.registro_config.registro_model.objects.filter(
                 sitio=sitio, 
-                user=user
+                user=user,
+                fecha=fecha
             ).first()
             
             if existing_registro:
@@ -53,7 +55,7 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
                     registro = existing_registro
                 else:
                     # Si ya existe y está activo, mostrar error
-                    error_message = f'Ya existe un registro activo para el sitio {sitio.name} y el usuario {user.username}'
+                    error_message = f'Ya existe un registro activo para el sitio {sitio.name}, usuario {user.username} y fecha {fecha.strftime("%d/%m/%Y")}'
                     if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                         return JsonResponse({
                             'success': False,
@@ -66,12 +68,12 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
                 # Crear nuevo registro
                 registro = form.save()
             
-            messages.success(self.request, f'Registro activado exitosamente para {registro.sitio.name}')
+            messages.success(self.request, f'Registro activado exitosamente para {registro.sitio.name} - {registro.fecha.strftime("%d/%m/%Y")}')
             
             if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
-                    'message': f'Registro activado exitosamente para {registro.sitio.name}'
+                    'message': f'Registro activado exitosamente para {registro.sitio.name} - {registro.fecha.strftime("%d/%m/%Y")}'
                 })
             else:
                 return redirect(f'{self.registro_config.app_namespace}:list')

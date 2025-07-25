@@ -7,6 +7,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from core.models.core_models import BaseModel
 from core.models.sites import Site
 from users.models import User
+from datetime import date
 
 
 class RegistroBase(BaseModel):
@@ -16,6 +17,7 @@ class RegistroBase(BaseModel):
     """
     sitio = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name="Sitio")
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuario")
+    fecha = models.DateField(verbose_name="Fecha de registro", default=date.today)
     is_active = models.BooleanField(default=True, verbose_name="Activo")
     
     # GenericRelation para las fotos
@@ -26,13 +28,13 @@ class RegistroBase(BaseModel):
         ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
-                fields=['sitio', 'user'],
-                name='unique_sitio_user_%(class)s_combination'
+                fields=['sitio', 'user', 'fecha'],
+                name='unique_sitio_user_fecha_%(class)s_combination'
             )
         ]
 
     def __str__(self):
-        return f"{self.sitio} - {self.created_at.strftime('%d/%m/%Y %H:%M')}"
+        return f"{self.sitio} - {self.fecha.strftime('%d/%m/%Y')}"
     
     def activar_registro(self):
         """Activa el registro."""

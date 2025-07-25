@@ -2,15 +2,16 @@
 Vistas para registros Reporte de visita.
 """
 
-from registros.views.generic_registro_views import (
-    GenericRegistroTableListView, 
-    GenericRegistroStepsView, 
-    GenericElementoView
+from registros.views.steps_views import (
+    GenericRegistroStepsView,
+    GenericElementoView,
+    GenericRegistroTableListView
 )
-from registros.views.generic_views import GenericActivarRegistroView
+from registros.views.activation_views import GenericActivarRegistroView
+from registros.config import RegistroConfig
 from .config import REGISTRO_CONFIG
-from django.urls import reverse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 
 
 class ListRegistrosView(GenericRegistroTableListView):

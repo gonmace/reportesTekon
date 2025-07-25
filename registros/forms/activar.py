@@ -34,9 +34,13 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
             self.helper.field_class = 'mb-2'
             self.helper.layout = Layout(
                 Div(
-                    Div(Field('sitio', css_class='select  w-full'), css_class='w-full'),
+                    Div(Field('sitio', css_class='select w-full'), css_class='w-full'),
                     Div(Field('user', css_class='select w-full'), css_class='w-full'),
                     css_class='flex flex-wrap -mx-2 mb-4',
+                ),
+                Div(
+                    Div(Field('fecha', css_class='input w-full'), css_class='w-full'),
+                    css_class='mb-4',
                 ),
                 Div(
                     Button('cancel', 'Cancelar', css_class='btn btn-error mt-6', type='button', onclick='closeModal()'),
@@ -54,6 +58,10 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
             self.fields['sitio'].queryset = Site.get_actives()
             self.fields['user'].queryset = User.objects.filter(user_type=User.ITO)
             
+            # Configurar el campo de fecha
+            if 'fecha' in self.fields:
+                self.fields['fecha'].widget = forms.DateInput(attrs={'type': 'date'})
+            
             # Establecer valores por defecto
             if not self.instance.pk:
                 if 'title' in self.fields:
@@ -63,6 +71,6 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
         
         class Meta:
             model = registro_model
-            fields = ['sitio', 'user', 'title', 'description']
+            fields = ['sitio', 'user', 'fecha', 'title', 'description']
     
     return ActivarRegistroForm

@@ -327,18 +327,19 @@ REGISTRO_CONFIG = create_registro_config(
         """Crear archivos de vistas"""
         app_path = Path(settings.BASE_DIR) / app_name
 
-        views_content = f'''"""
+        # Importaciones para las vistas
+        views_imports = f'''"""
 Vistas para registros {title}.
 """
 
-from registros.views.generic_registro_views import (
-    GenericRegistroTableListView, 
-    GenericRegistroStepsView, 
-    GenericElementoView
+from registros.views.steps_views import (
+    GenericRegistroStepsView,
+    GenericElementoView,
+    GenericRegistroTableListView
 )
-from registros.views.generic_views import GenericActivarRegistroView
+from registros.views.activation_views import GenericActivarRegistroView
+from registros.config import RegistroConfig
 from .config import REGISTRO_CONFIG
-from django.urls import reverse
 from django.shortcuts import get_object_or_404
 
 
@@ -411,7 +412,7 @@ class ActivarRegistroView(GenericActivarRegistroView):
         return REGISTRO_CONFIG'''
 
         with open(app_path / 'views.py', 'w', encoding='utf-8') as f:
-            f.write(views_content)
+            f.write(views_imports)
 
     def _create_forms(self, app_name, pasos):
         """Crear archivos de formularios"""

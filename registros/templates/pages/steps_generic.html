@@ -8,6 +8,30 @@
 
 {% block content %}
 
+<!-- Selector de fecha para múltiples registros del mismo sitio -->
+{% if registros_sitio|length > 1 %}
+<div class="mb-6 p-4 bg-base-100 rounded-lg shadow-sm border sombra">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-base-content">Seleccionar fecha:</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <select id="fecha-selector" class="select select-bordered select-sm" onchange="cambiarRegistro(this.value)">
+                {% for reg in registros_sitio %}
+                    <option value="{{ reg.id }}" {% if reg.id == registro.id %}selected{% endif %}>
+                        {{ reg.fecha|date:"d/m/Y" }} {% if reg.id == registro.id %}(Actual){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+            <a href="{% url app_namespace|add:':activar' %}" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-plus"></i>
+                Nueva Fecha
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <ul class="timeline timeline-vertical">
     {% for step_name, step in steps %}
         {% include 'pages/step_generic.html' with step=step first=forloop.first last=forloop.last %}
@@ -50,4 +74,12 @@
         
     </div>
 </div>
+
+<script>
+function cambiarRegistro(registroId) {
+    if (registroId) {
+        window.location.href = '/{{ app_namespace }}/' + registroId + '/';
+    }
+}
+</script>
 {% endblock %} 

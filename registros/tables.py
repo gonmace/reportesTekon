@@ -35,6 +35,12 @@ class GenericRegistrosTable(tables.Table):
         attrs={'td': {'class': 'w-fit max-w-40'}}
     )
     
+    fecha = tables.Column(
+        accessor='fecha',
+        verbose_name='Fecha',
+        attrs={'td': {'class': 'text-center'}, 'th': {'class': 'text-center'}}
+    )
+    
     # Columna ITO (solo para superusuarios)
     ito = tables.Column(
         accessor='user.username',
@@ -57,8 +63,8 @@ class GenericRegistrosTable(tables.Table):
             'class': 'table table-sm table-zebra w-full',
             'thead': {'class': 'bg-accent text-white uppercase'},
         }
-        fields = ('pti_id', 'operador_id', 'nombre_sitio')
-        sequence = ('pti_id', 'operador_id', 'nombre_sitio')
+        fields = ('pti_id', 'operador_id', 'nombre_sitio', 'fecha')
+        sequence = ('pti_id', 'operador_id', 'nombre_sitio', 'fecha')
         orderable = True
         
     def __init__(self, *args, **kwargs):
@@ -70,7 +76,13 @@ class GenericRegistrosTable(tables.Table):
         if self.user and self.user.is_superuser:
             self.base_columns['ito'] = self.ito
             self.base_columns['acciones'] = self.acciones
-            self.Meta.sequence = ('pti_id', 'operador_id', 'nombre_sitio', 'ito', 'acciones')
+            self.Meta.sequence = ('pti_id', 'operador_id', 'nombre_sitio', 'fecha', 'ito', 'acciones')
+    
+    def render_fecha(self, value):
+        """Renderizar la fecha en formato dd/mm/yyyy."""
+        if value:
+            return value.strftime('%d/%m/%Y')
+        return '-'
     
     def render_ito(self, value, record):
         """Renderizar la columna ITO con funcionalidad de edición para superusuarios."""

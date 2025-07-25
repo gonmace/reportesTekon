@@ -143,11 +143,18 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         registro_id = self.kwargs.get('registro_id')
         registro = get_object_or_404(self.registro_config.registro_model, id=registro_id)
         
+        # Obtener registros del mismo sitio para el selector de fecha
+        registros_sitio = self.registro_config.registro_model.objects.filter(
+            sitio=registro.sitio,
+            user=registro.user
+        ).order_by('-fecha')
+        
         # Generar contexto de pasos
         steps_context = self._generate_steps_context(registro)
         
         context.update({
             'registro': registro,
+            'registros_sitio': registros_sitio,  # Agregar registros del mismo sitio
             'steps': steps_context,
             'steps_config': self.registro_config.pasos,
             'title': self.registro_config.title,
@@ -484,7 +491,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             # Verificar si es un paso solo con componentes (sin formulario)
             is_component_only = elemento_config.model is None and elemento_config.form_class is None
             
-            # Generar estructura que espera el template step_generic.html
+            # Generar estructura que espera el template step_item.html
             step_data = {
                 'title': paso_config.title,
                 'step_name': step_name,

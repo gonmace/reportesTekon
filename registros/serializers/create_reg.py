@@ -22,7 +22,7 @@ class RegistrosSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Registros
-        fields = ['id', 'sitio', 'sitio_id', 'user', 'user_id', 'is_deleted', 'created_at', 'updated_at']
+        fields = ['id', 'sitio', 'sitio_id', 'user', 'user_id', 'fecha', 'is_deleted', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def create(self, validated_data):
@@ -32,9 +32,14 @@ class RegistrosSerializer(serializers.ModelSerializer):
             return super().create(validated_data)
         except Exception as e:
             # Capturar error de restricción única y personalizar mensaje
-            if 'unique_sitio_user_combination' in str(e):
+            if 'unique_sitio_user_fecha_combination' in str(e):
                 from django.core.exceptions import ValidationError
+                fecha = validated_data.get('fecha', 'fecha desconocida')
+                if hasattr(fecha, 'strftime'):
+                    fecha_str = fecha.strftime('%d/%m/%Y')
+                else:
+                    fecha_str = str(fecha)
                 raise ValidationError({
-                    'non_field_errors': ['Ya existe un registro para este sitio y usuario. No se puede crear un registro duplicado.']
+                    'non_field_errors': [f'Ya existe un registro para este sitio, usuario y fecha ({fecha_str}). No se puede crear un registro duplicado.']
                 })
             raise e 
