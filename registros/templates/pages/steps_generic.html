@@ -9,13 +9,13 @@
 {% block content %}
 
 <!-- Selector de fecha para múltiples registros del mismo sitio -->
-{% if registros_sitio|length > 1 %}
 <div class="mb-6 p-4 bg-base-100 rounded-lg shadow-sm border sombra">
     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2">
             <span class="text-sm font-medium text-base-content">Seleccionar fecha:</span>
         </div>
         <div class="flex items-center gap-2">
+            {% if registros_sitio|length > 1 %}
             <select id="fecha-selector" class="select select-bordered select-sm" onchange="cambiarRegistro(this.value)">
                 {% for reg in registros_sitio %}
                     <option value="{{ reg.id }}" {% if reg.id == registro.id %}selected{% endif %}>
@@ -23,14 +23,14 @@
                     </option>
                 {% endfor %}
             </select>
-            <a href="{% url app_namespace|add:':activar' %}" class="btn btn-primary btn-sm">
+            {% endif %}
+            <button class="btn btn-primary btn-sm" id="activar-registro-btn" type="button">
                 <i class="fa-solid fa-plus"></i>
                 Nueva Fecha
-            </a>
+            </button>
         </div>
     </div>
 </div>
-{% endif %}
 
 <ul class="timeline timeline-vertical">
     {% for step_name, step in steps %}
@@ -75,11 +75,100 @@
     </div>
 </div>
 
+<!-- Modal para activar registro -->
+{% include 'components/activar_registro_form.html' %}
+
 <script>
 function cambiarRegistro(registroId) {
     if (registroId) {
         window.location.href = '/{{ app_namespace }}/' + registroId + '/';
     }
 }
+
+// Configuración para el modal de activación
+window.ACTIVAR_URL = '{% url app_namespace|add:":activar" %}';
+window.MODAL_ID = '#activar-registro-modal';
+window.ACTIVAR_BTN_ID = '#activar-registro-btn';
+window.SITIO_ACTUAL = {{ registro.sitio.id }};
+window.USUARIO_ACTUAL = {{ registro.user.id }};
+window.FECHA_ACTUAL = '{{ registro.fecha|date:"Y-m-d" }}';
+
+// Inicializar modal cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('activar-registro-modal');
+    const activarBtn = document.getElementById('activar-registro-btn');
+    const sitioSelect = document.getElementById('id_sitio');
+    
+    if (activarBtn && modal) {
+        activarBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.showModal();
+            
+            // Pre-seleccionar el sitio actual
+            if (sitioSelect && window.SITIO_ACTUAL) {
+                sitioSelect.value = window.SITIO_ACTUAL;
+            }
+            
+            // Pre-seleccionar el usuario actual
+            const userSelect = document.getElementById('id_user');
+            if (userSelect && window.USUARIO_ACTUAL) {
+                userSelect.value = window.USUARIO_ACTUAL;
+            }
+            
+            // Pre-seleccionar la fecha actual
+            const fechaInput = document.getElementById('id_fecha');
+            if (fechaInput && window.FECHA_ACTUAL && window.FECHA_ACTUAL !== 'None') {
+                fechaInput.value = window.FECHA_ACTUAL;
+            } else if (fechaInput) {
+                // Si no hay fecha válida, usar la fecha actual
+                const today = new Date().toISOString().split('T')[0];
+                fechaInput.value = today;
+            }
+        });
+    }
+    
+    // Función global para cerrar modal
+    window.closeModal = function() {
+        modal.close();
+    };
+    
+    // Manejar envío del formulario
+    const form = modal.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            try {
+                const response = await fetch(window.ACTIVAR_URL, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    modal.close();
+                    alert(result.message || 'Registro activado exitosamente');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    const errorMessage = result.message || 'Error al activar el registro';
+                    alert(errorMessage);
+                }
+            } catch (error) {
+                console.error('Error en la petición:', error);
+                alert('Error al crear el registro. Por favor, inténtalo de nuevo.');
+            }
+        });
+    }
+});
 </script>
 {% endblock %} 

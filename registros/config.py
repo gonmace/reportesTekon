@@ -760,7 +760,8 @@ def create_registro_config(
     app_namespace: str,
     list_template: str = "pages/main_generic.html",
     steps_template: str = "pages/steps_generic.html",
-    header_title: str = None
+    header_title: str = None,
+    allow_multiple_per_site: bool = False
 ) -> RegistroConfig:
     """
     Crea una configuración completa de registro.
@@ -773,6 +774,7 @@ def create_registro_config(
         list_template: Template para listar registros
         steps_template: Template para mostrar pasos
         header_title: Título del header (opcional)
+        allow_multiple_per_site: Si permite múltiples registros por sitio (uno por día)
     
     Returns:
         RegistroConfig configurado
@@ -788,5 +790,6 @@ def create_registro_config(
             {'label': 'Inicio', 'url_name': 'dashboard:dashboard'},
             {'label': title}
         ],
-        header_title=header_title
+        header_title=header_title,
+        allow_multiple_per_site=allow_multiple_per_site
     ) 

@@ -101,7 +101,8 @@ class RegistroConfig:
         title: str = "Registros",
         app_namespace: str = None,
         breadcrumbs: list = None,
-        header_title: str = None  # <-- Nuevo campo opcional
+        header_title: str = None,
+        allow_multiple_per_site: bool = False
     ):
         self.registro_model = registro_model
         self.pasos = pasos
@@ -110,7 +111,8 @@ class RegistroConfig:
         self.title = title
         self.app_namespace = app_namespace
         self.breadcrumbs = breadcrumbs or []
-        self.header_title = header_title  # <-- Asignar el nuevo campo
+        self.header_title = header_title
+        self.allow_multiple_per_site = allow_multiple_per_site
 
 
 class ElementoGenerico(ElementoRegistro):

@@ -20,7 +20,7 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.registro_config = self.get_registro_config()
-        self.template_name = self.registro_config.list_template
+        self.template_name = 'components/activar_registro_template.html'
     
     def get_registro_config(self):
         """Obtiene la configuración del registro. Debe ser sobrescrito."""
@@ -36,10 +36,21 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
     
     def form_valid(self, form):
         try:
+            # Debug: imprimir los datos del formulario
+            print(f"Datos del formulario: {form.cleaned_data}")
+            
             # Verificar si ya existe un registro para este sitio, usuario y fecha
             sitio = form.cleaned_data['sitio']
             user = form.cleaned_data['user']
             fecha = form.cleaned_data['fecha']
+            
+            # Validar que la fecha no esté vacía
+            if not fecha:
+                from datetime import date
+                fecha = date.today()
+                print(f"Fecha vacía, usando fecha actual: {fecha}")
+            
+            print(f"Sitio: {sitio}, User: {user}, Fecha: {fecha}")
             
             existing_registro = self.registro_config.registro_model.objects.filter(
                 sitio=sitio, 
@@ -66,7 +77,21 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
                         return self.form_invalid(form)
             else:
                 # Crear nuevo registro
-                registro = form.save()
+                try:
+                    # Crear el registro usando el modelo dinámico
+                    registro = self.registro_config.registro_model.objects.create(
+                        sitio=sitio,
+                        user=user,
+                        title=form.cleaned_data.get('title', ''),
+                        description=form.cleaned_data.get('description', ''),
+                        fecha=fecha,
+                        is_active=True,
+                        is_deleted=False
+                    )
+                    print(f"Registro creado exitosamente: {registro}")
+                except Exception as save_error:
+                    print(f"Error al guardar: {save_error}")
+                    raise save_error
             
             messages.success(self.request, f'Registro activado exitosamente para {registro.sitio.name} - {registro.fecha.strftime("%d/%m/%Y")}')
             
@@ -78,10 +103,15 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
             else:
                 return redirect(f'{self.registro_config.app_namespace}:list')
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Error completo: {error_details}")
+            
             if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': False,
-                    'message': str(e)
+                    'message': f'Error al activar registro: {str(e)}',
+                    'details': error_details
                 }, status=400)
             else:
                 messages.error(self.request, f'Error al activar registro: {str(e)}')
@@ -105,6 +135,7 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
             'activate_button_text': 'Activar Registro',
             'activar_url': self.request.build_absolute_uri(f'/{self.registro_config.app_namespace}/activar/'),
             'modal_template': 'components/activar_registro_form.html',
+            'app_namespace': self.registro_config.app_namespace,
         })
         if getattr(self.registro_config, 'header_title', None):
             context['header_title'] = self.registro_config.header_title

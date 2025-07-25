@@ -82,10 +82,32 @@ class GenericRegistroTableListView(LoginRequiredMixin, BreadcrumbsMixin, SingleT
         
         # Si el usuario es superusuario, mostrar todos los registros activos
         if self.request.user.is_superuser:
-            return queryset
+            pass  # No filtrar por usuario
+        else:
+            # Para usuarios normales, mostrar solo sus registros activos
+            queryset = queryset.filter(user=self.request.user)
         
-        # Para usuarios normales, mostrar solo sus registros activos
-        return queryset.filter(user=self.request.user)
+        # Si permite múltiples registros por sitio, mostrar solo el más reciente por sitio
+        if getattr(self.registro_config, 'allow_multiple_per_site', False):
+            from django.db.models import Max
+            # Obtener los IDs de los registros más recientes por sitio
+            latest_registros = queryset.values('sitio').annotate(
+                latest_fecha=Max('fecha')
+            ).values_list('sitio', 'latest_fecha')
+            
+            # Filtrar para obtener solo los registros más recientes
+            filtered_queryset = self.registro_config.registro_model.objects.none()
+            for sitio_id, latest_fecha in latest_registros:
+                latest_registro = queryset.filter(
+                    sitio_id=sitio_id,
+                    fecha=latest_fecha
+                ).first()
+                if latest_registro:
+                    filtered_queryset = filtered_queryset | self.registro_config.registro_model.objects.filter(id=latest_registro.id)
+            
+            return filtered_queryset
+        
+        return queryset
     
     def get_table(self, **kwargs):
         """Pasar el usuario a la tabla para configurar columnas."""
@@ -162,6 +184,12 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             'breadcrumbs': self.get_breadcrumbs(),  # Usar breadcrumbs dinámicos
             'header_title': self.get_header_title(),  # Usar método personalizable
             'app_namespace': self.registro_config.app_namespace,  # Agregar namespace para URLs
+            'form': create_activar_registro_form(
+                registro_model=self.registro_config.registro_model,
+                title_default=self.registro_config.title,
+                description_default=f'Registro {self.registro_config.title} activado desde el formulario'
+            )(),
+            'activar_url': f'/{self.registro_config.app_namespace}/activar/',
         })
         return context
     
