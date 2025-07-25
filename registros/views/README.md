@@ -26,18 +26,9 @@ Este directorio contiene las vistas genéricas y base para el sistema de registr
 - `GenericRegistroTableListView` - Vista genérica para listar registros con tabla
 - `GenericElementoView` - Vista genérica para elementos de registros
 
-### 📁 `element_views.py`
-**Propósito:** Vistas específicas para manejar elementos individuales de registros.
 
-**Clases principales:**
-- `ElementoView` - Vista para elementos usando configuración declarativa
-- `ElementoFormView` - Vista de formulario para elementos
 
-### 📁 `list_views.py`
-**Propósito:** Vistas para listar registros (específicas de TX/TSS).
 
-**Clases principales:**
-- `ListRegistrosView` - Vista específica para listar registros TX/TSS
 
 ### 📁 `api_views.py`
 **Propósito:** ViewSets de API REST para operaciones CRUD de registros.
@@ -84,6 +75,6 @@ class ActivarRegistroView(GenericActivarRegistroView):
 | `base.py` | `base_views.py` | Vistas base |
 | `generic_views.py` | `activation_views.py` | Vistas de activación |
 | `generic_registro_views.py` | `steps_views.py` | Vistas de pasos |
-| `elemento_views.py` | `element_views.py` | Vistas de elementos |
-| `main.py` | `list_views.py` | Vistas de listado |
+
+
 | `registros.py` | `api_views.py` | ViewSets de API | 
