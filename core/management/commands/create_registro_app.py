@@ -17,7 +17,6 @@ import os
 import re
 from pathlib import Path
 
-
 class Command(BaseCommand):
     help = 'Crea una nueva aplicación de registros completa usando el sistema genérico (templates genéricos, URLs consistentes, vistas mejoradas)'
 
