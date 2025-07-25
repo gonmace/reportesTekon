@@ -1,0 +1,10 @@
+{% load registro_urls %}
+<a 
+    type="button"
+    href="{% get_registro_steps_url record.id app_namespace %}"
+    class="btn btn-lg btn-success btn-circle text-lg sombra"
+    data-id="{{ record.id }}" 
+    title="{{ record.sitio.name }}"
+>
+    <i class="fa-regular fa-pen-to-square"></i>
+</a> 

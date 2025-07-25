@@ -121,6 +121,8 @@ reg_nombre/
 - Detección de aplicaciones existentes
 - Opción `--force` para sobrescribir
 - Mensajes de error descriptivos
+- Corrección automática de templates
+- URLs correctas sin vistas inexistentes
 
 ## Pasos Después de la Creación
 

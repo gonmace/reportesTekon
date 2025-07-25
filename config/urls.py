@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include('core.urls.dashboard')),
     path('', include('core.urls.sitios')),
     path('reg_txtss/', include('reg_txtss.urls')),
+    path('reg_visita/', include('reg_visita.urls')),
     path('', include('photos.urls')),
     path('', include('pdf_reports.urls')),
     path('api/', include('core.urls.api')),

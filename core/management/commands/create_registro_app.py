@@ -1,3 +1,15 @@
+"""
+Comando para crear una nueva aplicación de registros completa.
+
+Este comando genera aplicaciones que usan el sistema genérico de registros,
+incluyendo:
+- Templates genéricos (main_generic.html, steps_generic.html)
+- URLs consistentes con paso_nombre
+- Vistas genéricas con header_title mejorado
+- Configuración declarativa completa
+- Sistema de breadcrumbs dinámico
+"""
+
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command
 from django.conf import settings
@@ -7,7 +19,7 @@ from pathlib import Path
 
 
 class Command(BaseCommand):
-    help = 'Crea una nueva aplicación de registros completa con estructura similar a reg_txtss'
+    help = 'Crea una nueva aplicación de registros completa usando el sistema genérico (templates genéricos, URLs consistentes, vistas mejoradas)'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -153,7 +165,7 @@ class Command(BaseCommand):
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900">{title}</h1>
-        <a href="{{% url '{app_name}:create' %}}" class="btn btn-primary">
+        <a href="{{% url '{app_name}:activar' %}}" class="btn btn-primary">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -191,19 +203,19 @@ class Command(BaseCommand):
                         {{% for registro in registros %}}
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{%{{ registro.id %}}%}}
+                                {{ registro.id }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{%{{ registro.title %}}%}}
+                                {{ registro.title }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{%{{ registro.sitio.name|default:"Sin sitio" %}}%}}
+                                {{ registro.sitio.name|default:"Sin sitio" }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{%{{ registro.user.username|default:"Sin usuario" %}}%}}
+                                {{ registro.user.username|default:"Sin usuario" }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{%{{ registro.created_at|date:"d/m/Y" %}}%}}
+                                {{ registro.created_at|date:"d/m/Y" }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <a href="{{% url '{app_name}:steps' registro.id %}}" class="text-indigo-600 hover:text-indigo-900">
@@ -233,16 +245,16 @@ class Command(BaseCommand):
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">{title}</h1>
-        <p class="text-gray-600">Registro #{{%{{ registro.id %}}%}}</p>
+        <p class="text-gray-600">Registro #{{ registro.id }}</p>
     </div>
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-8 px-6">
                 {{% for paso in pasos %}}
-                <a href="?paso={{%{{ paso.nombre %}}%}}" 
+                <a href="?paso={{ paso.nombre }}" 
                    class="py-4 px-1 border-b-2 font-medium text-sm {{% if paso.activo %}}border-indigo-500 text-indigo-600{{% else %}}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{{% endif %}}">
-                    {{%{{ paso.titulo %}}%}}
+                    {{ paso.titulo }}
                 </a>
                 {{% endfor %}}
             </nav>
@@ -305,8 +317,8 @@ REGISTRO_CONFIG = create_registro_config(
     pasos_config=PASOS_CONFIG,
     title='{title}',
     app_namespace='{app_name}',
-    list_template='{app_name}/list.html',
-    steps_template='{app_name}/steps.html'
+    list_template='pages/main_generic.html',
+    steps_template='pages/steps_generic.html'
 )'''
 
         with open(app_path / 'config.py', 'w', encoding='utf-8') as f:
@@ -592,9 +604,9 @@ app_name = '{app_name}'
 
 urlpatterns = [
     path('', ListRegistrosView.as_view(), name='list'),
-    path('<int:registro_id>/steps/', StepsRegistroView.as_view(), name='steps'),
+    path('activar/', ActivarRegistroView.as_view(), name='activar'),
+    path('<int:registro_id>/', StepsRegistroView.as_view(), name='steps'),
     path('<int:registro_id>/<str:paso_nombre>/', ElementoRegistroView.as_view(), name='elemento'),
-    path('<int:registro_id>/activar/', ActivarRegistroView.as_view(), name='activar'),
 ]'''
 
         with open(app_path / 'urls.py', 'w', encoding='utf-8') as f:
@@ -1002,17 +1014,21 @@ def preview_{app_name}_individual(request, registro_id):
         
         # Actualizar URLs para incluir PDF
         urls_content = f'''from django.urls import path
-from .views import *
+from .views import (
+    ListRegistrosView,
+    StepsRegistroView,
+    ElementoRegistroView,
+    ActivarRegistroView
+)
 from .pdf_views import {app_name.title().replace('_', '')}PDFView, preview_{app_name}_individual
 
 app_name = '{app_name}'
 
 urlpatterns = [
-    path('', GenericRegistroTableListView.as_view(), name='list'),
-    path('create/', GenericRegistroCreateView.as_view(), name='create'),
-    path('<int:registro_id>/', GenericRegistroStepsView.as_view(), name='steps'),
-    path('<int:registro_id>/<str:paso>/', GenericElementoView.as_view(), name='elemento'),
-    path('<int:registro_id>/activar/', GenericActivarRegistroView.as_view(), name='activar'),
+    path('', ListRegistrosView.as_view(), name='list'),
+    path('activar/', ActivarRegistroView.as_view(), name='activar'),
+    path('<int:registro_id>/', StepsRegistroView.as_view(), name='steps'),
+    path('<int:registro_id>/<str:paso>/', ElementoRegistroView.as_view(), name='elemento'),
     path('pdf/<int:registro_id>/', {app_name.title().replace('_', '')}PDFView.as_view(), name='pdf'),
     path('preview/<int:registro_id>/', preview_{app_name}_individual, name='preview'),
 ]'''

@@ -34,7 +34,7 @@
       {% if step.elements.photos.enabled %}
         <div class="flex items-center gap-1 ml-2">
           <a class="btn btn-{{step.elements.photos.color}} btn-circle sombra photo-counter" 
-             href="{% get_registro_photos_url step.step_name step.registro_id app_namespace='reg_txtss' %}"
+             href="{% get_registro_photos_url step.step_name step.registro_id app_namespace=app_namespace %}"
              title="Fotos de {{step.title}}"
              data-photo-count="{{step.elements.photos.count}}"
              data-photo-required="{% if step.elements.photos.required %}true{% else %}false{% endif %}"

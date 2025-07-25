@@ -104,6 +104,7 @@ class GenericRegistroTableListView(LoginRequiredMixin, BreadcrumbsMixin, SingleT
             'activate_button_text': 'Activar Registro',
             'activar_url': self.request.build_absolute_uri(f'/{self.registro_config.app_namespace}/activar/'),
             'modal_template': 'components/activar_registro_form.html',
+            'app_namespace': self.registro_config.app_namespace,  # Agregar namespace para URLs
             'form': create_activar_registro_form(
                 registro_model=self.registro_config.registro_model,
                 title_default=self.registro_config.title,
@@ -153,6 +154,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             'registro_title': registro.title,  # Agregar título del registro
             'breadcrumbs': self.get_breadcrumbs(),  # Usar breadcrumbs dinámicos
             'header_title': self.get_header_title(),  # Usar método personalizable
+            'app_namespace': self.registro_config.app_namespace,  # Agregar namespace para URLs
         })
         return context
     

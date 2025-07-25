@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'photos',
     'reg_txtss',
     'registros',
+    'reg_visita',
     'pdf_reports',
 ]
 

@@ -51,4 +51,21 @@ def get_registro_photos_url(etapa, registro_id, app_namespace='reg_txtss'):
     Returns:
         URL generada para las fotos
     """
-    return get_registro_url(etapa, registro_id, 'photos', app_namespace) 
+    return get_registro_url(etapa, registro_id, 'photos', app_namespace)
+
+@register.simple_tag
+def get_registro_steps_url(registro_id, app_namespace='reg_txtss'):
+    """
+    Genera la URL para la vista de pasos de un registro.
+    
+    Args:
+        registro_id: ID del registro
+        app_namespace: Namespace de la aplicación
+        
+    Returns:
+        URL generada para los pasos
+    """
+    try:
+        return reverse(f'{app_namespace}:steps', kwargs={'registro_id': registro_id})
+    except NoReverseMatch:
+        return f'/{app_namespace}/{registro_id}/' 
