@@ -47,6 +47,12 @@ class Command(BaseCommand):
             action='store_true',
             help='Forzar la creación aunque la aplicación ya exista'
         )
+        parser.add_argument(
+            '--allow-multiple-per-site',
+            action='store_true',
+            default=False,
+            help='Permitir múltiples registros por sitio (uno por día)'
+        )
 
     def handle(self, *args, **options):
         app_name = options['app_name']
@@ -54,6 +60,7 @@ class Command(BaseCommand):
         description = options['description'] or f'Aplicación para registros de {title.lower()}'
         pasos = options['pasos']
         force = options['force']
+        allow_multiple_per_site = options['allow_multiple_per_site']
 
         # Validar nombre de aplicación
         if not re.match(r'^[a-z][a-z0-9_]*$', app_name):
@@ -92,7 +99,7 @@ class Command(BaseCommand):
         self._create_templates(app_name, title, pasos)
         
         # Crear archivos de configuración
-        self._create_config_files(app_name, title, pasos)
+        self._create_config_files(app_name, title, pasos, allow_multiple_per_site)
         
         # Crear archivos de vistas
         self._create_views(app_name, title, pasos)
@@ -117,6 +124,9 @@ class Command(BaseCommand):
         
         # Crear configuración de PDF
         self._create_pdf_configuration(app_name, title, pasos)
+        
+        # Crear vistas de PDF específicas
+        self._create_pdf_views(app_name, title, pasos)
 
         self.stdout.write(
             self.style.SUCCESS(
@@ -271,7 +281,7 @@ class Command(BaseCommand):
         with open(templates_path / 'steps.html', 'w', encoding='utf-8') as f:
             f.write(steps_template)
 
-    def _create_config_files(self, app_name, title, pasos):
+    def _create_config_files(self, app_name, title, pasos, allow_multiple_per_site=False):
         """Crear archivos de configuración"""
         app_path = Path(settings.BASE_DIR) / app_name
 
@@ -317,7 +327,8 @@ REGISTRO_CONFIG = create_registro_config(
     title='{title}',
     app_namespace='{app_name}',
     list_template='pages/main_generic.html',
-    steps_template='pages/steps_generic.html'
+    steps_template='pages/steps_generic.html',
+    allow_multiple_per_site={str(allow_multiple_per_site).lower()}
 )'''
 
         with open(app_path / 'config.py', 'w', encoding='utf-8') as f:
@@ -384,6 +395,11 @@ class StepsRegistroView(GenericRegistroStepsView):
                 return operador_id
         
         return super().get_header_title()
+    
+    def get_pdf_url(self, registro_id):
+        """Obtiene la URL para generar el PDF del registro."""
+        from django.urls import reverse
+        return reverse('{app_name}:pdf', kwargs={{'registro_id': registro_id}})
 
 
 class ElementoRegistroView(GenericElementoView):
@@ -599,6 +615,7 @@ URLs para registros {title}.
 
 from django.urls import path
 from .views import ListRegistrosView, StepsRegistroView, ElementoRegistroView, ActivarRegistroView
+from .pdf_views import {app_name.title().replace('_', '')}PDFView, preview_{app_name}_individual
 
 app_name = '{app_name}'
 
@@ -607,6 +624,8 @@ urlpatterns = [
     path('activar/', ActivarRegistroView.as_view(), name='activar'),
     path('<int:registro_id>/', StepsRegistroView.as_view(), name='steps'),
     path('<int:registro_id>/<str:paso_nombre>/', ElementoRegistroView.as_view(), name='elemento'),
+    path('pdf/<int:registro_id>/', {app_name.title().replace('_', '')}PDFView.as_view(), name='pdf'),
+    path('preview/<int:registro_id>/', preview_{app_name}_individual, name='preview'),
 ]'''
 
         with open(app_path / 'urls.py', 'w', encoding='utf-8') as f:
@@ -641,7 +660,7 @@ urlpatterns = [
                 context['google_{paso}_image'] = {{
                     'src': mapa_{paso}.imagen.url,
                     'alt': f'Mapa de {{paso}}',
-                    'caption': f'Distancia: {{mapa_{paso}.distancia_total_metros:.0f}} m' if mapa_{paso}.distancia_total_metros else '',
+                    'caption': f'Distancia: {{mapa_{paso}.distancia_total_metros:.0f}} m' if mapa_{paso} and mapa_{paso}.distancia_total_metros else 'Mapa no disponible',
                     'icon1_color': '#FF4040',
                     'name1': '{paso.title()}',
                 }}
@@ -772,7 +791,7 @@ python manage.py createsuperuser
       </td>
       <td class="header-title">
         <h1>{title} <br>
-        {{%{{ registro.sitio.pti_cell_id|default:registro.sitio.operator_id %}}%}}</h1>
+        {{{{ registro.sitio.pti_cell_id|default:registro.sitio.operator_id }}}}</h1>
       </td>
       <td class="header-logo right">
         {{% include "svgs/tekon_logo.svg" %}}
@@ -792,8 +811,8 @@ python manage.py createsuperuser
   <section class="datos">
     <dl>
       {{% for key, value in datos_generales.items %}}
-        <dt>{{%{{ key %}}%}}</dt>
-        <dd>{{%{{ value %}}%}}</dd>
+        <dt>{{{{ key }}}}</dt>
+        <dd>{{{{ value }}}}</dd>
       {{% endfor %}}
     </dl>
   </section>
@@ -802,8 +821,8 @@ python manage.py createsuperuser
   <section class="datos">
     <dl>
       {{% for key, value in inspeccion_sitio.items %}}
-        <dt>{{%{{ key %}}%}}</dt>
-        <dd>{{%{{ value %}}%}}</dd>
+        <dt>{{{{ key }}}}</dt>
+        <dd>{{{{ value }}}}</dd>
       {{% endfor %}}
     </dl>
   </section>
@@ -815,11 +834,11 @@ python manage.py createsuperuser
 
 <!-- {paso.title()} -->
 <article id="registro-{paso}">
-  <h2>{{%{{ "{paso.title()}" %}}%}}</h2>
+  <h2>{{{{ "{paso.title()}" }}}}</h2>
   <section class="content-registro">
     {{% for key, value in registro_{paso}.items %}}
     {{% if value != '' %}}
-      <p><strong>{{%{{ key %}}%}}</strong> {{%{{ value %}}%}}</p>
+      <p><strong>{{{{ key }}}}</strong> {{{{ value }}}}</p>
     {{% endif %}}
     {{% endfor %}}
   </section>
@@ -830,8 +849,8 @@ python manage.py createsuperuser
 <table class="mapa-table">
   <tr>
     <td class="mapa-img-cell">
-      <img src="{{%{{ google_{paso}_image.src %}}%}}" alt="{{%{{ google_{paso}_image.alt %}}%}}">
-      <p class="mapa-leyenda-caption">{{%{{ google_{paso}_image.caption|default:"" %}}%}}</p>
+      <img src="{{{{ google_{paso}_image.src }}}}" alt="{{{{ google_{paso}_image.alt }}}}">
+      <p class="mapa-leyenda-caption">{{{{ google_{paso}_image.caption|default:"" }}}}</p>
     </td>
     <td class="mapa-leyenda-cell">
       {{% include "reportes_{app_name}/partials/leyenda.html" with icon_color=google_{paso}_image.icon1_color name=google_{paso}_image.name1 %}}
@@ -920,6 +939,8 @@ from django.contrib.contenttypes.models import ContentType
 from {app_name}.config import PASOS_CONFIG
 
 def convert_lat_to_dms(lat):
+    if lat is None:
+        return 'N/A'
     direction = 'N' if lat >= 0 else 'S'
     deg_abs = abs(lat)
     degrees = int(deg_abs)
@@ -929,6 +950,8 @@ def convert_lat_to_dms(lat):
     return f"{{direction}} {{degrees}}° {{minutes}}' {{seconds}}''"
 
 def convert_lon_to_dms(lon):
+    if lon is None:
+        return 'N/A'
     direction = 'E' if lon >= 0 else 'W'
     deg_abs = abs(lon)
     degrees = int(deg_abs)
@@ -1034,4 +1057,29 @@ urlpatterns = [
 ]'''
         
         with open(app_path / 'urls.py', 'w', encoding='utf-8') as f:
-            f.write(urls_content) 
+            f.write(urls_content)
+
+    def _create_pdf_views(self, app_name, title, pasos):
+        """Crear vistas de PDF específicas para la aplicación"""
+        app_path = Path(settings.BASE_DIR) / app_name
+        
+        pdf_view_content = f'''"""
+Vistas de PDF para registros {title}.
+"""
+from pdf_reports.views import RegistroPDFView, preview_registro_individual
+from django.shortcuts import render
+
+class {app_name.title().replace('_', '')}PDFView(RegistroPDFView):
+    """Vista para generar PDF de registros {title}."""
+    pass
+
+def preview_{app_name}_individual(request, registro_id):
+    """Vista para previsualizar el PDF de un registro {title}."""
+    view = {app_name.title().replace('_', '')}PDFView()
+    view.kwargs = {{'registro_id': registro_id}}
+    context = view.get_context_data()
+    return render(request, 'reportes_{app_name}/{app_name}.html', context)
+'''
+        
+        with open(app_path / 'pdf_views.py', 'w', encoding='utf-8') as f:
+            f.write(pdf_view_content) 

@@ -9,6 +9,8 @@ from django.contrib.contenttypes.models import ContentType
 from reg_txtss.config import PASOS_CONFIG
 
 def convert_lat_to_dms(lat):
+    if lat is None:
+        return 'N/A'
     direction = 'N' if lat >= 0 else 'S'
     deg_abs = abs(lat)
     degrees = int(deg_abs)
@@ -18,6 +20,8 @@ def convert_lat_to_dms(lat):
     return f"{direction} {degrees}° {minutes}' {seconds}''"
 
 def convert_lon_to_dms(lon):
+    if lon is None:
+        return 'N/A'
     direction = 'E' if lon >= 0 else 'W'
     deg_abs = abs(lon)
     degrees = int(deg_abs)
@@ -48,14 +52,14 @@ class RegistroPDFView(WeasyTemplateView):
             .get(id=registro_id)
         
         paso_sitio = registro.rsitio_set.first()
-        paso_sitio_lat = paso_sitio.lat
-        paso_sitio_lon = paso_sitio.lon
+        paso_sitio_lat = paso_sitio.lat if paso_sitio else None
+        paso_sitio_lon = paso_sitio.lon if paso_sitio else None
         
         paso_acceso = registro.racceso_set.first()
         
         paso_empalme = registro.rempalme_set.first()
-        paso_empalme_lat = paso_empalme.lat
-        paso_empalme_lon = paso_empalme.lon
+        paso_empalme_lat = paso_empalme.lat if paso_empalme else None
+        paso_empalme_lon = paso_empalme.lon if paso_empalme else None
         
         # Obtener el mapa del paso sitio desde la base de datos
         # Los mapas se guardan asociados al registro principal (RegTxtss), no a los pasos individuales
@@ -119,7 +123,7 @@ class RegistroPDFView(WeasyTemplateView):
             empalme_icon3_color = empalme_mapa_config.config['third_model'].get('icon_config', {}).get('color', '#0054FF')
             empalme_name3 = empalme_mapa_config.config['third_model'].get('name_field', 'Mandato')
             
-        desfase = mapa_sitio.distancia_total_metros
+        desfase = mapa_sitio.distancia_total_metros if mapa_sitio else 0
         if desfase < 5:
             desfase_color = '#90EE90'
         elif desfase <= 30:
@@ -152,15 +156,15 @@ class RegistroPDFView(WeasyTemplateView):
             },
             
             'registro_sitio': {
-                f'{paso_sitio._meta.get_field("altura").verbose_name}:': f'{paso_sitio.altura} m',
-                f'{paso_sitio._meta.get_field("deslindes").verbose_name}:': f'{paso_sitio.deslindes} metros',
-                f'{paso_sitio._meta.get_field("comentarios").verbose_name}:': f'{paso_sitio.comentarios}',
-            },
+                f'{paso_sitio._meta.get_field("altura").verbose_name}:': f'{paso_sitio.altura} m' if paso_sitio else 'N/A',
+                f'{paso_sitio._meta.get_field("deslindes").verbose_name}:': f'{paso_sitio.deslindes} metros' if paso_sitio else 'N/A',
+                f'{paso_sitio._meta.get_field("comentarios").verbose_name}:': f'{paso_sitio.comentarios}' if paso_sitio else 'N/A',
+            } if paso_sitio else {},
             
             'google_sitio_image': {
                 'src': mapa_sitio.imagen.url if mapa_sitio else None,
                 'alt': 'Mapa de ubicación del sitio',
-                'desfase': f'{mapa_sitio.distancia_total_metros:.0f} m',
+                'desfase': f'{mapa_sitio.distancia_total_metros:.0f} m' if mapa_sitio and mapa_sitio.distancia_total_metros else 'N/A',
                 'desfase_color': desfase_color,
                 'icon1_color': sitio_icon1_color,
                 'name1': sitio_name1,
@@ -173,20 +177,20 @@ class RegistroPDFView(WeasyTemplateView):
             },
             
             'registro_acceso': {
-                f'{paso_acceso._meta.get_field("tipo_suelo").verbose_name}:': f'{paso_acceso.tipo_suelo}',
-                f'{paso_acceso._meta.get_field("distancia").verbose_name}:': f'{paso_acceso.distancia} metros',
-                f'{paso_acceso._meta.get_field("comentarios").verbose_name}:': f'{paso_acceso.comentarios}',
-            },
+                f'{paso_acceso._meta.get_field("tipo_suelo").verbose_name}:': f'{paso_acceso.tipo_suelo}' if paso_acceso else 'N/A',
+                f'{paso_acceso._meta.get_field("distancia").verbose_name}:': f'{paso_acceso.distancia} metros' if paso_acceso else 'N/A',
+                f'{paso_acceso._meta.get_field("comentarios").verbose_name}:': f'{paso_acceso.comentarios}' if paso_acceso else 'N/A',
+            } if paso_acceso else {},
             'registro_empalme': {
-                f'{paso_empalme._meta.get_field("proveedor").verbose_name}:': f'{paso_empalme.proveedor}',
-                f'{paso_empalme._meta.get_field("capacidad").verbose_name}:': f'{paso_empalme.capacidad}',
-                f'{paso_empalme._meta.get_field("comentarios").verbose_name}:': f'{paso_empalme.comentarios}',
-            },
+                f'{paso_empalme._meta.get_field("proveedor").verbose_name}:': f'{paso_empalme.proveedor}' if paso_empalme else 'N/A',
+                f'{paso_empalme._meta.get_field("capacidad").verbose_name}:': f'{paso_empalme.capacidad}' if paso_empalme else 'N/A',
+                f'{paso_empalme._meta.get_field("comentarios").verbose_name}:': f'{paso_empalme.comentarios}' if paso_empalme else 'N/A',
+            } if paso_empalme else {},
             
             'google_empalme_image': {
                 'src': mapa_empalme.imagen.url if mapa_empalme else None,
                 'alt': 'Mapa de ubicación del empalme',
-                'caption': f'Distancia Sitio-Empalme: {mapa_empalme.distancia_total_metros:.0f} m' if mapa_empalme else 'Mapa no disponible',
+                'caption': f'Distancia Sitio-Empalme: {mapa_empalme.distancia_total_metros:.0f} m' if mapa_empalme and mapa_empalme.distancia_total_metros else 'Mapa no disponible',
                 'icon1_color': empalme_icon1_color,
                 'name1': empalme_name1,
                 'icon2_color': empalme_icon2_color,
