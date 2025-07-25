@@ -137,6 +137,6 @@ REGISTRO_CONFIG = create_registro_config(
     pasos_config=PASOS_CONFIG,
     title='TX/TSS',
     app_namespace='reg_txtss',
-    list_template='pages/main_txtss.html',
+    list_template='components/generic_tables2_template.html',
     steps_template='pages/steps_generic.html'
 ) 

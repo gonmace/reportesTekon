@@ -29,9 +29,10 @@ INSTALLED_APPS = [
     'core',
     'photos',
     'reg_txtss',
-    'registros',
     'reg_visita',
     'pdf_reports',
+    
+    'registros',
 ]
 
 MIDDLEWARE = [

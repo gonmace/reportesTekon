@@ -40,6 +40,6 @@ REGISTRO_CONFIG = create_registro_config(
     pasos_config=PASOS_CONFIG,
     title='Reporte de visita',
     app_namespace='reg_visita',
-    list_template='pages/main_generic.html',
+    list_template='components/generic_tables2_template.html',
     steps_template='pages/steps_generic.html'
 )
