@@ -13,6 +13,7 @@ from django_tables2 import SingleTableView
 from core.utils.breadcrumbs import BreadcrumbsMixin
 from registros.mixins.breadcrumbs_mixin import RegistroBreadcrumbsMixin
 from registros.components.registro_config import RegistroConfig, ElementoGenerico
+from registros.components.editable_table import EditableTableElemento
 from registros.forms.activar import create_activar_registro_form
 from registros.tables import create_registros_table
 from typing import Dict, Any
@@ -528,11 +529,16 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             # Verificar si es un paso solo con componentes (sin formulario)
             is_component_only = elemento_config.model is None and elemento_config.form_class is None
             
+            # Verificar si es una tabla editable
+            is_table = (elemento_config.template_name == 'components/editable_table.html' or 
+                       any(sub.tipo == 'editable_table' for sub in elemento_config.sub_elementos))
+            
             # Generar estructura que espera el template step_item.html
             step_data = {
                 'title': paso_config.title,
                 'step_name': step_name,
                 'registro_id': registro.id,
+                'is_table': is_table,  # Agregar propiedad para identificar tablas
                 'elements': {
                     'form': None if is_component_only else {
                         'url': f'/{self.registro_config.app_namespace}/{registro.id}/{step_name}/',
@@ -562,7 +568,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
 
 class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, BreadcrumbsMixin, View):
     """
-    Vista genérica para manejar elementos de registro.
+    Vista genérica para manejar elementos de registro (formularios, tablas editables, etc.).
     """
     
     def __init__(self, *args, **kwargs):
@@ -578,19 +584,24 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
         return self.registro_config.header_title or self.registro_config.title
     
     def get(self, request, registro_id, paso_nombre):
-        """Maneja las peticiones GET."""
+        """Maneja peticiones GET."""
         try:
             registro = get_object_or_404(self.registro_config.registro_model, id=registro_id)
             paso_config = self.registro_config.pasos.get(paso_nombre)
             
             if not paso_config:
-                messages.error(request, f'Paso "{paso_nombre}" no encontrado')
-                return redirect(f'{self.registro_config.app_namespace}:steps', registro_id=registro_id)
+                return JsonResponse({'error': f'Paso no válido: {paso_nombre}'}, status=400)
             
             elemento_config = paso_config.elemento
+            
+            # Verificar si es una tabla editable
+            if elemento_config.template_name == 'components/editable_table.html' or \
+               any(sub.tipo == 'editable_table' for sub in elemento_config.sub_elementos):
+                return self.handle_editable_table(request, registro, paso_config, elemento_config)
+            
+            # Manejo tradicional de formularios
             elemento = ElementoGenerico(registro, elemento_config)
             instance = elemento.get_or_create()
-            
             if instance:
                 elemento = ElementoGenerico(registro, elemento_config, instance)
             
@@ -611,27 +622,32 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
             return render(request, elemento_config.template_name, context)
             
         except Exception as e:
-            messages.error(request, f'Error al cargar el elemento: {str(e)}')
+            messages.error(request, f"Error al cargar el paso: {str(e)}")
             return redirect(f'{self.registro_config.app_namespace}:steps', registro_id=registro_id)
     
     def post(self, request, registro_id, paso_nombre):
-        """Maneja las peticiones POST."""
+        """Maneja peticiones POST."""
         try:
             registro = get_object_or_404(self.registro_config.registro_model, id=registro_id)
             paso_config = self.registro_config.pasos.get(paso_nombre)
             
             if not paso_config:
-                messages.error(request, f'Paso "{paso_nombre}" no encontrado')
-                return redirect(f'{self.registro_config.app_namespace}:steps', registro_id=registro_id)
+                return JsonResponse({'error': f'Paso no válido: {paso_nombre}'}, status=400)
             
             elemento_config = paso_config.elemento
+            
+            # Verificar si es una tabla editable
+            if elemento_config.template_name == 'components/editable_table.html' or \
+               any(sub.tipo == 'editable_table' for sub in elemento_config.sub_elementos):
+                return self.handle_editable_table_post(request, registro, paso_config, elemento_config)
+            
+            # Manejo tradicional de formularios
             elemento = ElementoGenerico(registro, elemento_config)
             instance = elemento.get_or_create()
-            
             if instance:
                 elemento = ElementoGenerico(registro, elemento_config, instance)
             
-            form = elemento.get_form(request.POST, request.FILES)
+            form = elemento.get_form(data=request.POST, files=request.FILES)
             
             if form.is_valid():
                 elemento.save(form)
@@ -668,17 +684,135 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                     return render(request, elemento_config.template_name, context)
                     
         except Exception as e:
-            error_message = f'Error al guardar el elemento: {str(e)}'
-            messages.error(request, error_message)
+            messages.error(request, f"Error al procesar el paso: {str(e)}")
+            return redirect(f'{self.registro_config.app_namespace}:steps', registro_id=registro_id)
+    
+    def handle_editable_table(self, request, registro, paso_config, elemento_config):
+        """Maneja la visualización de tablas editables."""
+        # Buscar configuración de tabla editable en sub_elementos
+        table_config = None
+        for sub_elemento in elemento_config.sub_elementos:
+            if sub_elemento.tipo == 'editable_table':
+                table_config = sub_elemento.config
+                break
+        
+        if not table_config:
+            # Si no hay sub_elementos, usar la configuración del elemento principal
+            table_config = {
+                'model_class': elemento_config.model,
+                'columns': [],  # Se debe configurar en el elemento
+                'api_url': f'/{self.registro_config.app_namespace}/api/{paso_config.nombre}/',
+                'allow_create': True,
+                'allow_edit': True,
+                'allow_delete': True,
+                'page_length': 10
+            }
+        
+        # Crear elemento de tabla editable
+        table_elemento = EditableTableElemento(registro, table_config)
+        
+        context = {
+            'registro': registro,
+            'paso_config': paso_config,
+            'elemento_config': elemento_config,
+            'elemento': table_elemento,
+            'title': self.registro_config.title,
+            'breadcrumbs': self.get_breadcrumbs(),
+            'header_title': self.get_header_title(),
+            'sub_elementos': elemento_config.sub_elementos,
+        }
+        
+        return render(request, 'components/table_only.html', context)
+    
+    def handle_editable_table_post(self, request, registro, paso_config, elemento_config):
+        """Maneja las operaciones POST de tablas editables."""
+        # Esta función se puede usar para operaciones específicas de tabla editable
+        # Por ahora, redirigir a la vista de tabla editable
+        return redirect(f'{self.registro_config.app_namespace}:steps', registro_id=registro.id)
+
+
+class GenericActivarRegistroView(LoginRequiredMixin, BreadcrumbsMixin, View):
+    """
+    Vista genérica para activar registros.
+    """
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.registro_config = self.get_registro_config()
+    
+    def get_registro_config(self) -> RegistroConfig:
+        """Obtiene la configuración del registro. Debe ser sobrescrito."""
+        raise NotImplementedError("Debe implementar get_registro_config()")
+    
+    def get(self, request):
+        """Muestra el formulario de activación."""
+        form = create_activar_registro_form(
+            registro_model=self.registro_config.registro_model,
+            title_default=self.registro_config.title,
+            description_default=f'Registro {self.registro_config.title} activado desde el formulario'
+        )()
+        
+        context = {
+            'form': form,
+            'title': f'Activar {self.registro_config.title}',
+            'breadcrumbs': self.get_breadcrumbs(),
+        }
+        
+        return render(request, 'components/activar_registro_form.html', context)
+    
+    def post(self, request):
+        """Procesa la activación del registro."""
+        form = create_activar_registro_form(
+            registro_model=self.registro_config.registro_model,
+            title_default=self.registro_config.title,
+            description_default=f'Registro {self.registro_config.title} activado desde el formulario'
+        )(data=request.POST)
+        
+        if form.is_valid():
+            try:
+                registro = form.save(commit=False)
+                registro.user = request.user
+                registro.save()
+                
+                messages.success(request, f'Registro {self.registro_config.title} activado exitosamente.')
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': True,
+                        'message': f'Registro {self.registro_config.title} activado exitosamente.',
+                        'redirect_url': f'{self.registro_config.app_namespace}:steps'
+                    })
+                else:
+                    return redirect(f'{self.registro_config.app_namespace}:steps', registro_id=registro.id)
+                    
+            except Exception as e:
+                messages.error(request, f'Error al activar el registro: {str(e)}')
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error al activar el registro: {str(e)}'
+                    }, status=400)
+                else:
+                    context = {
+                        'form': form,
+                        'title': f'Activar {self.registro_config.title}',
+                        'breadcrumbs': self.get_breadcrumbs(),
+                    }
+                    return render(request, 'components/activar_registro_form.html', context)
+        else:
+            messages.error(request, 'Error en el formulario. Por favor, corrija los errores.')
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': False,
-                    'message': error_message
+                    'message': 'Error en el formulario.',
+                    'errors': form.errors
                 }, status=400)
             else:
-                return redirect(f'{self.registro_config.app_namespace}:steps', registro_id=registro_id)
-    
-    def render_response(self, request, context):
-        """Renderiza la respuesta."""
-        return render(request, context['elemento_config'].template_name, context) 
+                context = {
+                    'form': form,
+                    'title': f'Activar {self.registro_config.title}',
+                    'breadcrumbs': self.get_breadcrumbs(),
+                }
+                return render(request, 'components/activar_registro_form.html', context) 

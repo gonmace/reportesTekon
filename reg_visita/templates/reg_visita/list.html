@@ -45,19 +45,19 @@
                         {% for registro in registros %}
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                { registro.id }
+                                {{ registro.id }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                { registro.title }
+                                {{ registro.title }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                { registro.sitio.name|default:"Sin sitio" }
+                                {{ registro.sitio.name|default:"Sin sitio" }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                { registro.user.username|default:"Sin usuario" }
+                                {{ registro.user.username|default:"Sin usuario" }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                { registro.created_at|date:"d/m/Y" }
+                                {{ registro.created_at|date:"d/m/Y" }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <a href="{% url 'reg_visita:steps' registro.id %}" class="text-indigo-600 hover:text-indigo-900">

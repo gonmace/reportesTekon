@@ -17,8 +17,12 @@
     {% if step.elements.form %}
     <a href="{{step.elements.form.url}}"
       class="btn btn-{{step.elements.form.color}} btn-circle p-1 sombra"
-      title="Editar {{step.title}}">
-      {% include 'svgs/notes.svg' %}
+      title="{% if step.is_table %}Tabla de {{step.title}}{% else %}Editar {{step.title}}{% endif %}">
+      {% if step.is_table %}
+        {% include 'svgs/table.svg' %}
+      {% else %}
+        {% include 'svgs/notes.svg' %}
+      {% endif %}
     </a>
     {% else %}
     <div class="btn btn-circle btn-disabled p-1 sombra bg-white border-2 border-gray-300"></div>

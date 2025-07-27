@@ -376,6 +376,147 @@ def create_photos_config(
 
 
 # ============================================================================
+# CONFIGURACIONES DE TABLA EDITABLE
+# ============================================================================
+
+def create_editable_table_config(
+    model_class: Type[models.Model],
+    title: str,
+    description: str,
+    columns: List[Dict[str, Any]],
+    template_name: str = 'components/editable_table.html',
+    success_message: str = None,
+    error_message: str = None,
+    page_length: int = 10,
+    allow_create: bool = True,
+    allow_delete: bool = True,
+    allow_edit: bool = True,
+    api_url: str = None
+) -> SubElementoConfig:
+    """
+    Crea configuración para una tabla editable con AJAX.
+    
+    Args:
+        model_class: Clase del modelo para la tabla
+        title: Título de la tabla
+        description: Descripción de la tabla
+        columns: Lista de columnas con configuración
+        template_name: Template para la tabla
+        success_message: Mensaje de éxito personalizado
+        error_message: Mensaje de error personalizado
+        page_length: Número de registros por página
+        allow_create: Si permite crear nuevos registros
+        allow_delete: Si permite eliminar registros
+        allow_edit: Si permite editar registros
+        api_url: URL de la API para operaciones CRUD
+    
+    Returns:
+        SubElementoConfig configurado para tabla editable
+    """
+    if success_message is None:
+        success_message = f"Datos de {title.lower()} guardados exitosamente."
+    if error_message is None:
+        error_message = f"Error al guardar los datos de {title.lower()}."
+    
+    table_config = {
+        'model_class': model_class,
+        'columns': columns,
+        'page_length': page_length,
+        'allow_create': allow_create,
+        'allow_delete': allow_delete,
+        'allow_edit': allow_edit,
+        'api_url': api_url
+    }
+    
+    return SubElementoConfig(
+        tipo='editable_table',
+        config=table_config,
+        template_name=template_name,
+        css_classes='editable-table-container',
+        title=title,
+        description=description,
+        success_message=success_message,
+        error_message=error_message
+    )
+
+
+def create_table_only_config(
+    title: str,
+    description: str,
+    columns: List[Dict[str, Any]],
+    model_class: Type[models.Model] = None,
+    template_name: str = 'components/editable_table.html',
+    sub_elementos: List[SubElementoConfig] = None,
+    success_message: str = None,
+    error_message: str = None,
+    page_length: int = 10,
+    allow_create: bool = True,
+    allow_delete: bool = True,
+    allow_edit: bool = True,
+    api_url: str = None
+) -> PasoConfig:
+    """
+    Crea una configuración de paso que solo muestra una tabla editable.
+    
+    Args:
+        title: Título del paso
+        description: Descripción del paso
+        columns: Lista de columnas con configuración
+        model_class: Clase del modelo para la tabla (opcional)
+        template_name: Template para la tabla
+        sub_elementos: Lista de sub-elementos adicionales
+        success_message: Mensaje de éxito personalizado
+        error_message: Mensaje de error personalizado
+        page_length: Número de registros por página
+        allow_create: Si permite crear nuevos registros
+        allow_delete: Si permite eliminar registros
+        allow_edit: Si permite editar registros
+        api_url: URL de la API para operaciones CRUD
+    
+    Returns:
+        PasoConfig configurado para tabla editable
+    """
+    table_config = create_editable_table_config(
+        model_class=model_class,
+        title=title,
+        description=description,
+        columns=columns,
+        template_name=template_name,
+        success_message=success_message,
+        error_message=error_message,
+        page_length=page_length,
+        allow_create=allow_create,
+        allow_delete=allow_delete,
+        allow_edit=allow_edit,
+        api_url=api_url
+    )
+    
+    # Agregar la tabla a los sub_elementos
+    all_sub_elementos = [table_config]
+    if sub_elementos:
+        all_sub_elementos.extend(sub_elementos)
+    
+    # Crear un elemento config sin modelo ni formulario
+    elemento = ElementoConfig(
+        nombre='table_only',
+        model=model_class,  # Puede ser None
+        form_class=None,  # Sin formulario
+        title=title,
+        description=description,
+        template_name=template_name,
+        success_message=success_message or "Tabla actualizada correctamente.",
+        error_message=error_message or "Error al actualizar la tabla.",
+        sub_elementos=all_sub_elementos
+    )
+    
+    return PasoConfig(
+        elemento=elemento,
+        title=title,
+        description=description
+    )
+
+
+# ============================================================================
 # CONFIGURACIONES DE ELEMENTOS BASE
 # ============================================================================
 
@@ -793,3 +934,367 @@ def create_registro_config(
         header_title=header_title,
         allow_multiple_per_site=allow_multiple_per_site
     ) 
+
+# ============================================================================
+# NUEVO SISTEMA FLEXIBLE DE ELEMENTOS MÚLTIPLES
+# ============================================================================
+
+def create_flexible_step_config(
+    title: str,
+    description: str,
+    elements: List[Dict[str, Any]] = None,
+    order: int = 0,
+    template_name: str = 'components/flexible_step.html',
+    success_message: str = None,
+    error_message: str = None
+) -> PasoConfig:
+    """
+    Crea una configuración de paso flexible que puede contener múltiples elementos.
+    
+    Args:
+        title: Título del paso
+        description: Descripción del paso
+        elements: Lista de elementos (formularios, tablas, mapas, fotos, etc.)
+        order: Orden del paso
+        template_name: Template personalizado para el paso
+        success_message: Mensaje de éxito personalizado
+        error_message: Mensaje de error personalizado
+    
+    Returns:
+        PasoConfig configurado con elementos múltiples
+    """
+    if elements is None:
+        elements = []
+    
+    # Crear configuración de elemento flexible
+    elemento = ElementoConfig(
+        nombre=title.lower().replace(' ', '_'),
+        model=None,  # No hay modelo principal
+        form_class=None,  # No hay formulario principal
+        title=title,
+        description=description,
+        template_name=template_name,
+        success_message=success_message or f"Paso '{title}' completado exitosamente.",
+        error_message=error_message or f"Error al completar el paso '{title}'.",
+        sub_elementos=[]  # Los elementos se manejan de forma diferente
+    )
+    
+    # Agregar elementos como sub-elementos especiales
+    for element_config in elements:
+        element_type = element_config.get('type')
+        
+        if element_type == 'form':
+            sub_elemento = _create_form_element_config(element_config)
+        elif element_type == 'table':
+            sub_elemento = _create_table_element_config(element_config)
+        elif element_type == 'map':
+            sub_elemento = _create_map_element_config(element_config)
+        elif element_type == 'photos':
+            sub_elemento = _create_photos_element_config(element_config)
+        elif element_type == 'info':
+            sub_elemento = _create_info_element_config(element_config)
+        elif element_type == 'custom':
+            sub_elemento = _create_custom_element_config(element_config)
+        else:
+            continue
+            
+        elemento.sub_elementos.append(sub_elemento)
+    
+    return PasoConfig(
+        elemento=elemento,
+        title=title,
+        description=description
+    )
+
+
+def _create_form_element_config(config: Dict[str, Any]) -> SubElementoConfig:
+    """Crea configuración para un elemento de formulario."""
+    return SubElementoConfig(
+        tipo='form',
+        config={
+            'model_class': config.get('model_class'),
+            'form_class': config.get('form_class'),
+            'title': config.get('title', 'Formulario'),
+            'description': config.get('description', ''),
+            'fields': config.get('fields', []),
+            'template_name': config.get('template_name', 'components/form_element.html'),
+            'success_message': config.get('success_message'),
+            'error_message': config.get('error_message'),
+            'required': config.get('required', True),
+            'css_classes': config.get('css_classes', 'form-container')
+        },
+        template_name=config.get('template_name', 'components/form_element.html'),
+        css_classes=config.get('css_classes', 'form-container')
+    )
+
+
+def _create_table_element_config(config: Dict[str, Any]) -> SubElementoConfig:
+    """Crea configuración para un elemento de tabla."""
+    return SubElementoConfig(
+        tipo='table',
+        config={
+            'model_class': config.get('model_class'),
+            'title': config.get('title', 'Tabla'),
+            'description': config.get('description', ''),
+            'columns': config.get('columns', []),
+            'page_length': config.get('page_length', 10),
+            'allow_create': config.get('allow_create', True),
+            'allow_edit': config.get('allow_edit', True),
+            'allow_delete': config.get('allow_delete', True),
+            'api_url': config.get('api_url'),
+            'required': config.get('required', False),
+            'min_rows': config.get('min_rows', 0),
+            'max_rows': config.get('max_rows', None)
+        },
+        template_name=config.get('template_name', 'components/table_element.html'),
+        css_classes=config.get('css_classes', 'table-container')
+    )
+
+
+def _create_map_element_config(config: Dict[str, Any]) -> SubElementoConfig:
+    """Crea configuración para un elemento de mapa."""
+    map_config = {
+        'type': config.get('map_type', 'single_point'),
+        'zoom': config.get('zoom', 15),
+        'template_name': config.get('template_name', 'components/mapa.html'),
+        'required': config.get('required', False)
+    }
+    
+    # Configurar puntos según el tipo de mapa
+    if config.get('map_type') == 'single_point':
+        map_config.update({
+            'lat_field': config.get('lat_field', 'lat'),
+            'lon_field': config.get('lon_field', 'lon'),
+            'name_field': config.get('name_field', 'name'),
+            'icon_config': {
+                'color': config.get('icon_color', 'red'),
+                'size': config.get('icon_size', 'normal'),
+                'type': config.get('icon_type', 'marker')
+            }
+        })
+    elif config.get('map_type') == 'multi_point':
+        map_config['points'] = config.get('points', [])
+    
+    return SubElementoConfig(
+        tipo='map',
+        config=map_config,
+        template_name=config.get('template_name', 'components/mapa.html'),
+        css_classes=config.get('css_classes', 'mapa-container')
+    )
+
+
+def _create_photos_element_config(config: Dict[str, Any]) -> SubElementoConfig:
+    """Crea configuración para un elemento de fotos."""
+    return SubElementoConfig(
+        tipo='photos',
+        config={
+            'min_count': config.get('min_count', 4),
+            'max_count': config.get('max_count', None),
+            'allowed_types': config.get('allowed_types', ['image/jpeg', 'image/png']),
+            'required': config.get('required', False),
+            'title': config.get('title', 'Fotos'),
+            'description': config.get('description', ''),
+            'template_name': config.get('template_name', 'photos/photos_main.html')
+        },
+        template_name=config.get('template_name', 'photos/photos_main.html'),
+        css_classes=config.get('css_classes', 'fotos-container')
+    )
+
+
+def _create_info_element_config(config: Dict[str, Any]) -> SubElementoConfig:
+    """Crea configuración para un elemento informativo."""
+    return SubElementoConfig(
+        tipo='info',
+        config={
+            'title': config.get('title', 'Información'),
+            'content': config.get('content', ''),
+            'template_name': config.get('template_name', 'components/info_element.html'),
+            'icon': config.get('icon', 'info'),
+            'color': config.get('color', 'info')
+        },
+        template_name=config.get('template_name', 'components/info_element.html'),
+        css_classes=config.get('css_classes', 'info-container')
+    )
+
+
+def _create_custom_element_config(config: Dict[str, Any]) -> SubElementoConfig:
+    """Crea configuración para un elemento personalizado."""
+    return SubElementoConfig(
+        tipo='custom',
+        config=config.get('config', {}),
+        template_name=config.get('template_name', 'components/custom_element.html'),
+        css_classes=config.get('css_classes', 'custom-container')
+    )
+
+
+# ============================================================================
+# FUNCIONES DE AYUDA PARA CREAR ELEMENTOS ESPECÍFICOS
+# ============================================================================
+
+def create_form_element(
+    model_class: Type[models.Model] = None,
+    form_class: Type = None,
+    title: str = "Formulario",
+    description: str = "",
+    fields: List[str] = None,
+    template_name: str = "components/form_element.html",
+    required: bool = True,
+    css_classes: str = "form-container",
+    success_message: str = None,
+    error_message: str = None
+) -> Dict[str, Any]:
+    """
+    Crea un elemento de formulario para usar en create_flexible_step_config.
+    """
+    return {
+        'type': 'form',
+        'model_class': model_class,
+        'form_class': form_class,
+        'title': title,
+        'description': description,
+        'fields': fields or [],
+        'template_name': template_name,
+        'required': required,
+        'css_classes': css_classes,
+        'success_message': success_message,
+        'error_message': error_message
+    }
+
+
+def create_table_element(
+    model_class: Type[models.Model],
+    title: str = "Tabla",
+    description: str = "",
+    columns: List[Dict[str, Any]] = None,
+    page_length: int = 10,
+    allow_create: bool = True,
+    allow_edit: bool = True,
+    allow_delete: bool = True,
+    required: bool = False,
+    min_rows: int = 0,
+    max_rows: int = None,
+    css_classes: str = "table-container",
+    template_name: str = "components/table_element.html"
+) -> Dict[str, Any]:
+    """
+    Crea un elemento de tabla para usar en create_flexible_step_config.
+    """
+    return {
+        'type': 'table',
+        'model_class': model_class,
+        'title': title,
+        'description': description,
+        'columns': columns or [],
+        'page_length': page_length,
+        'allow_create': allow_create,
+        'allow_edit': allow_edit,
+        'allow_delete': allow_delete,
+        'required': required,
+        'min_rows': min_rows,
+        'max_rows': max_rows,
+        'css_classes': css_classes,
+        'template_name': template_name
+    }
+
+
+def create_map_element(
+    map_type: str = "single_point",
+    title: str = "Mapa",
+    description: str = "",
+    lat_field: str = "lat",
+    lon_field: str = "lon",
+    name_field: str = "name",
+    zoom: int = 15,
+    icon_color: str = "red",
+    icon_size: str = "normal",
+    icon_type: str = "marker",
+    required: bool = False,
+    css_classes: str = "mapa-container",
+    template_name: str = "components/mapa.html"
+) -> Dict[str, Any]:
+    """
+    Crea un elemento de mapa para usar en create_flexible_step_config.
+    """
+    return {
+        'type': 'map',
+        'map_type': map_type,
+        'title': title,
+        'description': description,
+        'lat_field': lat_field,
+        'lon_field': lon_field,
+        'name_field': name_field,
+        'zoom': zoom,
+        'icon_color': icon_color,
+        'icon_size': icon_size,
+        'icon_type': icon_type,
+        'required': required,
+        'css_classes': css_classes,
+        'template_name': template_name
+    }
+
+
+def create_photos_element(
+    title: str = "Fotos",
+    description: str = "",
+    min_count: int = 4,
+    max_count: int = None,
+    allowed_types: List[str] = None,
+    required: bool = False,
+    css_classes: str = "fotos-container",
+    template_name: str = "photos/photos_main.html"
+) -> Dict[str, Any]:
+    """
+    Crea un elemento de fotos para usar en create_flexible_step_config.
+    """
+    if allowed_types is None:
+        allowed_types = ['image/jpeg', 'image/png']
+    
+    return {
+        'type': 'photos',
+        'title': title,
+        'description': description,
+        'min_count': min_count,
+        'max_count': max_count,
+        'allowed_types': allowed_types,
+        'required': required,
+        'css_classes': css_classes,
+        'template_name': template_name
+    }
+
+
+def create_info_element(
+    title: str = "Información",
+    content: str = "",
+    icon: str = "info",
+    color: str = "info",
+    css_classes: str = "info-container",
+    template_name: str = "components/info_element.html"
+) -> Dict[str, Any]:
+    """
+    Crea un elemento informativo para usar en create_flexible_step_config.
+    """
+    return {
+        'type': 'info',
+        'title': title,
+        'content': content,
+        'icon': icon,
+        'color': color,
+        'css_classes': css_classes,
+        'template_name': template_name
+    }
+
+
+def create_custom_element(
+    config: Dict[str, Any],
+    template_name: str = "components/custom_element.html",
+    css_classes: str = "custom-container"
+) -> Dict[str, Any]:
+    """
+    Crea un elemento personalizado para usar en create_flexible_step_config.
+    """
+    return {
+        'type': 'custom',
+        'config': config,
+        'template_name': template_name,
+        'css_classes': css_classes
+    } 
