@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title">{{ title }}</h2>
+            <p class="text-base-content/70">{{ description }}</p>
+            
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                <div class="stat bg-primary text-primary-content rounded-lg">
+                    <div class="stat-title">Total Avances</div>
+                    <div class="stat-value">{{ total_avances }}</div>
+                    <div class="stat-desc">Registros de avance físico</div>
+                </div>
+                
+                <div class="stat bg-secondary text-secondary-content rounded-lg">
+                    <div class="stat-title">Componentes</div>
+                    <div class="stat-value">{{ total_componentes }}</div>
+                    <div class="stat-desc">Componentes activos</div>
+                </div>
+                
+                <div class="stat bg-accent text-accent-content rounded-lg">
+                    <div class="stat-title">Grupos</div>
+                    <div class="stat-value">{{ total_grupos }}</div>
+                    <div class="stat-desc">Grupos de componentes</div>
+                </div>
+                
+                <div class="stat bg-info text-info-content rounded-lg">
+                    <div class="stat-title">Estructuras</div>
+                    <div class="stat-value">{{ total_estructuras }}</div>
+                    <div class="stat-desc">Estructuras de proyecto</div>
+                </div>
+            </div>
+            
+            <!-- Sitios con Avances -->
+            {% if sitios_con_avances %}
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold mb-4">Sitios con Avances Físicos</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for sitio in sitios_con_avances %}
+                    <div class="card bg-base-200 shadow-md">
+                        <div class="card-body">
+                            <h4 class="card-title text-lg">{{ sitio.name }}</h4>
+                            <p class="text-base-content/70">{{ sitio.comuna|default:"Sin comuna" }}</p>
+                            <div class="card-actions justify-end mt-4">
+                                <a href="{% url 'proyectos:avance_fisico_sitio' sitio.id %}" class="btn btn-primary btn-sm">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    Ver Avance
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Acciones rápidas -->
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold mb-4">Acciones Rápidas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="{% url 'proyectos:avance_fisico_list' %}" class="btn btn-primary">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Ver Todos los Avances
+                    </a>
+                    
+                    <a href="{% url 'proyectos:avance_fisico_create' %}" class="btn btn-success">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Crear Avance Físico
+                    </a>
+                    
+                    <a href="/admin/proyectos/" class="btn btn-outline">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Administración
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

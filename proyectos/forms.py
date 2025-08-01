@@ -1,17 +1,15 @@
-"""
-Formularios para registros reg_visita.
-"""
-
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div, Row, Column
-from .models import RegVisita, AvanceProyecto
-from registros.forms.utils import get_form_field_css_class
+from reg_visita.models import AvanceProyecto, RegVisita
+from proyectos.models import EstructuraProyecto, Componente
+from core.models.sites import Site
 
 
-class AvanceProyectoForm(forms.ModelForm):
+class AvanceFisicoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        self.registro_id = kwargs.pop('registro_id', None)
+        self.sitio_id = kwargs.pop('sitio_id', None)
+        self.estructura_id = kwargs.pop('estructura_id', None)
         super().__init__(*args, **kwargs)
         
         self.helper = FormHelper()
@@ -21,39 +19,48 @@ class AvanceProyectoForm(forms.ModelForm):
         self.helper.label_class = 'text-sm text-base-content'
         self.helper.field_class = 'mb-2'
         
-        # Configurar el campo registro automáticamente
+        # Configurar el campo registro
         self.fields['registro'].queryset = RegVisita.objects.all()
         
-        try:
-            if self.registro_id:
-                registro_obj = RegVisita.objects.get(id=self.registro_id)
-                self.fields['registro'].widget = forms.HiddenInput()
-                self.initial['registro'] = registro_obj.id
-                self.fields['registro'].initial = registro_obj.id
-            elif self.instance.pk:
-                self.fields['registro'].widget = forms.HiddenInput()
-            else:
-                self.fields['registro'].widget = forms.HiddenInput()
-        except RegVisita.DoesNotExist:
-            self.fields['registro'].widget = forms.HiddenInput()
-
-        # Configurar campos de relación
-        if 'proyectos' in self.fields:
-            from proyectos.models import EstructuraProyecto
-            self.fields['proyecto'].queryset = EstructuraProyecto.objects.filter(activo=True)
+        # Si se proporciona sitio_id, filtrar registros por sitio
+        if self.sitio_id:
+            try:
+                sitio = Site.objects.get(id=self.sitio_id)
+                self.fields['registro'].queryset = RegVisita.objects.filter(sitio=sitio)
+                # Si solo hay un registro para este sitio, seleccionarlo automáticamente
+                if self.fields['registro'].queryset.count() == 1:
+                    registro = self.fields['registro'].queryset.first()
+                    self.initial['registro'] = registro.id
+            except Site.DoesNotExist:
+                pass
         
-        if 'componente' in self.fields:
-            from proyectos.models import Componente
-            self.fields['componente'].queryset = Componente.objects.filter(activo=True)
+        # Configurar el campo proyecto (estructura)
+        self.fields['proyecto'].queryset = EstructuraProyecto.objects.filter(activo=True)
+        
+        # Si se proporciona estructura_id, seleccionarla automáticamente
+        if self.estructura_id:
+            try:
+                estructura = EstructuraProyecto.objects.get(id=self.estructura_id)
+                self.initial['proyecto'] = estructura.id
+                # También establecer el componente automáticamente
+                self.initial['componente'] = estructura.componente.id
+            except EstructuraProyecto.DoesNotExist:
+                pass
+        
+        # Configurar el campo componente
+        self.fields['componente'].queryset = Componente.objects.filter(activo=True)
 
         self.helper.layout = Layout(
-            Field('registro'),
             Row(
+                Column('registro', css_class='form-group col-md-6'),
                 Column('proyecto', css_class='form-group col-md-6'),
+                css_class='form-row'
+            ),
+            Row(
                 Column('componente', css_class='form-group col-md-6'),
                 css_class='form-row'
             ),
-            Field('comentarios', css_class=f"{get_form_field_css_class(self, 'comentarios')} w-full"),
+            Field('comentarios', css_class='w-full'),
             Row(
                 Column('ejecucion_anterior', css_class='form-group col-md-3'),
                 Column('ejecucion_actual', css_class='form-group col-md-3'),
@@ -62,7 +69,7 @@ class AvanceProyectoForm(forms.ModelForm):
                 css_class='form-row'
             ),
             Div(
-                Submit('submit', 'Guardar Avance de Proyecto', css_class='btn btn-success w-full mt-4 sombra'),
+                Submit('submit', 'Guardar Avance Físico', css_class='btn btn-success w-full mt-4'),
                 css_class='text-center'
             ),
         )
@@ -71,6 +78,7 @@ class AvanceProyectoForm(forms.ModelForm):
         model = AvanceProyecto
         fields = ['registro', 'proyecto', 'componente', 'comentarios', 'ejecucion_anterior', 'ejecucion_actual', 'ejecucion_acumulada', 'ejecucion_total']
         labels = {
+            'registro': 'Registro de Visita',
             'proyecto': 'Estructura de Proyecto',
             'componente': 'Componente',
             'comentarios': 'Comentarios',
@@ -100,5 +108,4 @@ class AvanceProyectoForm(forms.ModelForm):
                 'min': 0, 'step': 0.01,
                 'placeholder': '0.00'
             }),
-        }
-
+        } 

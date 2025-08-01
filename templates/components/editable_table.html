@@ -301,7 +301,7 @@ function setupEventListeners() {
 }
 
 // Iniciar edición de celda
-function startEdit(cell) {
+async function startEdit(cell) {
     if (tableState.editingCell) {
         cancelEdit();
     }
@@ -312,7 +312,7 @@ function startEdit(cell) {
     tableState.editingCell = cell;
     tableState.originalValue = cell.textContent;
     
-    const input = createInputElement(column, cell.textContent);
+    const input = await createInputElement(column, cell.textContent);
     cell.innerHTML = '';
     cell.appendChild(input);
     input.focus();
@@ -329,21 +329,52 @@ function startEdit(cell) {
 }
 
 // Crear elemento de input
-function createInputElement(column, value) {
-    if (column.type === 'select' && column.options) {
+async function createInputElement(column, value) {
+    if (column.type === 'select') {
         const select = document.createElement('select');
         select.className = 'editable-select';
-        select.innerHTML = '<option value="">Seleccionar...</option>';
+        select.innerHTML = '<option value="">Cargando opciones...</option>';
         
-        column.options.forEach(option => {
-            const optionElement = document.createElement('option');
-            optionElement.value = option.value;
-            optionElement.textContent = option.label;
-            if (option.value == value) {
-                optionElement.selected = true;
+        // Si hay opciones estáticas, usarlas
+        if (column.options) {
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+            column.options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.label;
+                if (option.value == value) {
+                    optionElement.selected = true;
+                }
+                select.appendChild(optionElement);
+            });
+        }
+        // Si hay API para cargar opciones dinámicamente
+        else if (column.options_api) {
+            try {
+                const response = await fetch(column.options_api);
+                if (response.ok) {
+                    const data = await response.json();
+                    select.innerHTML = '<option value="">Seleccionar...</option>';
+                    
+                    data.data.forEach(item => {
+                        const optionElement = document.createElement('option');
+                        const valueField = column.value_field || 'id';
+                        const displayField = column.display_field || 'nombre';
+                        optionElement.value = item[valueField];
+                        optionElement.textContent = item[displayField];
+                        if (item[valueField] == value) {
+                            optionElement.selected = true;
+                        }
+                        select.appendChild(optionElement);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">Error al cargar opciones</option>';
+                }
+            } catch (error) {
+                console.error('Error cargando opciones:', error);
+                select.innerHTML = '<option value="">Error al cargar opciones</option>';
             }
-            select.appendChild(optionElement);
-        });
+        }
         
         return select;
     } else {
@@ -448,28 +479,28 @@ async function deleteRow(rowId) {
 }
 
 // Abrir modal para agregar
-function openAddModal() {
+async function openAddModal() {
     document.getElementById('modal-title').textContent = 'Agregar Registro';
     document.getElementById('edit-form').dataset.mode = 'add';
-    generateFormFields({});
+    await generateFormFields({});
     document.getElementById('edit-modal').classList.add('modal-open');
 }
 
 // Abrir modal para editar
-function openEditModal(row) {
+async function openEditModal(row) {
     document.getElementById('modal-title').textContent = 'Editar Registro';
     document.getElementById('edit-form').dataset.mode = 'edit';
     document.getElementById('edit-form').dataset.rowId = row.id;
-    generateFormFields(row);
+    await generateFormFields(row);
     document.getElementById('edit-modal').classList.add('modal-open');
 }
 
 // Generar campos del formulario
-function generateFormFields(data) {
+async function generateFormFields(data) {
     const container = document.getElementById('form-fields');
     container.innerHTML = '';
     
-    TABLE_CONFIG.columns.forEach(column => {
+    for (const column of TABLE_CONFIG.columns) {
         const div = document.createElement('div');
         div.className = 'form-control w-full mb-4';
         
@@ -478,21 +509,52 @@ function generateFormFields(data) {
         label.innerHTML = `<span class="label-text">${column.label}</span>`;
         div.appendChild(label);
         
-        if (column.type === 'select' && column.options) {
+        if (column.type === 'select') {
             const select = document.createElement('select');
             select.name = column.key;
             select.className = 'select select-bordered w-full';
-            select.innerHTML = '<option value="">Seleccionar...</option>';
+            select.innerHTML = '<option value="">Cargando opciones...</option>';
             
-            column.options.forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option.value;
-                optionElement.textContent = option.label;
-                if (option.value == data[column.key]) {
-                    optionElement.selected = true;
+            // Si hay opciones estáticas, usarlas
+            if (column.options) {
+                select.innerHTML = '<option value="">Seleccionar...</option>';
+                column.options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.label;
+                    if (option.value == data[column.key]) {
+                        optionElement.selected = true;
+                    }
+                    select.appendChild(optionElement);
+                });
+            }
+            // Si hay API para cargar opciones dinámicamente
+            else if (column.options_api) {
+                try {
+                    const response = await fetch(column.options_api);
+                    if (response.ok) {
+                        const responseData = await response.json();
+                        select.innerHTML = '<option value="">Seleccionar...</option>';
+                        
+                        responseData.data.forEach(item => {
+                            const optionElement = document.createElement('option');
+                            const valueField = column.value_field || 'id';
+                            const displayField = column.display_field || 'nombre';
+                            optionElement.value = item[valueField];
+                            optionElement.textContent = item[displayField];
+                            if (item[valueField] == data[column.key]) {
+                                optionElement.selected = true;
+                            }
+                            select.appendChild(optionElement);
+                        });
+                    } else {
+                        select.innerHTML = '<option value="">Error al cargar opciones</option>';
+                    }
+                } catch (error) {
+                    console.error('Error cargando opciones:', error);
+                    select.innerHTML = '<option value="">Error al cargar opciones</option>';
                 }
-                select.appendChild(optionElement);
-            });
+            }
             
             div.appendChild(select);
         } else {
@@ -507,7 +569,7 @@ function generateFormFields(data) {
         }
         
         container.appendChild(div);
-    });
+    }
 }
 
 // Manejar envío del formulario

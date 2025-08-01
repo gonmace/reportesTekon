@@ -13,41 +13,75 @@ from registros.config import (
     create_sub_element_only_config,
     create_table_only_config
 )
-from .models import RegVisita, Visita, Avance
-from .forms import VisitaForm, AvanceForm
+from .models import RegVisita, AvanceProyecto
 from core.models.sites import Site
 
-# Configuración de columnas para tabla editable de visitas
-visitas_columns = [
+# Configuración de columnas para tabla editable de avances de proyecto
+avances_proyecto_columns = [
+    {
+        'key': 'proyecto',
+        'label': 'Estructura Proyecto',
+        'type': 'select',
+        'editable': True,
+        'required': False,
+        'options_api': '/reg_visita/api/estructuras_proyecto/',  # API para cargar opciones dinámicamente
+        'display_field': 'nombre',  # Campo a mostrar en el select
+        'value_field': 'id'  # Campo a usar como valor
+    },
+    {
+        'key': 'componente',
+        'label': 'Componente',
+        'type': 'select',
+        'editable': True,
+        'required': False,
+        'options_api': '/reg_visita/api/componentes/',  # API para cargar opciones dinámicamente
+        'display_field': 'nombre',  # Campo a mostrar en el select
+        'value_field': 'id'  # Campo a usar como valor
+    },
     {
         'key': 'comentarios',
         'label': 'Comentarios',
         'type': 'text',
         'editable': True,
-        'required': True
+        'required': False
     },
     {
-        'key': 'created_at',
-        'label': 'Fecha Creación',
-        'type': 'text',
-        'editable': False
-    },
-    {
-        'key': 'updated_at',
-        'label': 'Última Actualización',
-        'type': 'text',
-        'editable': False
-    }
-]
-
-# Configuración de columnas para tabla editable de avances
-avances_columns = [
-    {
-        'key': 'comentarios',
-        'label': 'Comentarios',
-        'type': 'text',
+        'key': 'ejecucion_anterior',
+        'label': '% Ejecución Anterior',
+        'type': 'number',
         'editable': True,
-        'required': True
+        'required': True,
+        'min': 0,
+        'max': 100,
+        'step': 0.01
+    },
+    {
+        'key': 'ejecucion_actual',
+        'label': '% Ejecución Actual',
+        'type': 'number',
+        'editable': True,
+        'required': True,
+        'min': 0,
+        'max': 100,
+        'step': 0.01
+    },
+    {
+        'key': 'ejecucion_acumulada',
+        'label': '% Ejecución Acumulada',
+        'type': 'number',
+        'editable': True,
+        'required': True,
+        'min': 0,
+        'step': 0.01
+    },
+    {
+        'key': 'ejecucion_total',
+        'label': '% Ejecución Total',
+        'type': 'number',
+        'editable': True,
+        'required': True,
+        'min': 0,
+        'step': 0.01
     },
     {
         'key': 'created_at',
@@ -65,25 +99,13 @@ avances_columns = [
 
 # Configuración de pasos usando tablas editables
 PASOS_CONFIG = {
-    'visita': create_table_only_config(
-        title='Visitas',
-        description='Administre las visitas realizadas. Puede editar los comentarios directamente en la tabla.',
-        columns=visitas_columns,
-        model_class=Visita,
-        template_name='components/editable_table.html',
-        api_url='/reg_visita/api/visitas/',
-        allow_create=True,
-        allow_edit=True,
-        allow_delete=True,
-        page_length=10
-    ),
-    'avance': create_table_only_config(
-        title='Avances',
-        description='Administre los avances registrados. Puede editar los comentarios directamente en la tabla.',
-        columns=avances_columns,
-        model_class=Avance,
-        template_name='components/editable_table.html',
-        api_url='/reg_visita/api/avances/',
+    'avance_proyecto': create_table_only_config(
+        title='Avances de Proyecto',
+        description='Administre los avances de ejecución de proyectos. Puede editar los porcentajes de ejecución y seleccionar la estructura de proyecto y componente relacionado directamente en la tabla.',
+        columns=avances_proyecto_columns,
+        model_class=AvanceProyecto,
+        template_name='components/editable_table.html',  # Usar directamente el template de tabla editable
+        api_url='/reg_visita/api/avances_proyecto/',
         allow_create=True,
         allow_edit=True,
         allow_delete=True,

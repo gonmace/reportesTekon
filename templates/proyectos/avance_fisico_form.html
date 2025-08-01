@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="card-title">{{ title }}</h2>
+                    <p class="text-base-content/70">{{ description }}</p>
+                    
+                    {% if sitio_seleccionado %}
+                    <div class="mt-2">
+                        <span class="badge badge-primary">Sitio: {{ sitio_seleccionado.name }}</span>
+                        {% if sitio_seleccionado.comuna %}
+                            <span class="badge badge-outline">{{ sitio_seleccionado.comuna }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if estructura_seleccionada %}
+                    <div class="mt-2">
+                        <span class="badge badge-secondary">Estructura: {{ estructura_seleccionada.grupo.name }} - {{ estructura_seleccionada.componente.name }}</span>
+                        <span class="badge badge-info">Incidencia: {{ estructura_seleccionada.incidencia }}%</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <a href="{% url 'proyectos:avance_fisico_list' %}" class="btn btn-outline">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver
+                </a>
+            </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Registro -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Registro</span>
+                        </label>
+                        {{ form.registro }}
+                        {% if form.registro.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.registro.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Proyecto -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Estructura de Proyecto</span>
+                        </label>
+                        {{ form.proyecto }}
+                        {% if form.proyecto.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.proyecto.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Componente -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Componente</span>
+                        </label>
+                        {{ form.componente }}
+                        {% if form.componente.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.componente.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Comentarios -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Comentarios</span>
+                    </label>
+                    {{ form.comentarios }}
+                    {% if form.comentarios.errors %}
+                        <div class="text-error text-sm mt-1">{{ form.comentarios.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Porcentajes de Ejecución -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">% Ejecución Anterior</span>
+                        </label>
+                        {{ form.ejecucion_anterior }}
+                        {% if form.ejecucion_anterior.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.ejecucion_anterior.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">% Ejecución Actual</span>
+                        </label>
+                        {{ form.ejecucion_actual }}
+                        {% if form.ejecucion_actual.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.ejecucion_actual.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">% Ejecución Acumulada</span>
+                        </label>
+                        {{ form.ejecucion_acumulada }}
+                        {% if form.ejecucion_acumulada.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.ejecucion_acumulada.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">% Ejecución Total</span>
+                        </label>
+                        {{ form.ejecucion_total }}
+                        {% if form.ejecucion_total.errors %}
+                            <div class="text-error text-sm mt-1">{{ form.ejecucion_total.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Botones -->
+                <div class="flex justify-end gap-4 pt-6">
+                    <a href="{% url 'proyectos:avance_fisico_list' %}" class="btn btn-outline">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-calcular ejecución acumulada y total
+document.addEventListener('DOMContentLoaded', function() {
+    const ejecucionAnterior = document.getElementById('id_ejecucion_anterior');
+    const ejecucionActual = document.getElementById('id_ejecucion_actual');
+    const ejecucionAcumulada = document.getElementById('id_ejecucion_acumulada');
+    const ejecucionTotal = document.getElementById('id_ejecucion_total');
+    
+    function calcularEjecucion() {
+        const anterior = parseFloat(ejecucionAnterior.value) || 0;
+        const actual = parseFloat(ejecucionActual.value) || 0;
+        const acumulada = anterior + actual;
+        
+        ejecucionAcumulada.value = acumulada.toFixed(2);
+        ejecucionTotal.value = acumulada.toFixed(2);
+    }
+    
+    ejecucionAnterior.addEventListener('input', calcularEjecucion);
+    ejecucionActual.addEventListener('input', calcularEjecucion);
+});
+</script>
+{% endblock %} 

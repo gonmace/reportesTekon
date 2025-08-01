@@ -24,10 +24,12 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_daisyui',
     'django_tables2',
+    'admin_sort',
     
     'users',
     'core',
     'photos',
+    'proyectos',
     'reg_txtss',
     'reg_visita',
     'pdf_reports',
@@ -124,6 +126,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom User Model
+AUTH_USER_MODEL = 'users.User'
 
 from import_export.formats.base_formats import XLSX, CSV
 EXPORT_FORMATS = [XLSX, CSV]

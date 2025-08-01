@@ -481,19 +481,47 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 from photos.models import Photos
                 from django.contrib.contenttypes.models import ContentType
                 
-                # Obtener el ContentType del modelo del registro
-                content_type = ContentType.objects.get_for_model(type(registro))
+                # Obtener configuración de fotos para determinar el modelo objetivo
+                target_model = None
+                for sub in elemento_config.sub_elementos:
+                    if sub.tipo == 'fotos':
+                        target_model = sub.config.get('target_model')
+                        break
+                
+                # Si se especifica un modelo objetivo, usarlo; si no, usar el registro principal
+                if target_model:
+                    try:
+                        from django.apps import apps
+                        app_label = registro._meta.app_label
+                        model_class = apps.get_model(app_label, target_model)
+                        content_type = ContentType.objects.get_for_model(model_class)
+                        
+                        # Buscar la instancia del modelo específico
+                        try:
+                            target_instance = model_class.objects.get(registro_id=registro.id)
+                            object_id = target_instance.id
+                        except model_class.DoesNotExist:
+                            object_id = None
+                    except LookupError:
+                        # Si no se encuentra el modelo, usar el registro principal
+                        content_type = ContentType.objects.get_for_model(type(registro))
+                        object_id = registro.id
+                else:
+                    # Usar el registro principal por defecto
+                    content_type = ContentType.objects.get_for_model(type(registro))
+                    object_id = registro.id
                 
                 # Determinar el nombre de la app para el filtro
                 app_filter = self.registro_config.app_namespace
                 
                 # Contar fotos para este registro, etapa y app
-                photo_count = Photos.count_photos(
-                    registro_id=registro.id,
-                    etapa=step_name,
-                    app_name=app_filter,
-                    content_type=content_type
-                )
+                if object_id is not None:
+                    photo_count = Photos.count_photos(
+                        registro_id=object_id,
+                        etapa=step_name,
+                        app_name=app_filter,
+                        content_type=content_type
+                    )
             
             # Procesar configuración del mapa
             map_config = self._process_map_config(registro, elemento_config, instance)

@@ -349,7 +349,8 @@ def create_photos_config(
     photo_min: int = 4,
     allowed_types: List[str] = ['image/jpeg', 'image/png'],
     photos_template: str = 'photos/photos_main.html',
-    css_classes: str = 'fotos-container'
+    css_classes: str = 'fotos-container',
+    target_model: str = None
 ) -> SubElementoConfig:
     """
     Crea configuración para sub-elemento de fotos.
@@ -359,17 +360,23 @@ def create_photos_config(
         allowed_types: Tipos de archivo permitidos
         photos_template: Template para las fotos
         css_classes: Clases CSS para el contenedor
+        target_model: Modelo específico al que asociar las fotos (opcional)
     
     Returns:
         SubElementoConfig configurado para fotos
     """
     
+    config = {
+        'min_files': photo_min,
+        'allowed_types': allowed_types
+    }
+    
+    if target_model:
+        config['target_model'] = target_model
+    
     return SubElementoConfig(
         tipo='fotos',
-        config={
-            'min_files': photo_min,
-            'allowed_types': allowed_types
-        },
+        config=config,
         template_name=photos_template,
         css_classes=css_classes
     )
