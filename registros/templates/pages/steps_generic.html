@@ -8,36 +8,29 @@
 
 {% block content %}
 
-{% if allow_multiple_per_site and registros_sitio|length > 1 %}
+{% if allow_multiple_per_site %}
 <!-- Selector de fecha para múltiples registros del mismo sitio -->
 <div class="mb-6 p-4 bg-base-100 rounded-lg shadow-sm border sombra">
     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2">
             <span class="text-sm font-medium text-base-content">Seleccionar fecha:</span>
+            <span class="text-xs text-base-content/60">(Hoy para nueva fecha, fechas existentes para navegar)</span>
         </div>
         <div class="flex items-center gap-2">
             <select id="fecha-selector" class="select select-bordered select-sm" onchange="cambiarRegistro(this.value)">
+                <!-- Opción para fecha de hoy -->
+                <option value="hoy" style="font-weight: bold; color: #3b82f6;">
+                    🗓️ Hoy ({{ "now"|date:"d/m/Y" }})
+                </option>
+                <!-- Separador -->
+                <option value="" disabled>──────────</option>
+                <!-- Registros existentes -->
                 {% for reg in registros_sitio %}
                     <option value="{{ reg.id }}" {% if reg.id == registro.id %}selected{% endif %}>
                         {{ reg.fecha|date:"d/m/Y" }} {% if reg.id == registro.id %}(Actual){% endif %}
                     </option>
                 {% endfor %}
             </select>
-            <button class="btn btn-primary btn-sm" id="activar-registro-btn" type="button">
-                <i class="fa-solid fa-plus"></i>
-                Nueva Fecha
-            </button>
-        </div>
-    </div>
-</div>
-{% elif allow_multiple_per_site %}
-<!-- Solo botón Nueva Fecha cuando permite múltiples pero no hay otros registros -->
-<div class="mb-6 p-4 bg-base-100 rounded-lg shadow-sm border sombra">
-    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-medium text-base-content">Registros del sitio:</span>
-        </div>
-        <div class="flex items-center gap-2">
             <button class="btn btn-primary btn-sm" id="activar-registro-btn" type="button">
                 <i class="fa-solid fa-plus"></i>
                 Nueva Fecha
@@ -105,7 +98,15 @@
 
 <script>
 function cambiarRegistro(registroId) {
-    if (registroId) {
+    if (registroId === 'hoy') {
+        // Si selecciona "Hoy", abrir el modal para crear un nuevo registro con fecha de hoy
+        const modal = document.getElementById('activar-registro-modal');
+        const activarBtn = document.getElementById('activar-registro-btn');
+        if (activarBtn && modal) {
+            activarBtn.click();
+        }
+    } else if (registroId) {
+        // Si selecciona un registro existente, navegar a él
         window.location.href = '/{{ app_namespace }}/' + registroId + '/';
     }
 }
@@ -142,10 +143,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Pre-seleccionar la fecha actual
             const fechaInput = document.getElementById('id_fecha');
-            if (fechaInput && window.FECHA_ACTUAL && window.FECHA_ACTUAL !== 'None') {
-                fechaInput.value = window.FECHA_ACTUAL;
-            } else if (fechaInput) {
-                // Si no hay fecha válida, usar la fecha actual
+            if (fechaInput) {
+                // Siempre usar la fecha actual cuando se abre el modal
                 const today = new Date().toISOString().split('T')[0];
                 fechaInput.value = today;
             }
