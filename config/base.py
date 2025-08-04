@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'reg_txtss',
     'reg_visita',
     'pdf_reports',
+    'proyectos',
     
     'registros',
 ]

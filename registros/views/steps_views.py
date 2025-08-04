@@ -49,7 +49,8 @@ class GenericRegistroListView(LoginRequiredMixin, BreadcrumbsMixin, ListView):
             'form': create_activar_registro_form(
                 registro_model=self.registro_config.registro_model,
                 title_default=self.registro_config.title,
-                description_default=f'Registro {self.registro_config.title} activado desde el formulario'
+                description_default=f'Registro {self.registro_config.title} activado desde el formulario',
+                allow_multiple_per_site=getattr(self.registro_config, 'allow_multiple_per_site', False)
             )(),
             'title': self.registro_config.title,
             'breadcrumbs': self.registro_config.breadcrumbs,
@@ -130,7 +131,8 @@ class GenericRegistroTableListView(LoginRequiredMixin, BreadcrumbsMixin, SingleT
             'form': create_activar_registro_form(
                 registro_model=self.registro_config.registro_model,
                 title_default=self.registro_config.title,
-                description_default=f'Registro {self.registro_config.title} activado desde el formulario'
+                description_default=f'Registro {self.registro_config.title} activado desde el formulario',
+                allow_multiple_per_site=getattr(self.registro_config, 'allow_multiple_per_site', False)
             )(),
         })
         
@@ -194,7 +196,8 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             'form': create_activar_registro_form(
                 registro_model=self.registro_config.registro_model,
                 title_default=self.registro_config.title,
-                description_default=f'Registro {self.registro_config.title} activado desde el formulario'
+                description_default=f'Registro {self.registro_config.title} activado desde el formulario',
+                allow_multiple_per_site=getattr(self.registro_config, 'allow_multiple_per_site', False)
             )(),
             'activar_url': f'/{self.registro_config.app_namespace}/activar/',
             'pdf_url': pdf_url,  # Agregar URL del PDF

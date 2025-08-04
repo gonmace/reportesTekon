@@ -6,7 +6,7 @@ from core.models.sites import Site
 from registros.models.base import RegistroBase
 
 
-def create_activar_registro_form(registro_model, title_default='Registro', description_default='Registro activado desde el formulario'):
+def create_activar_registro_form(registro_model, title_default='Registro', description_default='Registro activado desde el formulario', allow_multiple_per_site=False, project=False):
     """
     Factory function para crear un formulario de activación específico para un modelo.
     
@@ -14,6 +14,8 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
         registro_model: Clase del modelo que hereda de RegistroBase
         title_default: Título por defecto
         description_default: Descripción por defecto
+        allow_multiple_per_site: Si permite múltiples registros por sitio (muestra campo fecha)
+        project: Si debe mostrar campo de estructura/grupo de proyectos
     
     Returns:
         Clase de formulario configurada
@@ -30,24 +32,36 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
             self.helper.form_tag = True
             self.helper.form_method = 'post'
             self.helper.form_action = ''
-            self.helper.label_class = 'text-sm text-base-content'
+            self.helper.label_class = 'text-sm'
             self.helper.field_class = 'mb-2'
-            self.helper.layout = Layout(
+            
+            # Construir layout dinámicamente según allow_multiple_per_site
+            layout_fields = [
                 Div(
                     Div(Field('sitio', css_class='select w-full'), css_class='w-full'),
                     Div(Field('user', css_class='select w-full'), css_class='w-full'),
                     css_class='flex flex-wrap -mx-2 mb-4',
-                ),
-                Div(
-                    Div(Field('fecha', css_class='input w-full'), css_class='w-full'),
-                    css_class='mb-4',
-                ),
+                )
+            ]
+            
+
+            if allow_multiple_per_site:
+                layout_fields.append(
+                    Div(
+                        Div(Field('fecha', css_class='input w-full'), css_class='w-full'),
+                        css_class='mb-4',
+                    )
+                )
+            
+            layout_fields.append(
                 Div(
                     Button('cancel', 'Cancelar', css_class='btn btn-error mt-6', type='button', onclick='closeModal()'),
                     Submit('submit', 'Activar Registro', css_class='btn btn-success flex-grow mt-6', css_id='activar-registro-btn'),
                     css_class='flex gap-2 justify-center',
-                ),
+                )
             )
+            
+            self.helper.layout = Layout(*layout_fields)
             
             # Configurar campos ocultos
             if 'title' in self.fields:
@@ -61,6 +75,20 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
             # Configurar el campo de fecha
             if 'fecha' in self.fields:
                 self.fields['fecha'].widget = forms.DateInput(attrs={'type': 'date'})
+                # Establecer fecha de hoy como valor por defecto
+                from datetime import date
+                self.fields['fecha'].initial = date.today()
+            
+            # Configurar el campo de estructura si project=True
+            if project and 'estructura' in self.fields:
+                from proyectos.models import Grupo
+                self.fields['estructura'] = forms.ModelChoiceField(
+                    queryset=Grupo.objects.filter(activo=True),
+                    empty_label="Seleccionar estructura...",
+                    label="Estructura",
+                    required=False,
+                    widget=forms.Select(attrs={'class': 'select select-bordered w-full focus:select-primary'})
+                )
             
             # Establecer valores por defecto
             if not self.instance.pk:
@@ -71,6 +99,6 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
         
         class Meta:
             model = registro_model
-            fields = ['sitio', 'user', 'fecha', 'title', 'description']
+            fields = ['sitio', 'user', 'title', 'description', 'fecha'] + (['estructura'] if project else [])
     
     return ActivarRegistroForm

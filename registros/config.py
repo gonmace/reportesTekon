@@ -761,7 +761,8 @@ def create_registro_config(
     list_template: str = "pages/main_generic.html",
     steps_template: str = "pages/steps_generic.html",
     header_title: str = None,
-    allow_multiple_per_site: bool = False
+    allow_multiple_per_site: bool = False,
+    project: bool = False
 ) -> RegistroConfig:
     """
     Crea una configuración completa de registro.
@@ -775,6 +776,7 @@ def create_registro_config(
         steps_template: Template para mostrar pasos
         header_title: Título del header (opcional)
         allow_multiple_per_site: Si permite múltiples registros por sitio (uno por día)
+        project: Si debe mostrar campo de estructura/grupo de proyectos
     
     Returns:
         RegistroConfig configurado
@@ -791,5 +793,6 @@ def create_registro_config(
             {'label': title}
         ],
         header_title=header_title,
-        allow_multiple_per_site=allow_multiple_per_site
+        allow_multiple_per_site=allow_multiple_per_site,
+        project=project
     ) 

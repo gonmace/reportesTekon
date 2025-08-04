@@ -139,5 +139,6 @@ REGISTRO_CONFIG = create_registro_config(
     app_namespace='reg_txtss',
     list_template='components/generic_tables2_template.html',
     steps_template='pages/steps_generic.html',
-    allow_multiple_per_site=False  # No permite múltiples registros por sitio
+    allow_multiple_per_site=False,  # No permite múltiples registros por sitio
+    project=False  # No muestra campo de estructura/grupo de proyectos
 ) 

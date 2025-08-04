@@ -42,5 +42,6 @@ REGISTRO_CONFIG = create_registro_config(
     app_namespace='reg_visita',
     list_template='components/generic_tables2_template.html',
     steps_template='pages/steps_generic.html',
-    allow_multiple_per_site=True  # Permite múltiples registros por sitio (uno por día)
+    allow_multiple_per_site=True,  # Permite múltiples registros por sitio (uno por día)
+    project=True  # Muestra campo de estructura/grupo de proyectos
 )

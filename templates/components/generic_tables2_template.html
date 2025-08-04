@@ -14,10 +14,10 @@
         <div class="flex items-center gap-2">
 
             {% if show_activate_button %}
-            <button class="btn btn-primary btn-sm ml-2 sombra" id="activar-registro-btn" type="button">
-                <i class="fa-solid fa-check"></i>
+            <a href="{% url app_namespace|add:':activar' %}" class="btn btn-primary btn-sm ml-2 sombra" id="activar-registro-btn">
+                <i class="fa-solid fa-plus"></i>
                 {{ activate_button_text|default:"Activar Registro" }}
-            </button>
+            </a>
             {% endif %}
             
         </div>
@@ -42,10 +42,7 @@
 </ul>
 {% endif %}
 
-<!-- Modal para activar registro -->
-{% if show_activate_button %}
-{% include modal_template|default:'components/activar_registro_form.html' %}
-{% endif %}
+
 
 {% endblock content %}
 
@@ -62,146 +59,8 @@ window.ACTIVAR_BTN_ID = '{{ activar_btn_id|default:"#activar-registro-btn" }}';
 // Verificar si Alert ya está disponible
 const Alert = window.Alert || console;
 
-class GenericModalHandler {
-    constructor(config = {}) {
-        console.log("GenericModalHandler constructor iniciado");
-        this.config = {
-            modalId: window.MODAL_ID || "#activar-registro-modal",
-            activarBtnId: window.ACTIVAR_BTN_ID || "#activar-registro-btn",
-            activarUrl: window.ACTIVAR_URL || "/activar/",
-            ...config
-        };
-        console.log("Configuración del modal:", this.config);
-        this.modal = null;
-        this.activarBtn = null;
-        this.init();
-    }
+// No se necesita JavaScript adicional ya que el botón es un enlace directo
 
-    init() {
-        console.log("GenericModalHandler init iniciado");
-        console.log("Buscando modal con ID:", this.config.modalId);
-        console.log("Buscando botón con ID:", this.config.activarBtnId);
-        
-        this.modal = document.getElementById(this.config.modalId.replace("#", ""));
-        this.activarBtn = document.getElementById(this.config.activarBtnId.replace("#", ""));
-        
-        console.log("Modal encontrado:", this.modal);
-        console.log("Botón activar encontrado:", this.activarBtn);
-        
-        // Buscar elementos alternativos si no se encuentran
-        if (!this.activarBtn) {
-            this.activarBtn = document.querySelector('[id*="activar"]');
-            console.log("Botón alternativo encontrado:", this.activarBtn);
-        }
-        
-        if (!this.modal) {
-            this.modal = document.querySelector('dialog');
-            console.log("Modal alternativo encontrado:", this.modal);
-        }
-        
-        if (this.activarBtn && this.modal) {
-            console.log("Configurando eventos del modal...");
-            this.configurarEventos();
-        } else {
-            console.error("No se encontraron los elementos del modal");
-            console.log("Elementos disponibles:", {
-                modals: document.querySelectorAll('dialog'),
-                buttons: document.querySelectorAll('[id*="activar"]')
-            });
-        }
-    }
-
-    configurarEventos() {
-        console.log("Configurando eventos del modal...");
-        
-        this.activarBtn.addEventListener("click", (e) => {
-            console.log("Botón activar clickeado", e);
-            e.preventDefault();
-            this.modal.showModal();
-        });
-        
-        console.log("Evento click agregado al botón");
-
-        window.closeModal = () => {
-            console.log("Cerrando modal");
-            this.modal.close();
-        };
-
-        const form = this.modal.querySelector("form");
-        console.log("Formulario encontrado:", form);
-        
-        if (form) {
-            console.log("Agregando event listener al formulario");
-            form.addEventListener("submit", (e) => this.handleFormSubmit(e));
-        } else {
-            console.error("No se encontró el formulario en el modal");
-        }
-    }
-
-    async handleFormSubmit(e) {
-        e.preventDefault();
-        console.log("Formulario enviado");
-        
-        const formData = new FormData(e.target);
-        const sitio = formData.get("sitio");
-        const user = formData.get("user");
-        const title = formData.get("title");
-        const description = formData.get("description");
-        
-        console.log("Datos del formulario:", { sitio, user, title, description });
-        
-        if (!sitio || !user) {
-            alert("Por favor completa todos los campos requeridos.");
-            return;
-        }
-
-        try {
-            const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-            console.log("CSRF Token:", csrfToken);
-            console.log("URL de activación:", this.config.activarUrl);
-            
-            const response = await fetch(this.config.activarUrl, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": csrfToken,
-                    "X-Requested-With": "XMLHttpRequest"
-                },
-                body: formData
-            });
-            
-            console.log("Respuesta del servidor:", response.status, response.statusText);
-            const result = await response.json();
-            console.log("Datos de respuesta:", result);
-            
-            if (response.ok && result.success) {
-                this.modal.close();
-                alert(result.message || "Registro activado exitosamente");
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                const errorMessage = result.message || "Error al activar el registro";
-                console.error("Error del servidor:", errorMessage);
-                alert(errorMessage);
-            }
-        } catch (error) {
-            console.error("Error en la petición:", error);
-            alert("Error al crear el registro. Por favor, inténtalo de nuevo.");
-        }
-    }
-}
-
-// Inicialización cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", function() {
-    console.log("DOM cargado, inicializando componentes...");
-    
-    try {
-        console.log("Inicializando GenericModalHandler...");
-        new GenericModalHandler();
-        console.log("Componentes inicializados");
-    } catch (error) {
-        console.error("Error inicializando componentes:", error);
-    }
-});
+// No se necesita inicialización adicional ya que el botón es un enlace directo
 </script>
 {% endblock extra_js %} 

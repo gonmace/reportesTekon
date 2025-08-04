@@ -102,7 +102,8 @@ class RegistroConfig:
         app_namespace: str = None,
         breadcrumbs: list = None,
         header_title: str = None,
-        allow_multiple_per_site: bool = False
+        allow_multiple_per_site: bool = False,
+        project: bool = False
     ):
         self.registro_model = registro_model
         self.pasos = pasos
@@ -113,6 +114,7 @@ class RegistroConfig:
         self.breadcrumbs = breadcrumbs or []
         self.header_title = header_title
         self.allow_multiple_per_site = allow_multiple_per_site
+        self.project = project
 
 
 class ElementoGenerico(ElementoRegistro):

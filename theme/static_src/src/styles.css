@@ -99,6 +99,11 @@
     @apply !shadow-md !shadow-black;
   }
 
+  /* Regla personalizada para sobrescribir las reglas de DaisyUI para labels */
+  .label-text {
+    @apply !text-base-content !font-extralight;
+  }
+
   ul.timeline > li {
     @apply h-20;
   }

@@ -20,7 +20,7 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.registro_config = self.get_registro_config()
-        self.template_name = 'components/activar_registro_template.html'
+        self.template_name = 'pages/activar_registro.html'
     
     def get_registro_config(self):
         """Obtiene la configuración del registro. Debe ser sobrescrito."""
@@ -28,10 +28,14 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
     
     def get_form_class(self):
         """Retorna el formulario configurado para el modelo específico."""
+        allow_multiple = getattr(self.registro_config, 'allow_multiple_per_site', False)
+        project = getattr(self.registro_config, 'project', False)
         return create_activar_registro_form(
             registro_model=self.registro_config.registro_model,
             title_default=self.registro_config.title,
-            description_default=f'Registro {self.registro_config.title} activado desde el formulario'
+            description_default=f'Registro {self.registro_config.title} activado desde el formulario',
+            allow_multiple_per_site=allow_multiple,
+            project=project
         )
     
     def form_valid(self, form):
@@ -49,6 +53,12 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
                 from datetime import date
                 fecha = date.today()
                 print(f"Fecha vacía, usando fecha actual: {fecha}")
+            
+            # Si no hay campo fecha en el formulario, usar fecha actual
+            if 'fecha' not in form.cleaned_data:
+                from datetime import date
+                fecha = date.today()
+                print(f"No hay campo fecha en formulario, usando fecha actual: {fecha}")
             
             print(f"Sitio: {sitio}, User: {user}, Fecha: {fecha}")
             
@@ -78,16 +88,30 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
             else:
                 # Crear nuevo registro
                 try:
+                    # Obtener el grupo de actividades seleccionado
+                    grupo_actividades = form.cleaned_data.get('grupo_actividades')
+                    
                     # Crear el registro usando el modelo dinámico
-                    registro = self.registro_config.registro_model.objects.create(
-                        sitio=sitio,
-                        user=user,
-                        title=form.cleaned_data.get('title', ''),
-                        description=form.cleaned_data.get('description', ''),
-                        fecha=fecha,
-                        is_active=True,
-                        is_deleted=False
-                    )
+                    registro_data = {
+                        'sitio': sitio,
+                        'user': user,
+                        'title': form.cleaned_data.get('title', ''),
+                        'description': form.cleaned_data.get('description', ''),
+                        'fecha': fecha,
+                        'is_active': True,
+                        'is_deleted': False
+                    }
+                    
+                    # Agregar grupo_actividades si el modelo lo soporta
+                    if hasattr(self.registro_config.registro_model, 'grupo_actividades'):
+                        registro_data['grupo_actividades'] = grupo_actividades
+                    
+                    # Agregar estructura si el modelo lo soporta
+                    estructura = form.cleaned_data.get('estructura')
+                    if hasattr(self.registro_config.registro_model, 'estructura'):
+                        registro_data['estructura'] = estructura
+                    
+                    registro = self.registro_config.registro_model.objects.create(**registro_data)
                     print(f"Registro creado exitosamente: {registro}")
                 except Exception as save_error:
                     print(f"Error al guardar: {save_error}")
@@ -131,11 +155,10 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
         context = super().get_context_data(**kwargs)
         context.update({
             'page_title': self.registro_config.title,
-            'show_activate_button': True,
-            'activate_button_text': 'Activar Registro',
-            'activar_url': self.request.build_absolute_uri(f'/{self.registro_config.app_namespace}/activar/'),
-            'modal_template': 'components/activar_registro_form.html',
             'app_namespace': self.registro_config.app_namespace,
+            'activar_url': self.request.build_absolute_uri(f'/{self.registro_config.app_namespace}/activar/'),
+            'allow_multiple_per_site': getattr(self.registro_config, 'allow_multiple_per_site', False),
+            'project': getattr(self.registro_config, 'project', False),
         })
         if getattr(self.registro_config, 'header_title', None):
             context['header_title'] = self.registro_config.header_title
