@@ -113,6 +113,10 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
                     
                     registro = self.registro_config.registro_model.objects.create(**registro_data)
                     print(f"Registro creado exitosamente: {registro}")
+                    
+                    # Copiar datos de la fecha anterior si es una nueva fecha
+                    self._copiar_datos_fecha_anterior(registro, sitio, user)
+                    
                 except Exception as save_error:
                     print(f"Error al guardar: {save_error}")
                     raise save_error
@@ -162,4 +166,50 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
         })
         if getattr(self.registro_config, 'header_title', None):
             context['header_title'] = self.registro_config.header_title
-        return context 
+        return context
+    
+    def _copiar_datos_fecha_anterior(self, nuevo_registro, sitio, user):
+        """
+        Copia los datos de la fecha anterior más reciente al nuevo registro.
+        """
+        try:
+            from datetime import date
+            from reg_construccion.models import AvanceComponente
+            
+            # Buscar el registro anterior más reciente del mismo sitio y usuario
+            registro_anterior = self.registro_config.registro_model.objects.filter(
+                sitio=sitio,
+                user=user,
+                fecha__lt=nuevo_registro.fecha,  # Fecha anterior a la nueva
+                is_active=True,
+                is_deleted=False
+            ).order_by('-fecha').first()
+            
+            if not registro_anterior:
+                print(f"No se encontró registro anterior para copiar datos")
+                return
+            
+            print(f"Copiando datos del registro anterior: {registro_anterior.fecha}")
+            
+            # Copiar AvanceComponente del registro anterior
+            avances_anteriores = AvanceComponente.objects.filter(
+                registro=registro_anterior
+            ).select_related('componente')
+            
+            for avance_anterior in avances_anteriores:
+                # Crear nuevo avance con la fecha actual
+                nuevo_avance = AvanceComponente.objects.create(
+                    registro=nuevo_registro,
+                    componente=avance_anterior.componente,
+                    fecha=date.today(),
+                    porcentaje_actual=avance_anterior.porcentaje_actual,
+                    porcentaje_acumulado=avance_anterior.porcentaje_acumulado,
+                    comentarios=f"Copiado desde {registro_anterior.fecha.strftime('%d/%m/%Y')} - {avance_anterior.comentarios or 'Sin comentarios'}"
+                )
+                print(f"Copiado avance para componente: {avance_anterior.componente.nombre}")
+            
+            print(f"Se copiaron {avances_anteriores.count()} avances del registro anterior")
+            
+        except Exception as e:
+            print(f"Error al copiar datos de fecha anterior: {e}")
+            # No interrumpir el flujo principal si hay error al copiar 

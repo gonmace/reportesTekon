@@ -14,7 +14,7 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
         registro_model: Clase del modelo que hereda de RegistroBase
         title_default: Título por defecto
         description_default: Descripción por defecto
-        allow_multiple_per_site: Si permite múltiples registros por sitio (muestra campo fecha)
+        allow_multiple_per_site: Si permite múltiples registros por sitio (muestra solo campo fecha)
         project: Si debe mostrar campo de estructura/grupo de proyectos
     
     Returns:
@@ -36,19 +36,23 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
             self.helper.field_class = 'mb-2'
             
             # Construir layout dinámicamente según allow_multiple_per_site
-            layout_fields = [
-                Div(
-                    Div(Field('sitio', css_class='select w-full'), css_class='w-full'),
-                    Div(Field('user', css_class='select w-full'), css_class='w-full'),
-                    css_class='flex flex-wrap -mx-2 mb-4',
-                )
-            ]
+            layout_fields = []
             
-
+            # Si no es múltiple por sitio, mostrar sitio e ITO
+            if not allow_multiple_per_site:
+                layout_fields.append(
+                    Div(
+                        Div(Field('sitio', css_class='select w-full'), css_class='w-full'),
+                        Div(Field('user', css_class='select w-full'), css_class='w-full'),
+                        css_class='flex flex-wrap -mx-2 mb-4',
+                    )
+                )
+            
+            # Si es múltiple por sitio, solo mostrar fecha
             if allow_multiple_per_site:
                 layout_fields.append(
                     Div(
-                        Div(Field('fecha', css_class='input w-full'), css_class='w-full'),
+                        Div(Field('fecha', css_class='input input-bordered w-full focus:input-primary'), css_class='w-full'),
                         css_class='mb-4',
                     )
                 )
@@ -69,12 +73,23 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
             if 'description' in self.fields:
                 self.fields['description'].widget = forms.HiddenInput()
             
-            self.fields['sitio'].queryset = Site.get_actives()
-            self.fields['user'].queryset = User.objects.filter(user_type=User.ITO)
+            # Si es múltiple por sitio, ocultar sitio e ITO
+            if allow_multiple_per_site:
+                if 'sitio' in self.fields:
+                    self.fields['sitio'].widget = forms.HiddenInput()
+                if 'user' in self.fields:
+                    self.fields['user'].widget = forms.HiddenInput()
+            else:
+                # Configurar campos visibles solo si no es múltiple por sitio
+                self.fields['sitio'].queryset = Site.get_actives()
+                self.fields['user'].queryset = User.objects.filter(user_type=User.ITO)
             
             # Configurar el campo de fecha
             if 'fecha' in self.fields:
-                self.fields['fecha'].widget = forms.DateInput(attrs={'type': 'date'})
+                self.fields['fecha'].widget = forms.DateInput(attrs={
+                    'type': 'date',
+                    'class': 'input input-bordered w-full focus:input-primary'
+                })
                 # Establecer fecha de hoy como valor por defecto
                 from datetime import date
                 self.fields['fecha'].initial = date.today()
