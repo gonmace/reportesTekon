@@ -1,41 +1,133 @@
 {% load crispy_forms_tags %}
 
 <div class="sub-elemento sub-elemento-table">
-    <div class="card">
-        <div class="card-header">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-table me-2"></i>
-                {{ config.title|default:"Tabla de Datos" }}
-            </h5>
-        </div>
-        <div class="card-body">
-            {% if data %}
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+    <div class="card bg-base-100 shadow-xl">
+
+            
+            {% if data and data|length > 0 %}
+                <div class="overflow-x-auto">
+                    <table class="table w-full">
                         <thead>
-                            <tr>
-                                {% for key, value in data.0.items %}
-                                    <th>{{ key|title }}</th>
-                                {% endfor %}
+                            <tr class="bg-primary font-bold text-white">
+                                <th class="text-left py-3 px-4 border-r border-white/20">
+                                    COMPONENTES
+                                </th>
+                                <th class="text-center py-3 px-4 border-r border-white/20">
+                                    <div class="flex flex-col">
+                                        <span>%</span>
+                                        <span>INCIDENCIA</span>
+                                    </div>
+                                </th>
+                                <th class="text-center">
+                                    <div class="flex flex-col">
+                                        <span>% EJEC</span>
+                                        <span>ANTERIOR</span>
+                                    </div>
+                                </th>
+                                <th class="text-center">
+                                    <div class="flex flex-col">
+                                        <span>% EJEC</span>
+                                        <span>ACTUAL</span>
+                                    </div>
+                                </th>
+                                <th class="text-center">
+                                    <div class="flex flex-col">
+                                        <span>% EJEC</span>
+                                        <span>ACUMULADA</span>
+                                    </div>
+                                </th>
+                                <th class="text-center">
+                                    <div class="flex flex-col">
+                                        <span>% EJECUCION</span>
+                                        <span>TOTAL</span>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in data %}
-                                <tr>
-                                    {% for key, value in item.items %}
-                                        <td>{{ value }}</td>
-                                    {% endfor %}
-                                </tr>
+                            <tr class="hover:bg-secondary border-b border-secondary ">
+                                <td class="font-medium border-r border-secondary">{{ item.componente }}</td>
+                                <td class="text-center border-r border-secondary">{{ item.incidencia }}</td>
+                                <td class="text-center border-r border-secondary">{{ item.ejec_anterior }}</td>
+                                <td class="text-center border-r border-secondary font-semibold">{{ item.ejec_actual }}</td>
+                                <td class="text-center border-r border-secondary ">{{ item.ejec_acumulada }}</td>
+                                <td class="text-center border-r border-secondary">{{ item.ejecucion_total }}</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
+                        <tfoot>
+                            <tr class="bg-primary border-gray-300 text-white">
+                                <td class="border-r border-gray-300"><strong>TOTAL</strong></td>
+                                <td class="text-center border-r border-gray-300"><strong>100.0%</strong></td>
+                                <td class="text-center border-r border-gray-300"><strong>{{ total_ejec_anterior|default:"0%" }}</strong></td> 
+                                <td class="text-center border-r border-gray-300"><strong>{{ total_ejec_actual|default:"0%" }}</strong></td>
+                                <td class="text-center border-r border-gray-300"><strong>{{ total_ejec_acumulada|default:"0%" }}</strong></td>
+                                <td class="text-center"><strong>{{ total_ejecucion_total|default:"0.0%" }}</strong></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
+                
+                <!-- Información adicional con DaisyUI -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="card bg-primary text-primary-content">
+                        <div class="card-body">
+                            <h3 class="card-title text-sm">
+                                <i class="fas fa-info-circle"></i>
+                                Información del Proyecto
+                            </h3>
+                            <p class="text-xs">
+                                <strong>Sitio:</strong> {{ registro.sitio.nombre|default:"No especificado" }}
+                            </p>
+                            <p class="text-xs">
+                                <strong>Fecha:</strong> {{ registro.fecha|date:"d/m/Y" }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-success text-success-content">
+                        <div class="card-body">
+                            <h3 class="card-title text-sm">
+                                <i class="fas fa-chart-line"></i>
+                                Progreso General
+                            </h3>
+                            <p class="text-xs">
+                                <strong>Ejecución Total:</strong> {{ total_ejecucion_total|default:"0.0%" }}
+                            </p>
+                            <p class="text-xs">
+                                <strong>Componentes:</strong> {{ data|length }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-warning text-warning-content">
+                        <div class="card-body">
+                            <h3 class="card-title text-sm">
+                                <i class="fas fa-question-circle"></i>
+                                Leyenda
+                            </h3>
+                            <p class="text-xs">
+                                <strong>% Incidencia:</strong> Peso del componente
+                            </p>
+                            <p class="text-xs">
+                                <strong>% Ejecución:</strong> Progreso real
+                            </p>
+                            <p class="text-xs">
+                                <strong>% Total:</strong> Incidencia × Ejecución
+                            </p>
+                        </div>
+                    </div>
+                </div>
             {% else %}
-                <div class="text-center text-muted py-4">
-                    <i class="fas fa-table fa-3x mb-3"></i>
-                    <p>No hay datos disponibles</p>
+                <div class="text-center py-8">
+                    <div class="text-6xl mb-4 opacity-30">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">No hay componentes disponibles</h3>
+                    <p class="text-sm opacity-70">Selecciona una estructura de proyecto para ver los componentes</p>
                 </div>
             {% endif %}
-        </div>
+   
     </div>
 </div> 

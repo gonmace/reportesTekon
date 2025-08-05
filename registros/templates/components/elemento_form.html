@@ -45,8 +45,9 @@
                         <div class="card-body">
                             <h3 class="card-title">{{ sub_elemento.config.title|default:"Tabla" }}</h3>
                             <div class="{{ sub_elemento.css_classes }}">
-                                {% with data=sub_elementos_data.table %}
-                                    {% include sub_elemento.template_name with config=sub_elemento.config %}
+                                <!-- Debug: sub_elementos_data = {{ sub_elementos_data }} -->
+                                {% with data=sub_elementos_data.table|default:None %}
+                                    {% include sub_elemento.template_name with config=sub_elemento.config data=data %}
                                 {% endwith %}
                             </div>
                         </div>

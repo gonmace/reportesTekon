@@ -593,29 +593,129 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         
         # Por ahora, retornar datos de ejemplo
         # En el futuro, esto se puede personalizar según el data_source
-        if data_source == 'avance_data':
-            # Obtener datos del modelo Avance
-            from reg_construccion.models import Avance
-            avances = Avance.objects.filter(registro=registro).order_by('-created_at')
+        if data_source == 'avance_componente_data':
+            # Obtener datos del modelo AvanceComponente filtrados por la estructura del registro
+            from reg_construccion.models import AvanceComponente
+            from proyectos.models import Componente, GrupoComponente
+            from datetime import datetime, timedelta
             
-            # Convertir a formato de tabla
-            table_data = []
-            for avance in avances:
-                row_data = {
-                    'fecha': avance.created_at.strftime('%d/%m/%Y %H:%M'),
-                    'comentarios': avance.comentarios or 'Sin comentarios',
-                    'estado': 'Completado' if avance.comentarios else 'Pendiente'
+            # Obtener los componentes de la estructura seleccionada
+            if registro.estructura:
+                # Obtener todos los componentes activos de la estructura con su incidencia
+                componentes_estructura = GrupoComponente.objects.filter(
+                    grupo=registro.estructura,
+                    activo=True
+                ).select_related('componente').order_by('orden', 'componente__nombre')
+                
+                # Obtener avances existentes para esta estructura
+                avances_existentes = AvanceComponente.objects.filter(
+                    registro=registro,
+                    componente__in=[gc.componente for gc in componentes_estructura]
+                ).order_by('componente__nombre', '-fecha', '-created_at')
+                
+                # Crear un diccionario de avances por componente
+                avances_por_componente = {}
+                for avance in avances_existentes:
+                    if avance.componente_id not in avances_por_componente:
+                        avances_por_componente[avance.componente_id] = []
+                    avances_por_componente[avance.componente_id].append(avance)
+                
+                # Generar datos de tabla
+                table_data = []
+                total_ejec_anterior = 0
+                total_ejec_actual = 0
+                total_ejec_acumulada = 0
+                total_ejecucion_total = 0
+                
+                for gc in componentes_estructura:
+                    componente = gc.componente
+                    avances_componente = avances_por_componente.get(componente.id, [])
+                    
+                    # Calcular porcentajes de ejecución
+                    ejec_anterior = 0
+                    ejec_actual = 0
+                    
+                    if avances_componente:
+                        # Obtener el avance más reciente
+                        ultimo_avance = avances_componente[0]
+                        ejec_actual = ultimo_avance.porcentaje_actual
+                        
+                        # Buscar avance anterior (si hay más de uno)
+                        if len(avances_componente) > 1:
+                            # El segundo más reciente sería el anterior
+                            avance_anterior = avances_componente[1]
+                            ejec_anterior = avance_anterior.porcentaje_acumulado
+                        else:
+                            # Si solo hay un avance, el anterior sería 0
+                            ejec_anterior = 0
+                    else:
+                        # Sin avances, todos los valores son 0
+                        ejec_anterior = 0
+                        ejec_actual = 0
+                    
+                    # Calcular ejecución acumulada
+                    ejec_acumulada = ejec_anterior + ejec_actual
+                    
+                    # Calcular ejecución total (incidencia × ejecución acumulada)
+                    incidencia = float(gc.porcentaje_incidencia)
+                    ejecucion_total = (incidencia / 100) * ejec_acumulada
+                    
+                    # Acumular totales
+                    total_ejec_anterior += ejec_anterior
+                    total_ejec_actual += ejec_actual
+                    total_ejec_acumulada += ejec_acumulada
+                    total_ejecucion_total += ejecucion_total
+                    
+                    row_data = {
+                        'componente': componente.nombre,
+                        'incidencia': f"{incidencia:.1f}%",
+                        'ejec_anterior': f"{ejec_anterior}%",
+                        'ejec_actual': f"{ejec_actual}%",
+                        'ejec_acumulada': f"{ejec_acumulada}%",
+                        'ejecucion_total': f"{ejecucion_total:.1f}%"
+                    }
+                    
+                    table_data.append(row_data)
+                
+                # Agregar totales al contexto
+                context = {
+                    'table_data': table_data,
+                    'total_ejec_anterior': f"{total_ejec_anterior:.1f}%",
+                    'total_ejec_actual': f"{total_ejec_actual:.1f}%",
+                    'total_ejec_acumulada': f"{total_ejec_acumulada:.1f}%",
+                    'total_ejecucion_total': f"{total_ejecucion_total:.1f}%"
                 }
-                table_data.append(row_data)
-            
-            return table_data
+                
+                return table_data
+            else:
+                # Si no hay estructura seleccionada, mostrar todos los avances
+                avances_componente = AvanceComponente.objects.filter(
+                    registro=registro
+                ).order_by('componente__nombre', '-fecha', '-created_at')
+                
+                # Convertir a formato de tabla
+                table_data = []
+                for avance in avances_componente:
+                    row_data = {
+                        'componente': avance.componente.nombre,
+                        'incidencia': 'N/A',
+                        'ejec_anterior': f"{avance.porcentaje_actual}%",
+                        'ejec_actual': f"{avance.porcentaje_actual}%",
+                        'ejec_acumulada': f"{avance.porcentaje_acumulado}%",
+                        'ejecucion_total': 'N/A'
+                    }
+                    table_data.append(row_data)
+                
+                return table_data
         
         # Datos por defecto
         return [
             {
+                'componente': 'Ejemplo Componente',
                 'fecha': '01/01/2024',
-                'comentarios': 'Ejemplo de comentario',
-                'estado': 'Completado'
+                'porcentaje_actual': '25%',
+                'porcentaje_acumulado': '30%',
+                'comentarios': 'Ejemplo de comentario'
             }
         ]
     
@@ -683,6 +783,151 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
         """Obtiene el título del header. Puede ser sobrescrito."""
         return self.registro_config.header_title or self.registro_config.title
     
+    def _process_sub_elementos_data(self, registro, elemento_config, instance):
+        """Procesa los datos de los subelementos."""
+        sub_elementos_data = {}
+        
+        for sub_elemento in elemento_config.sub_elementos:
+            if sub_elemento.tipo == 'table':
+                # Obtener datos para la tabla
+                table_data = self._get_table_data(registro, sub_elemento, instance)
+                sub_elementos_data[sub_elemento.tipo] = table_data
+        
+        return sub_elementos_data
+    
+    def _get_table_data(self, registro, sub_elemento, instance):
+        """Obtiene los datos para el subelemento de tabla."""
+        data_source = sub_elemento.config.get('data_source')
+        fields_to_show = sub_elemento.config.get('fields_to_show', [])
+        
+        # Por ahora, retornar datos de ejemplo
+        # En el futuro, esto se puede personalizar según el data_source
+        if data_source == 'avance_componente_data':
+            # Obtener datos del modelo AvanceComponente filtrados por la estructura del registro
+            from reg_construccion.models import AvanceComponente
+            from proyectos.models import Componente, GrupoComponente
+            from datetime import datetime, timedelta
+            
+            # Obtener los componentes de la estructura seleccionada
+            if registro.estructura:
+                # Obtener todos los componentes activos de la estructura con su incidencia
+                componentes_estructura = GrupoComponente.objects.filter(
+                    grupo=registro.estructura,
+                    activo=True
+                ).select_related('componente').order_by('orden', 'componente__nombre')
+                
+                # Obtener avances existentes para esta estructura
+                avances_existentes = AvanceComponente.objects.filter(
+                    registro=registro,
+                    componente__in=[gc.componente for gc in componentes_estructura]
+                ).order_by('componente__nombre', '-fecha', '-created_at')
+                
+                # Crear un diccionario de avances por componente
+                avances_por_componente = {}
+                for avance in avances_existentes:
+                    if avance.componente_id not in avances_por_componente:
+                        avances_por_componente[avance.componente_id] = []
+                    avances_por_componente[avance.componente_id].append(avance)
+                
+                # Generar datos de tabla
+                table_data = []
+                total_ejec_anterior = 0
+                total_ejec_actual = 0
+                total_ejec_acumulada = 0
+                total_ejecucion_total = 0
+                
+                for gc in componentes_estructura:
+                    componente = gc.componente
+                    avances_componente = avances_por_componente.get(componente.id, [])
+                    
+                    # Calcular porcentajes de ejecución
+                    ejec_anterior = 0
+                    ejec_actual = 0
+                    
+                    if avances_componente:
+                        # Obtener el avance más reciente
+                        ultimo_avance = avances_componente[0]
+                        ejec_actual = ultimo_avance.porcentaje_actual
+                        
+                        # Buscar avance anterior (si hay más de uno)
+                        if len(avances_componente) > 1:
+                            # El segundo más reciente sería el anterior
+                            avance_anterior = avances_componente[1]
+                            ejec_anterior = avance_anterior.porcentaje_acumulado
+                        else:
+                            # Si solo hay un avance, el anterior sería 0
+                            ejec_anterior = 0
+                    else:
+                        # Sin avances, todos los valores son 0
+                        ejec_anterior = 0
+                        ejec_actual = 0
+                    
+                    # Calcular ejecución acumulada
+                    ejec_acumulada = ejec_anterior + ejec_actual
+                    
+                    # Calcular ejecución total (incidencia × ejecución acumulada)
+                    incidencia = float(gc.porcentaje_incidencia)
+                    ejecucion_total = (incidencia / 100) * ejec_acumulada
+                    
+                    # Acumular totales
+                    total_ejec_anterior += ejec_anterior
+                    total_ejec_actual += ejec_actual
+                    total_ejec_acumulada += ejec_acumulada
+                    total_ejecucion_total += ejecucion_total
+                    
+                    row_data = {
+                        'componente': componente.nombre,
+                        'incidencia': f"{incidencia:.1f}%",
+                        'ejec_anterior': f"{ejec_anterior}%",
+                        'ejec_actual': f"{ejec_actual}%",
+                        'ejec_acumulada': f"{ejec_acumulada}%",
+                        'ejecucion_total': f"{ejecucion_total:.1f}%"
+                    }
+                    
+                    table_data.append(row_data)
+                
+                # Agregar totales al contexto
+                context = {
+                    'table_data': table_data,
+                    'total_ejec_anterior': f"{total_ejec_anterior:.1f}%",
+                    'total_ejec_actual': f"{total_ejec_actual:.1f}%",
+                    'total_ejec_acumulada': f"{total_ejec_acumulada:.1f}%",
+                    'total_ejecucion_total': f"{total_ejecucion_total:.1f}%"
+                }
+                
+                return table_data
+            else:
+                # Si no hay estructura seleccionada, mostrar todos los avances
+                avances_componente = AvanceComponente.objects.filter(
+                    registro=registro
+                ).order_by('componente__nombre', '-fecha', '-created_at')
+                
+                # Convertir a formato de tabla
+                table_data = []
+                for avance in avances_componente:
+                    row_data = {
+                        'componente': avance.componente.nombre,
+                        'incidencia': 'N/A',
+                        'ejec_anterior': f"{avance.porcentaje_actual}%",
+                        'ejec_actual': f"{avance.porcentaje_actual}%",
+                        'ejec_acumulada': f"{avance.porcentaje_acumulado}%",
+                        'ejecucion_total': 'N/A'
+                    }
+                    table_data.append(row_data)
+                
+                return table_data
+        
+        # Datos por defecto
+        return [
+            {
+                'componente': 'Ejemplo Componente',
+                'fecha': '01/01/2024',
+                'porcentaje_actual': '25%',
+                'porcentaje_acumulado': '30%',
+                'comentarios': 'Ejemplo de comentario'
+            }
+        ]
+    
     def get(self, request, registro_id, paso_nombre):
         """Maneja las peticiones GET."""
         try:
@@ -718,6 +963,8 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                 'sub_elementos_data': sub_elementos_data,
             }
             
+            print(f"DEBUG: Template que se va a renderizar: {elemento_config.template_name}")
+            print(f"DEBUG: Context keys: {list(context.keys())}")
             return render(request, elemento_config.template_name, context)
             
         except Exception as e:

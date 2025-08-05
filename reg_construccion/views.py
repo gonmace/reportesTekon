@@ -12,6 +12,7 @@ from registros.config import RegistroConfig
 from .config import REGISTRO_CONFIG
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.shortcuts import render
 
 
 class ListRegistrosView(GenericRegistroTableListView):
@@ -85,3 +86,32 @@ class ActivarRegistroView(GenericActivarRegistroView):
     
     def get_registro_config(self):
         return REGISTRO_CONFIG
+
+
+class TableOnlyView(GenericElementoView):
+    template_name = 'pages/tabla_avance.html'
+
+    def get_registro_config(self):
+        from .config import REGISTRO_CONFIG
+        return REGISTRO_CONFIG
+
+    def get(self, request, registro_id, paso_nombre):
+        registro = self.registro_config.registro_model.objects.get(id=registro_id)
+        paso_config = self.registro_config.pasos.get(paso_nombre)
+        elemento_config = paso_config.elemento
+        instance = None
+        if hasattr(elemento_config, 'model'):
+            instance = elemento_config.model.objects.filter(registro=registro).first()
+        # Busca el subelemento tipo 'table'
+        table_sub = next((s for s in elemento_config.sub_elementos if s.tipo == 'table'), None)
+        data = self._get_table_data(registro, table_sub, instance) if table_sub else []
+        context = {
+            'registro': registro,
+            'paso_config': paso_config,
+            'elemento_config': elemento_config,
+            'breadcrumbs': self.get_breadcrumbs(),
+            'header_title': self.get_header_title(),
+            'config': table_sub.config if table_sub else {},
+            'data': data,
+        }
+        return render(request, self.template_name, context)

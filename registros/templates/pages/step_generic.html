@@ -71,8 +71,8 @@
         {% if step.elements.table and step.elements.table.enabled %}
           <div class="flex items-center gap-1 ml-2">
             <a class="btn btn-{{step.elements.table.color}} btn-circle sombra table-counter" 
-               href="{% get_registro_url step.step_name step.registro_id 'form' app_namespace=app_namespace %}"
-               title="Tabla de {{step.title}} ({{step.elements.table.count}} registros)"
+               href="{% url 'reg_construccion:elemento_tabla' step.registro_id step.step_name %}"
+               title="Tabla de {{step.title}}"
                data-table-count="{{step.elements.table.count}}">
               <i class="fas fa-table"></i>
             </a>

@@ -13,30 +13,24 @@ from registros.config import (
     create_custom_config,
     create_sub_element_only_config
 )
-from .models import RegConstruccion, Visita, Avance
-from .forms import VisitaForm, AvanceForm
+from .models import RegConstruccion, AvanceComponente
+from .forms import AvanceComponenteForm
 from core.models.sites import Site
 
 # Configuración de pasos
 PASOS_CONFIG = {
-    'visita': create_custom_config(
-        model_class=Visita,
-        form_class=VisitaForm,
-        title='Visita',
-        description='Información sobre visita.',
-        template_form='components/elemento_form.html'
-    ),
-    'avance': create_custom_config(
-        model_class=Avance,
-        form_class=AvanceForm,
-        title='Avance',
-        description='Información sobre avance.',
+    'avance_componente': create_custom_config(
+        model_class=AvanceComponente,
+        form_class=AvanceComponenteForm,
+        title='Avance por Componente',
+        description='Tabla de avances por componente de la estructura.',
         template_form='components/elemento_form.html',
         sub_elementos=[
             create_table_config(
-                table_title="Tabla de Avance",
-                data_source="avance_data",
-                fields_to_show=['fecha', 'comentarios', 'estado']
+                table_title="COMPONENTES",
+                table_template='components/sub_elemento_table.html',
+                data_source="avance_componente_data",
+                fields_to_show=['componente', 'incidencia', 'ejec_anterior', 'ejec_actual', 'ejec_acumulada', 'ejecucion_total']
             )
         ]
     ),

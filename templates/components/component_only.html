@@ -34,8 +34,10 @@
                     {% elif sub_elemento.tipo == 'table' %}
                         <div class="table-default-container">
                             <h3 class="text-lg font-semibold mb-3">{{ sub_elemento.config.title|default:"Tabla" }}</h3>
-                            <div class="table-placeholder bg-base-200 rounded-lg p-8 text-center">
-                                <p class="text-base-content/60">Componente de tabla</p>
+                            <div class="{{ sub_elemento.css_classes }}">
+                                {% with data=sub_elementos_data.table|default:None %}
+                                    {% include sub_elemento.template_name with config=sub_elemento.config %}
+                                {% endwith %}
                             </div>
                         </div>
                     {% else %}

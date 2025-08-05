@@ -387,10 +387,14 @@ def create_table_config(
     
     Args:
         table_title: Título de la tabla
-        table_template: Template para la tabla
+        table_template: Template para la tabla (ruta: 'components/sub_elemento_table.html')
         css_classes: Clases CSS para el contenedor
         data_source: Fuente de datos para la tabla (opcional)
         fields_to_show: Lista de campos a mostrar (opcional)
+    
+    Template requerido:
+        - Ruta: 'components/sub_elemento_table.html'
+        - Debe existir en: registros/templates/components/sub_elemento_table.html
     
     Returns:
         SubElementoConfig configurado para tabla
