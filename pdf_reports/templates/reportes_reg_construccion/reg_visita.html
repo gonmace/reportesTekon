@@ -1,0 +1,154 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Informe Reporte de visita</title>
+  <link rel="stylesheet" href="{% static 'css/weasyprint.css' %}">
+</head>
+<body>
+
+<!-- ENCABEZADO -->
+<div id="page-header">
+  <table class="header-table">
+    <tr>
+      <td class="header-logo left">
+        {% include "svgs/phoenix_tower_logo_horizontal.svg" %}
+      </td>
+      <td class="header-title">
+        <h1>Reporte de visita <br>
+        {{ registro.sitio.pti_cell_id|default:registro.sitio.operator_id }}</h1>
+      </td>
+      <td class="header-logo right">
+        {% include "svgs/tekon_logo.svg" %}
+      </td>
+    </tr>
+  </table>  
+</div>
+
+<!-- PIE DE PÁGINA -->
+<div id="page-footer">
+  <span class="page-number"></span>
+</div>
+
+<!-- CONTENIDO DEL INFORME -->
+<article id="datos-generales">
+  <h2>Datos Generales.</h2>
+  <section class="datos">
+    <dl>
+      {% for key, value in datos_generales.items %}
+        <dt>{{ key }}</dt>
+        <dd>{{ value }}</dd>
+      {% endfor %}
+    </dl>
+  </section>
+
+  <h2>INSPECCIÓN DE SITIO.</h2>
+  <section class="datos">
+    <dl>
+      {% for key, value in inspeccion_sitio.items %}
+        <dt>{{ key }}</dt>
+        <dd>{{ value }}</dd>
+      {% endfor %}
+    </dl>
+  </section>
+</article>
+
+<!-- Visita -->
+<article id="registro-visita">
+  <h2>{{ "Visita" }}</h2>
+  <section class="content-registro">
+    {% for key, value in registro_visita.items %}
+    {% if value != '' %}
+      <p><strong>{{ key }}</strong> {{ value }}</p>
+    {% endif %}
+    {% endfor %}
+  </section>
+</article>
+
+<!-- Mapa del visita -->
+{% if google_visita_image.src %}
+<table class="mapa-table">
+  <tr>
+    <td class="mapa-img-cell">
+      <img src="{{ google_visita_image.src }}" alt="{{ google_visita_image.alt }}">
+      <p class="mapa-leyenda-caption">{{ google_visita_image.caption|default:"" }}</p>
+    </td>
+    <td class="mapa-leyenda-cell">
+      {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_visita_image.icon1_color name=google_visita_image.name1 %}
+      {% if google_visita_image.icon2_color %}
+        {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_visita_image.icon2_color name=google_visita_image.name2 %}
+      {% endif %}
+      {% if google_visita_image.icon3_color %}
+        {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_visita_image.icon3_color name=google_visita_image.name3 %}
+      {% endif %}
+    </td>
+  </tr>
+</table>
+{% endif %}
+
+<!-- Fotos del Visita -->
+{% if registro_visita_fotos.fotos %}
+  <section class="imagenes">
+    <div class="foto-titulo">
+      <p><strong>Registro Fotográfico del {{ "Visita" }}:</strong></p>
+    </div>
+    {% for foto in registro_visita_fotos.fotos %}
+      <div>
+        <img src="{{ foto.src }}" alt="{{ foto.alt }}">
+        <p style="">{{ foto.descripcion }}</p>
+      </div>
+    {% endfor %}
+  </section>
+{% endif %}
+
+<!-- Avance -->
+<article id="registro-avance">
+  <h2>{{ "Avance" }}</h2>
+  <section class="content-registro">
+    {% for key, value in registro_avance.items %}
+    {% if value != '' %}
+      <p><strong>{{ key }}</strong> {{ value }}</p>
+    {% endif %}
+    {% endfor %}
+  </section>
+</article>
+
+<!-- Mapa del avance -->
+{% if google_avance_image.src %}
+<table class="mapa-table">
+  <tr>
+    <td class="mapa-img-cell">
+      <img src="{{ google_avance_image.src }}" alt="{{ google_avance_image.alt }}">
+      <p class="mapa-leyenda-caption">{{ google_avance_image.caption|default:"" }}</p>
+    </td>
+    <td class="mapa-leyenda-cell">
+              {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_avance_image.icon1_color name=google_avance_image.name1 %}
+      {% if google_avance_image.icon2_color %}
+                  {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_avance_image.icon2_color name=google_avance_image.name2 %}
+      {% endif %}
+      {% if google_avance_image.icon3_color %}
+                  {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_avance_image.icon3_color name=google_avance_image.name3 %}
+      {% endif %}
+    </td>
+  </tr>
+</table>
+{% endif %}
+
+<!-- Fotos del Avance -->
+{% if registro_avance_fotos.fotos %}
+  <section class="imagenes">
+    <div class="foto-titulo">
+      <p><strong>Registro Fotográfico del {{ "Avance" }}:</strong></p>
+    </div>
+    {% for foto in registro_avance_fotos.fotos %}
+      <div>
+        <img src="{{ foto.src }}" alt="{{ foto.alt }}">
+        <p style="">{{ foto.descripcion }}</p>
+      </div>
+    {% endfor %}
+  </section>
+{% endif %}
+
+</body>
+</html>

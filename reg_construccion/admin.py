@@ -1,12 +1,12 @@
 """
-Admin para registros reg_visita.
+Admin para registros reg_construccion.
 """
 
 from django.contrib import admin
-from .models import RegVisita, Visita, Avance
+from .models import RegConstruccion, Visita, Avance
 
-@admin.register(RegVisita)
-class RegVisitaAdmin(admin.ModelAdmin):
+@admin.register(RegConstruccion)
+class RegConstruccionAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'sitio', 'user', 'created_at']
     list_filter = ['created_at', 'sitio']
     search_fields = ['title', 'description']

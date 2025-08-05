@@ -1,5 +1,5 @@
 """
-Modelos para registros Reporte de visita.
+Modelos para registros Reporte de construcción.
 """
 
 from registros.models.base import RegistroBase
@@ -12,13 +12,13 @@ from users.models import User
 from proyectos.models import Grupo
 from simple_history.models import HistoricalRecords
 
-class RegVisita(RegistroBase):
+class RegConstruccion(RegistroBase):
     """
-    Modelo para registros Reporte de visita.
+    Modelo para registros Reporte de construcción.
     """
-    sitio = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Sitio', related_name='reg_visita')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario', related_name='reg_visita')
-    estructura = models.ForeignKey(Grupo, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Estructura', related_name='reg_visita')
+    sitio = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Sitio', related_name='reg_construccion')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario', related_name='reg_construccion')
+    estructura = models.ForeignKey(Grupo, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Estructura', related_name='reg_construccion')
     title = models.CharField(max_length=100, verbose_name='Título')
     description = models.TextField(blank=True, null=True, verbose_name='Descripción')
     history = HistoricalRecords()
@@ -27,7 +27,7 @@ class RegVisita(RegistroBase):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"RegVisita {self.id}"
+        return f"RegConstruccion {self.id}"
     
     def clean(self):
         """Custom validation method"""
@@ -39,8 +39,8 @@ class RegVisita(RegistroBase):
 
 
 class Visita(PasoBase):
-    """Paso Visita para registros Reporte de visita."""
-    registro = models.ForeignKey(RegVisita, on_delete=models.CASCADE, verbose_name='Registro')
+    """Paso Visita para registros Reporte de construcción."""
+    registro = models.ForeignKey(RegConstruccion, on_delete=models.CASCADE, verbose_name='Registro')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
     
     class Meta:
@@ -61,8 +61,8 @@ class Visita(PasoBase):
 
 
 class Avance(PasoBase):
-    """Paso Avance para registros Reporte de visita."""
-    registro = models.ForeignKey(RegVisita, on_delete=models.CASCADE, verbose_name='Registro')
+    """Paso Avance para registros Reporte de construcción."""
+    registro = models.ForeignKey(RegConstruccion, on_delete=models.CASCADE, verbose_name='Registro')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
     
     class Meta:

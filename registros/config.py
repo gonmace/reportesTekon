@@ -375,6 +375,39 @@ def create_photos_config(
     )
 
 
+def create_table_config(
+    table_title: str = "Tabla de Datos",
+    table_template: str = 'components/sub_elemento_table.html',
+    css_classes: str = 'table-container',
+    data_source: str = None,
+    fields_to_show: List[str] = None
+) -> SubElementoConfig:
+    """
+    Crea configuración para sub-elemento de tabla.
+    
+    Args:
+        table_title: Título de la tabla
+        table_template: Template para la tabla
+        css_classes: Clases CSS para el contenedor
+        data_source: Fuente de datos para la tabla (opcional)
+        fields_to_show: Lista de campos a mostrar (opcional)
+    
+    Returns:
+        SubElementoConfig configurado para tabla
+    """
+    
+    return SubElementoConfig(
+        tipo='table',
+        config={
+            'title': table_title,
+            'data_source': data_source,
+            'fields_to_show': fields_to_show or []
+        },
+        template_name=table_template,
+        css_classes=css_classes
+    )
+
+
 # ============================================================================
 # CONFIGURACIONES DE ELEMENTOS BASE
 # ============================================================================

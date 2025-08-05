@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'core',
     'photos',
     'reg_txtss',
-    'reg_visita',
+    'reg_construccion',
     'pdf_reports',
     'proyectos',
     

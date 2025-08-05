@@ -1,5 +1,5 @@
 """
-Vistas para registros Reporte de visita.
+Vistas para registros Reporte de construcción.
 """
 
 from registros.views.steps_views import (
@@ -15,7 +15,7 @@ from django.urls import reverse
 
 
 class ListRegistrosView(GenericRegistroTableListView):
-    """Vista para listar registros Reporte de visita usando tabla genérica."""
+    """Vista para listar registros Reporte de construcción usando tabla genérica."""
     
     def get_registro_config(self):
         return REGISTRO_CONFIG
@@ -24,12 +24,12 @@ class ListRegistrosView(GenericRegistroTableListView):
         """Genera breadcrumbs para la página de listado."""
         return [
             {'label': 'Inicio', 'url': reverse('dashboard:dashboard')},
-            {'label': 'Reporte de visita'}  # Página actual sin URL
+            {'label': 'Reporte de construcción'}  # Página actual sin URL
         ]
 
 
 class StepsRegistroView(GenericRegistroStepsView):
-    """Vista para mostrar los pasos de un registro Reporte de visita."""
+    """Vista para mostrar los pasos de un registro Reporte de construcción."""
     
     def get_registro_config(self):
         return REGISTRO_CONFIG
@@ -58,11 +58,11 @@ class StepsRegistroView(GenericRegistroStepsView):
     
     def get_pdf_url(self, registro_id):
         """Obtiene la URL para generar el PDF."""
-        return reverse('reg_visita:pdf', kwargs={'registro_id': registro_id})
+        return reverse('reg_construccion:pdf', kwargs={'registro_id': registro_id})
 
 
 class ElementoRegistroView(GenericElementoView):
-    """Vista para manejar elementos de registro Reporte de visita."""
+    """Vista para manejar elementos de registro Reporte de construcción."""
     
     def get_registro_config(self):
         return REGISTRO_CONFIG
@@ -81,7 +81,7 @@ class ElementoRegistroView(GenericElementoView):
 
 
 class ActivarRegistroView(GenericActivarRegistroView):
-    """Vista para activar registros Reporte de visita."""
+    """Vista para activar registros Reporte de construcción."""
     
     def get_registro_config(self):
         return REGISTRO_CONFIG

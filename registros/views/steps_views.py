@@ -466,6 +466,12 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             # Verificar sub-elementos
             has_photos = any(sub.tipo == 'fotos' for sub in elemento_config.sub_elementos)
             has_map = any(sub.tipo == 'mapa' for sub in elemento_config.sub_elementos)
+            has_table = any(sub.tipo == 'table' for sub in elemento_config.sub_elementos)
+            
+            print(f"DEBUG: Paso {step_name} - has_photos: {has_photos}, has_map: {has_map}, has_table: {has_table}")
+            
+            if step_name == 'avance':
+                print(f"DEBUG: Procesando paso avance - subelementos: {[sub.tipo for sub in elemento_config.sub_elementos]}")
             
             # Obtener configuración de fotos si existe
             photo_config = None
@@ -496,6 +502,9 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                     app_name=app_filter,
                     content_type=content_type
                 )
+            
+            # Procesar configuración de tabla si existe
+            table_config = self._process_table_config(registro, elemento_config, instance)
             
             # Procesar configuración del mapa
             map_config = self._process_map_config(registro, elemento_config, instance)
@@ -549,7 +558,8 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                         'required': has_photos,
                         'min_count': min_count
                     },
-                    'map': map_config
+                    'map': map_config,
+                    'table': table_config
                 },
                 'completeness': completeness,
                 'instance': instance,
@@ -557,10 +567,103 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 'datos_clave_template': datos_clave_template
             }
             
+            print(f"DEBUG: Configuración final de tabla para {step_name}: {table_config}")
+            
             # Return as tuple (step_name, step_data) to match template expectation
             steps_context.append((step_name, step_data))
         
         return steps_context
+    
+    def _process_sub_elementos_data(self, registro, elemento_config, instance):
+        """Procesa los datos de los subelementos."""
+        sub_elementos_data = {}
+        
+        for sub_elemento in elemento_config.sub_elementos:
+            if sub_elemento.tipo == 'table':
+                # Obtener datos para la tabla
+                table_data = self._get_table_data(registro, sub_elemento, instance)
+                sub_elementos_data[sub_elemento.tipo] = table_data
+        
+        return sub_elementos_data
+    
+    def _get_table_data(self, registro, sub_elemento, instance):
+        """Obtiene los datos para el subelemento de tabla."""
+        data_source = sub_elemento.config.get('data_source')
+        fields_to_show = sub_elemento.config.get('fields_to_show', [])
+        
+        # Por ahora, retornar datos de ejemplo
+        # En el futuro, esto se puede personalizar según el data_source
+        if data_source == 'avance_data':
+            # Obtener datos del modelo Avance
+            from reg_construccion.models import Avance
+            avances = Avance.objects.filter(registro=registro).order_by('-created_at')
+            
+            # Convertir a formato de tabla
+            table_data = []
+            for avance in avances:
+                row_data = {
+                    'fecha': avance.created_at.strftime('%d/%m/%Y %H:%M'),
+                    'comentarios': avance.comentarios or 'Sin comentarios',
+                    'estado': 'Completado' if avance.comentarios else 'Pendiente'
+                }
+                table_data.append(row_data)
+            
+            return table_data
+        
+        # Datos por defecto
+        return [
+            {
+                'fecha': '01/01/2024',
+                'comentarios': 'Ejemplo de comentario',
+                'estado': 'Completado'
+            }
+        ]
+    
+    def _process_table_config(self, registro, elemento_config, instance):
+        """Procesa la configuración del subelemento de tabla."""
+        has_table = any(sub.tipo == 'table' for sub in elemento_config.sub_elementos)
+        
+        print(f"DEBUG: Procesando tabla para {registro.id}, has_table: {has_table}")
+        
+        if not has_table:
+            return {
+                'enabled': False,
+                'url': '',
+                'color': 'error',
+                'count': 0
+            }
+        
+        # Obtener datos de la tabla
+        table_data = self._get_table_data_for_step(registro, elemento_config, instance)
+        table_count = len(table_data)
+        
+        print(f"DEBUG: Datos de tabla encontrados: {table_count}")
+        
+        # Determinar color basado en la cantidad de datos
+        if table_count == 0:
+            table_color = 'error'
+        elif table_count < 3:
+            table_color = 'warning'
+        else:
+            table_color = 'success'
+        
+        config = {
+            'enabled': True,
+            'url': f'/{self.registro_config.app_namespace}/{registro.id}/avance/',
+            'color': table_color,
+            'count': table_count
+        }
+        
+        print(f"DEBUG: Configuración de tabla: {config}")
+        
+        return config
+    
+    def _get_table_data_for_step(self, registro, elemento_config, instance):
+        """Obtiene los datos de tabla para el paso específico."""
+        for sub_elemento in elemento_config.sub_elementos:
+            if sub_elemento.tipo == 'table':
+                return self._get_table_data(registro, sub_elemento, instance)
+        return []
 
 
 class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, BreadcrumbsMixin, View):
@@ -599,6 +702,9 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
             
             form = elemento.get_form()
             
+            # Procesar datos de subelementos
+            sub_elementos_data = self._process_sub_elementos_data(registro, elemento_config, instance)
+            
             context = {
                 'registro': registro,
                 'paso_config': paso_config,
@@ -609,6 +715,7 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                 'title': self.registro_config.title,
                 'breadcrumbs': self.get_breadcrumbs(),
                 'header_title': self.get_header_title(),
+                'sub_elementos_data': sub_elementos_data,
             }
             
             return render(request, elemento_config.template_name, context)

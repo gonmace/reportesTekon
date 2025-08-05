@@ -1,5 +1,5 @@
 """
-Configuración declarativa para registros Reporte de visita.
+Configuración declarativa para registros Reporte de construcción.
 """
 
 from registros.config import (
@@ -9,10 +9,11 @@ from registros.config import (
     create_2_point_map_config,
     create_3_point_map_config,
     create_photos_config,
+    create_table_config,
     create_custom_config,
     create_sub_element_only_config
 )
-from .models import RegVisita, Visita, Avance
+from .models import RegConstruccion, Visita, Avance
 from .forms import VisitaForm, AvanceForm
 from core.models.sites import Site
 
@@ -30,16 +31,23 @@ PASOS_CONFIG = {
         form_class=AvanceForm,
         title='Avance',
         description='Información sobre avance.',
-        template_form='components/elemento_form.html'
+        template_form='components/elemento_form.html',
+        sub_elementos=[
+            create_table_config(
+                table_title="Tabla de Avance",
+                data_source="avance_data",
+                fields_to_show=['fecha', 'comentarios', 'estado']
+            )
+        ]
     ),
 }
 
 # Configuración completa del registro
 REGISTRO_CONFIG = create_registro_config(
-    registro_model=RegVisita,
+    registro_model=RegConstruccion,
     pasos_config=PASOS_CONFIG,
-    title='Reporte de visita',
-    app_namespace='reg_visita',
+    title='Reporte de construcción',
+    app_namespace='reg_construccion',
     list_template='components/generic_tables2_template.html',
     steps_template='pages/steps_generic.html',
     allow_multiple_per_site=True,  # Permite múltiples registros por sitio (uno por día)

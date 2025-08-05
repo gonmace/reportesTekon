@@ -1,11 +1,11 @@
 """
-Formularios para registros reg_visita.
+Formularios para registros reg_construccion.
 """
 
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit, Div
-from .models import RegVisita, Visita, Avance
+from .models import RegConstruccion, Visita, Avance
 from registros.forms.utils import get_form_field_css_class
 
 
@@ -22,11 +22,11 @@ class VisitaForm(forms.ModelForm):
         self.helper.field_class = 'mb-2'
         
         # Configurar el campo registro automáticamente
-        self.fields['registro'].queryset = RegVisita.objects.all()
+        self.fields['registro'].queryset = RegConstruccion.objects.all()
         
         try:
             if self.registro_id:
-                registro_obj = RegVisita.objects.get(id=self.registro_id)
+                registro_obj = RegConstruccion.objects.get(id=self.registro_id)
                 self.fields['registro'].widget = forms.HiddenInput()
                 self.initial['registro'] = registro_obj.id
                 self.fields['registro'].initial = registro_obj.id
@@ -34,7 +34,7 @@ class VisitaForm(forms.ModelForm):
                 self.fields['registro'].widget = forms.HiddenInput()
             else:
                 self.fields['registro'].widget = forms.HiddenInput()
-        except RegVisita.DoesNotExist:
+        except RegConstruccion.DoesNotExist:
             self.fields['registro'].widget = forms.HiddenInput()
 
         self.helper.layout = Layout(
@@ -70,11 +70,11 @@ class AvanceForm(forms.ModelForm):
         self.helper.field_class = 'mb-2'
         
         # Configurar el campo registro automáticamente
-        self.fields['registro'].queryset = RegVisita.objects.all()
+        self.fields['registro'].queryset = RegConstruccion.objects.all()
         
         try:
             if self.registro_id:
-                registro_obj = RegVisita.objects.get(id=self.registro_id)
+                registro_obj = RegConstruccion.objects.get(id=self.registro_id)
                 self.fields['registro'].widget = forms.HiddenInput()
                 self.initial['registro'] = registro_obj.id
                 self.fields['registro'].initial = registro_obj.id
@@ -82,7 +82,7 @@ class AvanceForm(forms.ModelForm):
                 self.fields['registro'].widget = forms.HiddenInput()
             else:
                 self.fields['registro'].widget = forms.HiddenInput()
-        except RegVisita.DoesNotExist:
+        except RegConstruccion.DoesNotExist:
             self.fields['registro'].widget = forms.HiddenInput()
 
         self.helper.layout = Layout(

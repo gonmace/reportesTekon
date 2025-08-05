@@ -31,6 +31,13 @@
                                 <p class="text-base-content/60">Componente de fotos</p>
                             </div>
                         </div>
+                    {% elif sub_elemento.tipo == 'table' %}
+                        <div class="table-default-container">
+                            <h3 class="text-lg font-semibold mb-3">{{ sub_elemento.config.title|default:"Tabla" }}</h3>
+                            <div class="table-placeholder bg-base-200 rounded-lg p-8 text-center">
+                                <p class="text-base-content/60">Componente de tabla</p>
+                            </div>
+                        </div>
                     {% else %}
                         <div class="component-default-container">
                             <h3 class="text-lg font-semibold mb-3">{{ sub_elemento.tipo|title }}</h3>
@@ -83,6 +90,7 @@
 
 .mapa-placeholder,
 .fotos-placeholder,
+.table-placeholder,
 .component-placeholder {
     min-height: 200px;
     display: flex;

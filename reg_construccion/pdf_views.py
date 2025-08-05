@@ -1,12 +1,12 @@
 from django_weasyprint.views import WeasyTemplateView
 from datetime import datetime
-from reg_visita.models import RegVisita
+from reg_construccion.models import RegConstruccion
 from django.conf import settings
 from pathlib import Path
 from django.shortcuts import render
 from core.models.google_maps import GoogleMapsImage
 from django.contrib.contenttypes.models import ContentType
-from reg_visita.config import PASOS_CONFIG
+from reg_construccion.config import PASOS_CONFIG
 
 def convert_lat_to_dms(lat):
     direction = 'N' if lat >= 0 else 'S'
@@ -26,8 +26,8 @@ def convert_lon_to_dms(lon):
     seconds = round((minutes_full - minutes) * 60, 2)
     return f"{direction} {degrees}° {minutes}' {seconds}''"
 
-class RegVisitaPDFView(WeasyTemplateView):
-    template_name = 'reportes_reg_visita/reg_visita.html'
+class RegConstruccionPDFView(WeasyTemplateView):
+    template_name = 'reportes_reg_construccion/reg_visita.html'
     pdf_options = {
         'default-font-family': 'Arial',
         'default-font-size': 12,
@@ -39,7 +39,7 @@ class RegVisitaPDFView(WeasyTemplateView):
         context = super().get_context_data(**kwargs)
         registro_id = self.kwargs.get('registro_id')
 
-        registro = RegVisita.objects.select_related('sitio', 'user')\
+        registro = RegConstruccion.objects.select_related('sitio', 'user')\
             .prefetch_related('visita_set', 'avance_set')\
             .get(id=registro_id)
         
@@ -155,7 +155,7 @@ class RegVisitaPDFView(WeasyTemplateView):
             content_type=registro_content_type,
             object_id=registro.id,
             etapa=etapa,
-            app='reg_visita'
+            app='reg_construccion'
         ).order_by('orden', '-created_at')
         
         fotos_list = []
@@ -169,8 +169,8 @@ class RegVisitaPDFView(WeasyTemplateView):
         
         return fotos_list
 
-def preview_reg_visita_individual(request, registro_id):
-    view = RegVisitaPDFView()
+def preview_reg_construccion_individual(request, registro_id):
+    view = RegConstruccionPDFView()
     view.kwargs = {'registro_id': registro_id}
     context = view.get_context_data()
-    return render(request, 'reportes_reg_visita/reg_visita.html', context)
+    return render(request, 'reportes_reg_construccion/reg_visita.html', context)

@@ -54,6 +54,21 @@ def get_registro_photos_url(etapa, registro_id, app_namespace='reg_txtss'):
     return get_registro_url(etapa, registro_id, 'photos', app_namespace)
 
 @register.simple_tag
+def get_registro_table_url(etapa, registro_id, app_namespace='reg_txtss'):
+    """
+    Genera la URL para las tablas de una etapa específica de registro.
+    
+    Args:
+        etapa: Nombre de la etapa (sitio, acceso, etc.)
+        registro_id: ID del registro
+        
+    Returns:
+        URL generada para las tablas
+    """
+    # Para las tablas, usar la URL del elemento (formulario) ya que la tabla se muestra en el mismo paso
+    return get_registro_url(etapa, registro_id, 'form', app_namespace)
+
+@register.simple_tag
 def get_registro_steps_url(registro_id, app_namespace='reg_txtss'):
     """
     Genera la URL para la vista de pasos de un registro.

@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from users.models import User
 from core.models.sites import Site
-from reg_visita.models import RegVisita, Visita, Avance
+from reg_construccion.models import RegConstruccion, Visita, Avance
 from reg_txtss.models import RegTxtss
 from photos.models import Photos
 from registros.models.base import RegistroBase
@@ -61,7 +61,7 @@ class Command(BaseCommand):
             'timestamp': datetime.now().isoformat(),
             'users': [],
             'sites': [],
-            'reg_visita': [],
+            'reg_construccion': [],
             'reg_txtss': [],
             'photos': [],
         }
@@ -109,10 +109,10 @@ class Command(BaseCommand):
             }
             backup_data['sites'].append(site_data)
         
-        # Backup de registros de visita
-        self.stdout.write('Exportando registros de visita...')
-        reg_visitas = RegVisita.objects.all()
-        for reg in reg_visitas:
+        # Backup de registros de construcción
+        self.stdout.write('Exportando registros de construcción...')
+        reg_construcciones = RegConstruccion.objects.all()
+        for reg in reg_construcciones:
             reg_data = {
                 'id': reg.id,
                 'sitio_id': reg.sitio.id if reg.sitio else None,
@@ -125,7 +125,7 @@ class Command(BaseCommand):
                 'created_at': reg.created_at.isoformat() if reg.created_at else None,
                 'updated_at': reg.updated_at.isoformat() if reg.updated_at else None,
             }
-            backup_data['reg_visita'].append(reg_data)
+            backup_data['reg_construccion'].append(reg_data)
         
         # Backup de registros TXTSS
         self.stdout.write('Exportando registros TXTSS...')
@@ -173,7 +173,7 @@ class Command(BaseCommand):
                 f'Archivo: {output_file}\n'
                 f'Usuarios: {len(backup_data["users"])}\n'
                 f'Sitios: {len(backup_data["sites"])}\n'
-                f'Registros visita: {len(backup_data["reg_visita"])}\n'
+                f'Registros construcción: {len(backup_data["reg_construccion"])}\n'
                 f'Registros TXTSS: {len(backup_data["reg_txtss"])}\n'
                 f'Fotos: {len(backup_data["photos"])}'
             )
@@ -252,14 +252,14 @@ class Command(BaseCommand):
                 else:
                     self.stdout.write(f'  Sitio existente: {site.name}')
             
-            # Restaurar registros de visita
-            self.stdout.write('Restaurando registros de visita...')
-            for reg_data in backup_data['reg_visita']:
+            # Restaurar registros de construcción
+            self.stdout.write('Restaurando registros de construcción...')
+            for reg_data in backup_data['reg_construccion']:
                 try:
                     sitio = Site.objects.get(id=reg_data['sitio_id']) if reg_data['sitio_id'] else None
                     user = User.objects.get(id=reg_data['user_id']) if reg_data['user_id'] else None
                     
-                    reg, created = RegVisita.objects.get_or_create(
+                    reg, created = RegConstruccion.objects.get_or_create(
                         id=reg_data['id'],
                         defaults={
                             'sitio': sitio,
