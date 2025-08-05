@@ -15,6 +15,7 @@ from registros.mixins.breadcrumbs_mixin import RegistroBreadcrumbsMixin
 from registros.components.registro_config import RegistroConfig, ElementoGenerico
 from registros.forms.activar import create_activar_registro_form
 from registros.tables import create_registros_table
+from reg_construccion.models import EjecucionPorcentajes
 from typing import Dict, Any
 
 
@@ -666,11 +667,29 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                     total_ejec_acumulada += ejec_acumulada
                     total_ejecucion_total += ejecucion_total
                     
+                    # Guardar los porcentajes calculados en el modelo EjecucionPorcentajes
+                    try:
+                        ejecucion_porcentaje, created = EjecucionPorcentajes.objects.update_or_create(
+                            registro=registro,
+                            componente=componente,
+                            defaults={
+                                'porcentaje_ejec_actual': ejec_actual,
+                                'porcentaje_ejec_anterior': ejec_anterior,
+                            }
+                        )
+                    except Exception as e:
+                        # Si hay algún error al guardar, continuar sin interrumpir
+                        print(f"Error al guardar porcentajes para componente {componente.nombre}: {e}")
+                    
                     row_data = {
                         'componente': componente.nombre,
+                        'componente_id': componente.id,
                         'incidencia': f"{incidencia:.1f}%",
+                        'incidencia_valor': incidencia,
                         'ejec_anterior': f"{ejec_anterior}%",
+                        'ejec_anterior_valor': ejec_anterior,
                         'ejec_actual': f"{ejec_actual}%",
+                        'ejec_actual_valor': ejec_actual,
                         'ejec_acumulada': f"{ejec_acumulada}%",
                         'ejecucion_total': f"{ejecucion_total:.1f}%"
                     }
@@ -875,11 +894,29 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                     total_ejec_acumulada += ejec_acumulada
                     total_ejecucion_total += ejecucion_total
                     
+                    # Guardar los porcentajes calculados en el modelo EjecucionPorcentajes
+                    try:
+                        ejecucion_porcentaje, created = EjecucionPorcentajes.objects.update_or_create(
+                            registro=registro,
+                            componente=componente,
+                            defaults={
+                                'porcentaje_ejec_actual': ejec_actual,
+                                'porcentaje_ejec_anterior': ejec_anterior,
+                            }
+                        )
+                    except Exception as e:
+                        # Si hay algún error al guardar, continuar sin interrumpir
+                        print(f"Error al guardar porcentajes para componente {componente.nombre}: {e}")
+                    
                     row_data = {
                         'componente': componente.nombre,
+                        'componente_id': componente.id,
                         'incidencia': f"{incidencia:.1f}%",
+                        'incidencia_valor': incidencia,
                         'ejec_anterior': f"{ejec_anterior}%",
+                        'ejec_anterior_valor': ejec_anterior,
                         'ejec_actual': f"{ejec_actual}%",
+                        'ejec_actual_valor': ejec_actual,
                         'ejec_acumulada': f"{ejec_acumulada}%",
                         'ejecucion_total': f"{ejecucion_total:.1f}%"
                     }

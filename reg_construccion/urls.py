@@ -5,6 +5,8 @@ from .views import (
     ElementoRegistroView,
     ActivarRegistroView,
     TableOnlyView,
+    guardar_ejecucion,
+    actualizar_ejecucion_ajax,
 )
 from .pdf_views import RegConstruccionPDFView, preview_reg_construccion_individual
 
@@ -16,6 +18,8 @@ urlpatterns = [
     path('<int:registro_id>/', StepsRegistroView.as_view(), name='steps'),
     path('<int:registro_id>/<str:paso_nombre>/', ElementoRegistroView.as_view(), name='elemento'),
     path('<int:registro_id>/<str:paso_nombre>/tabla/', TableOnlyView.as_view(), name='elemento_tabla'),
+    path('guardar-ejecucion/<int:registro_id>/', guardar_ejecucion, name='guardar_ejecucion'),
+    path('actualizar-ejecucion/<int:registro_id>/', actualizar_ejecucion_ajax, name='actualizar_ejecucion_ajax'),
     path('pdf/<int:registro_id>/', RegConstruccionPDFView.as_view(), name='pdf'),
     path('preview/<int:registro_id>/', preview_reg_construccion_individual, name='preview'),
 ]

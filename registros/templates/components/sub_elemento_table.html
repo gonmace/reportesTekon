@@ -5,69 +5,109 @@
 
             
             {% if data and data|length > 0 %}
-                <div class="overflow-x-auto">
-                    <table class="table w-full">
-                        <thead>
-                            <tr class="bg-primary font-bold text-white">
-                                <th class="text-left py-3 px-4 border-r border-white/20">
-                                    COMPONENTES
-                                </th>
-                                <th class="text-center py-3 px-4 border-r border-white/20">
-                                    <div class="flex flex-col">
-                                        <span>%</span>
-                                        <span>INCIDENCIA</span>
-                                    </div>
-                                </th>
-                                <th class="text-center">
-                                    <div class="flex flex-col">
-                                        <span>% EJEC</span>
-                                        <span>ANTERIOR</span>
-                                    </div>
-                                </th>
-                                <th class="text-center">
-                                    <div class="flex flex-col">
-                                        <span>% EJEC</span>
-                                        <span>ACTUAL</span>
-                                    </div>
-                                </th>
-                                <th class="text-center">
-                                    <div class="flex flex-col">
-                                        <span>% EJEC</span>
-                                        <span>ACUMULADA</span>
-                                    </div>
-                                </th>
-                                <th class="text-center">
-                                    <div class="flex flex-col">
-                                        <span>% EJECUCION</span>
-                                        <span>TOTAL</span>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in data %}
-                            <tr class="hover:bg-secondary border-b border-secondary ">
-                                <td class="font-medium border-r border-secondary">{{ item.componente }}</td>
-                                <td class="text-center border-r border-secondary">{{ item.incidencia }}</td>
-                                <td class="text-center border-r border-secondary">{{ item.ejec_anterior }}</td>
-                                <td class="text-center border-r border-secondary font-semibold">{{ item.ejec_actual }}</td>
-                                <td class="text-center border-r border-secondary ">{{ item.ejec_acumulada }}</td>
-                                <td class="text-center border-r border-secondary">{{ item.ejecucion_total }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                        <tfoot>
-                            <tr class="bg-primary border-gray-300 text-white">
-                                <td class="border-r border-gray-300"><strong>TOTAL</strong></td>
-                                <td class="text-center border-r border-gray-300"><strong>100.0%</strong></td>
-                                <td class="text-center border-r border-gray-300"><strong>{{ total_ejec_anterior|default:"0%" }}</strong></td> 
-                                <td class="text-center border-r border-gray-300"><strong>{{ total_ejec_actual|default:"0%" }}</strong></td>
-                                <td class="text-center border-r border-gray-300"><strong>{{ total_ejec_acumulada|default:"0%" }}</strong></td>
-                                <td class="text-center"><strong>{{ total_ejecucion_total|default:"0.0%" }}</strong></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                <form id="ejecucion-form" method="POST" action="{% url 'reg_construccion:guardar_ejecucion' registro.id %}">
+                    {% csrf_token %}
+                    <div class="overflow-x-auto">
+                        <table class="table w-full">
+                            <thead>
+                                <tr class="bg-primary font-bold text-white">
+                                    <th class="text-left py-3 px-4 border-r border-white/20">
+                                        COMPONENTES
+                                    </th>
+                                    <th class="text-center py-3 px-4 border-r border-white/20">
+                                        <div class="flex flex-col">
+                                            <span>%</span>
+                                            <span>INCIDENCIA</span>
+                                        </div>
+                                    </th>
+                                    <th class="text-center">
+                                        <div class="flex flex-col">
+                                            <span>% EJEC</span>
+                                            <span>ANTERIOR</span>
+                                        </div>
+                                    </th>
+                                    <th class="text-center">
+                                        <div class="flex flex-col">
+                                            <span>% EJEC</span>
+                                            <span>ACTUAL</span>
+                                        </div>
+                                    </th>
+                                    <th class="text-center">
+                                        <div class="flex flex-col">
+                                            <span>% EJEC</span>
+                                            <span>ACUMULADA</span>
+                                        </div>
+                                    </th>
+                                    <th class="text-center">
+                                        <div class="flex flex-col">
+                                            <span>% EJECUCION</span>
+                                            <span>TOTAL</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in data %}
+                                <tr class="hover:bg-secondary border-b border-secondary ">
+                                    <td class="font-medium border-r border-secondary">{{ item.componente }}</td>
+                                    <td class="text-center border-r border-secondary">{{ item.incidencia }}</td>
+                                    <td class="text-center border-r border-secondary">{{ item.ejec_anterior }}</td>
+                                    <td class="text-center border-r border-secondary font-semibold">
+                                        <input type="number" 
+                                               name="ejec_actual_{{ item.componente_id }}" 
+                                               value="{{ item.ejec_actual_valor|default:0 }}"
+                                               min="0" 
+                                               max="100" 
+                                               class="input input-sm input-bordered w-20 text-center"
+                                               data-original-value="{{ item.ejec_actual_valor|default:0 }}"
+                                               data-ejec-anterior="{{ item.ejec_anterior_valor|default:0 }}"
+                                               data-incidencia="{{ item.incidencia_valor|default:0 }}"
+                                               onchange="updateAcumulada(this)">
+                                        <span class="text-xs ml-1">%</span>
+                                    </td>
+                                    <td class="text-center border-r border-secondary">
+                                        <span id="ejec_acumulada_{{ item.componente_id }}">
+                                            {{ item.ejec_acumulada }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center border-r border-secondary">
+                                        <span id="ejecucion_total_{{ item.componente_id }}">
+                                            {{ item.ejecucion_total }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-primary border-gray-300 text-white">
+                                    <td class="border-r border-gray-300"><strong>TOTAL</strong></td>
+                                    <td class="text-center border-r border-gray-300"><strong>100.0%</strong></td>
+                                    <td class="text-center border-r border-gray-300"><strong>{{ total_ejec_anterior|default:"0%" }}</strong></td> 
+                                    <td class="text-center border-r border-gray-300">
+                                        <strong id="total_ejec_actual">{{ total_ejec_actual|default:"0%" }}</strong>
+                                    </td>
+                                    <td class="text-center border-r border-gray-300">
+                                        <strong id="total_ejec_acumulada">{{ total_ejec_acumulada|default:"0%" }}</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong id="total_ejecucion_total">{{ total_ejecucion_total|default:"0.0%" }}</strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <!-- Botón para guardar cambios -->
+                    <div class="flex justify-center mt-6 mb-4">
+                        <button type="submit" 
+                                class="btn btn-primary btn-lg"
+                                id="guardar-btn"
+                                disabled>
+                            <i class="fas fa-save mr-2"></i>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
                 
                 <!-- Información adicional con DaisyUI -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -93,7 +133,7 @@
                                 Progreso General
                             </h3>
                             <p class="text-xs">
-                                <strong>Ejecución Total:</strong> {{ total_ejecucion_total|default:"0.0%" }}
+                                <strong>Ejecución Total:</strong> <span id="info_ejecucion_total">{{ total_ejecucion_total|default:"0.0%" }}</span>
                             </p>
                             <p class="text-xs">
                                 <strong>Componentes:</strong> {{ data|length }}
@@ -130,4 +170,76 @@
             {% endif %}
    
     </div>
-</div> 
+</div>
+
+<script>
+// Función para actualizar valores calculados
+function updateAcumulada(input) {
+    const ejecActual = parseInt(input.value) || 0;
+    const ejecAnteriorVal = parseInt(input.getAttribute('data-ejec-anterior')) || 0;
+    const incidenciaVal = parseFloat(input.getAttribute('data-incidencia')) || 0;
+    
+    // Calcular ejecución acumulada
+    const ejecAcumulada = ejecAnteriorVal + ejecActual;
+    
+    // Calcular ejecución total
+    const ejecucionTotal = (incidenciaVal / 100) * ejecAcumulada;
+    
+    // Actualizar valores en la tabla
+    const componenteId = input.name.split('_')[2];
+    document.getElementById(`ejec_acumulada_${componenteId}`).textContent = `${ejecAcumulada}%`;
+    document.getElementById(`ejecucion_total_${componenteId}`).textContent = `${ejecucionTotal.toFixed(1)}%`;
+    
+    // Habilitar botón de guardar si hay cambios
+    checkForChanges();
+    
+    // Actualizar totales
+    updateTotales();
+}
+
+// Función para verificar si hay cambios
+function checkForChanges() {
+    const inputs = document.querySelectorAll('input[name^="ejec_actual_"]');
+    let hasChanges = false;
+    
+    inputs.forEach(input => {
+        const originalValue = parseInt(input.getAttribute('data-original-value')) || 0;
+        const currentValue = parseInt(input.value) || 0;
+        
+        if (originalValue !== currentValue) {
+            hasChanges = true;
+        }
+    });
+    
+    const guardarBtn = document.getElementById('guardar-btn');
+    guardarBtn.disabled = !hasChanges;
+}
+
+// Función para actualizar totales
+function updateTotales() {
+    const inputs = document.querySelectorAll('input[name^="ejec_actual_"]');
+    let totalEjecActual = 0;
+    let totalEjecAcumulada = 0;
+    let totalEjecucionTotal = 0;
+    
+    inputs.forEach(input => {
+        const ejecActual = parseInt(input.value) || 0;
+        const ejecAnterior = parseInt(input.getAttribute('data-ejec-anterior')) || 0;
+        const incidencia = parseFloat(input.getAttribute('data-incidencia')) || 0;
+        
+        totalEjecActual += ejecActual;
+        totalEjecAcumulada += (ejecAnterior + ejecActual);
+        totalEjecucionTotal += ((incidencia / 100) * (ejecAnterior + ejecActual));
+    });
+    
+    document.getElementById('total_ejec_actual').textContent = `${totalEjecActual}%`;
+    document.getElementById('total_ejec_acumulada').textContent = `${totalEjecAcumulada}%`;
+    document.getElementById('total_ejecucion_total').textContent = `${totalEjecucionTotal.toFixed(1)}%`;
+    document.getElementById('info_ejecucion_total').textContent = `${totalEjecucionTotal.toFixed(1)}%`;
+}
+
+// Inicializar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    checkForChanges();
+});
+</script> 

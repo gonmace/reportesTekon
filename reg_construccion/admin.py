@@ -3,7 +3,7 @@ Admin para registros Reporte de construcción.
 """
 
 from django.contrib import admin
-from .models import RegConstruccion, Visita, AvanceComponente
+from .models import RegConstruccion, Visita, AvanceComponente, EjecucionPorcentajes
 
 
 @admin.register(RegConstruccion)
@@ -29,4 +29,14 @@ class AvanceComponenteAdmin(admin.ModelAdmin):
     search_fields = ['comentarios', 'componente__nombre']
     readonly_fields = ['created_at', 'updated_at']
     ordering = ['-fecha', '-created_at']
+
+
+@admin.register(EjecucionPorcentajes)
+class EjecucionPorcentajesAdmin(admin.ModelAdmin):
+    list_display = ['id', 'registro', 'componente', 'porcentaje_ejec_actual', 'porcentaje_ejec_anterior', 'fecha_calculo']
+    list_filter = ['fecha_calculo', 'componente', 'porcentaje_ejec_actual', 'porcentaje_ejec_anterior']
+    search_fields = ['registro__title', 'componente__nombre']
+    readonly_fields = ['fecha_calculo']
+    ordering = ['-fecha_calculo']
+    list_per_page = 50
 

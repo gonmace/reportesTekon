@@ -171,3 +171,57 @@ class AvanceComponente(PasoBase):
         
         super().save(*args, **kwargs)
 
+
+class EjecucionPorcentajes(models.Model):
+    """
+    Modelo para almacenar los porcentajes de ejecución actual y anterior
+    calculados para cada componente de un registro de construcción.
+    """
+    registro = models.ForeignKey(RegConstruccion, on_delete=models.CASCADE, verbose_name='Registro')
+    componente = models.ForeignKey(
+        Componente, 
+        on_delete=models.CASCADE, 
+        verbose_name='Componente',
+        related_name='ejecucion_porcentajes'
+    )
+    porcentaje_ejec_actual = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        verbose_name='Porcentaje Ejecución Actual',
+        help_text='Porcentaje de ejecución actual del componente'
+    )
+    porcentaje_ejec_anterior = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        verbose_name='Porcentaje Ejecución Anterior',
+        help_text='Porcentaje de ejecución anterior del componente'
+    )
+    fecha_calculo = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Fecha de Cálculo'
+    )
+    
+    class Meta:
+        verbose_name = 'Ejecución Porcentajes'
+        verbose_name_plural = 'Ejecuciones Porcentajes'
+        ordering = ['-fecha_calculo']
+        unique_together = ['registro', 'componente']
+    
+    def __str__(self):
+        return f"{self.registro} - {self.componente} - Actual: {self.porcentaje_ejec_actual}%, Anterior: {self.porcentaje_ejec_anterior}%"
+    
+    def clean(self):
+        """Validación personalizada para los porcentajes"""
+        super().clean()
+        if self.porcentaje_ejec_actual < 0 or self.porcentaje_ejec_actual > 100:
+            from django.core.exceptions import ValidationError
+            raise ValidationError('El porcentaje de ejecución actual debe estar entre 0 y 100')
+        
+        if self.porcentaje_ejec_anterior < 0 or self.porcentaje_ejec_anterior > 100:
+            from django.core.exceptions import ValidationError
+            raise ValidationError('El porcentaje de ejecución anterior debe estar entre 0 y 100')
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+

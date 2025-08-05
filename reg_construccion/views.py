@@ -2,6 +2,18 @@
 Vistas para registros Reporte de construcción.
 """
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.urls import reverse
+from .models import RegConstruccion, AvanceComponente, EjecucionPorcentajes
+from .forms import VisitaForm, AvanceComponenteForm
+from proyectos.models import Componente
 from registros.views.steps_views import (
     GenericRegistroStepsView,
     GenericElementoView,
@@ -10,11 +22,113 @@ from registros.views.steps_views import (
 from registros.views.activation_views import GenericActivarRegistroView
 from registros.config import RegistroConfig
 from .config import REGISTRO_CONFIG
-from django.shortcuts import get_object_or_404
-from django.urls import reverse
-from django.shortcuts import render
+from datetime import date
+import json
 
 
+
+
+
+@login_required
+@require_POST
+def guardar_ejecucion(request, registro_id):
+    """Guardar los cambios de ejecución actual desde la tabla."""
+    registro = get_object_or_404(RegConstruccion, pk=registro_id, user=request.user)
+    
+    try:
+        cambios_realizados = 0
+        
+        # Procesar cada campo de ejecución actual
+        for key, value in request.POST.items():
+            if key.startswith('ejec_actual_'):
+                componente_id = key.split('_')[2]
+                nuevo_valor = int(value) if value else 0
+                
+                # Validar que el valor esté entre 0 y 100
+                if nuevo_valor < 0 or nuevo_valor > 100:
+                    messages.error(request, f'El valor para el componente {componente_id} debe estar entre 0 y 100.')
+                    return redirect('reg_construccion:steps', registro_id=registro.pk)
+                
+                # Obtener el componente
+                componente = get_object_or_404(Componente, pk=componente_id)
+                
+                # Crear o actualizar el avance de componente
+                avance, created = AvanceComponente.objects.update_or_create(
+                    registro=registro,
+                    componente=componente,
+                    fecha=date.today(),
+                    defaults={
+                        'porcentaje_actual': nuevo_valor,
+                        'porcentaje_acumulado': nuevo_valor,  # Por ahora igual al actual
+                        'comentarios': f'Actualización desde tabla - {date.today()}'
+                    }
+                )
+                
+                cambios_realizados += 1
+        
+        if cambios_realizados > 0:
+            messages.success(request, f'Se guardaron {cambios_realizados} cambios de ejecución exitosamente.')
+        else:
+            messages.warning(request, 'No se realizaron cambios.')
+            
+    except Exception as e:
+        messages.error(request, f'Error al guardar los cambios: {str(e)}')
+    
+    return redirect('reg_construccion:steps', registro_id=registro.pk)
+
+
+@login_required
+@csrf_exempt
+def actualizar_ejecucion_ajax(request, registro_id):
+    """Actualizar ejecución vía AJAX."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            registro = get_object_or_404(RegConstruccion, pk=registro_id, user=request.user)
+            
+            cambios_realizados = 0
+            
+            for item in data.get('ejecuciones', []):
+                componente_id = item.get('componente_id')
+                nuevo_valor = int(item.get('valor', 0))
+                
+                if nuevo_valor < 0 or nuevo_valor > 100:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'El valor para el componente {componente_id} debe estar entre 0 y 100.'
+                    })
+                
+                componente = get_object_or_404(Componente, pk=componente_id)
+                
+                avance, created = AvanceComponente.objects.update_or_create(
+                    registro=registro,
+                    componente=componente,
+                    fecha=date.today(),
+                    defaults={
+                        'porcentaje_actual': nuevo_valor,
+                        'porcentaje_acumulado': nuevo_valor,
+                        'comentarios': f'Actualización AJAX - {date.today()}'
+                    }
+                )
+                
+                cambios_realizados += 1
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Se guardaron {cambios_realizados} cambios exitosamente.',
+                'cambios_realizados': cambios_realizados
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Error al procesar los cambios: {str(e)}'
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+
+# Vistas genéricas para registros
 class ListRegistrosView(GenericRegistroTableListView):
     """Vista para listar registros Reporte de construcción usando tabla genérica."""
     
