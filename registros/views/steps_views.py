@@ -597,16 +597,15 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         if data_source == 'avance_componente_data':
             # Obtener datos del modelo AvanceComponente filtrados por la estructura del registro
             from reg_construccion.models import AvanceComponente
-            from proyectos.models import Componente, GrupoComponente
+            from proyectos.models import Componente, ComponenteGrupo
             from datetime import datetime, timedelta
             
             # Obtener los componentes de la estructura seleccionada
             if registro.estructura:
                 # Obtener todos los componentes activos de la estructura con su incidencia
-                componentes_estructura = GrupoComponente.objects.filter(
-                    grupo=registro.estructura,
-                    activo=True
-                ).select_related('componente').order_by('orden', 'componente__nombre')
+                componentes_estructura = ComponenteGrupo.objects.filter(
+                    grupo=registro.estructura
+                ).select_related('componente').order_by('componente__nombre')
                 
                 # Obtener avances existentes para esta estructura
                 avances_existentes = AvanceComponente.objects.filter(
@@ -658,7 +657,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                     ejec_acumulada = ejec_anterior + ejec_actual
                     
                     # Calcular ejecución total (incidencia × ejecución acumulada)
-                    incidencia = float(gc.porcentaje_incidencia)
+                    incidencia = float(gc.incidencia)
                     ejecucion_total = (incidencia / 100) * ejec_acumulada
                     
                     # Acumular totales
@@ -824,16 +823,15 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
         if data_source == 'avance_componente_data':
             # Obtener datos del modelo AvanceComponente filtrados por la estructura del registro
             from reg_construccion.models import AvanceComponente
-            from proyectos.models import Componente, GrupoComponente
+            from proyectos.models import Componente, ComponenteGrupo
             from datetime import datetime, timedelta
             
             # Obtener los componentes de la estructura seleccionada
             if registro.estructura:
                 # Obtener todos los componentes activos de la estructura con su incidencia
-                componentes_estructura = GrupoComponente.objects.filter(
-                    grupo=registro.estructura,
-                    activo=True
-                ).select_related('componente').order_by('orden', 'componente__nombre')
+                componentes_estructura = ComponenteGrupo.objects.filter(
+                    grupo=registro.estructura
+                ).select_related('componente').order_by('componente__nombre')
                 
                 # Obtener avances existentes para esta estructura
                 avances_existentes = AvanceComponente.objects.filter(
@@ -885,7 +883,7 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                     ejec_acumulada = ejec_anterior + ejec_actual
                     
                     # Calcular ejecución total (incidencia × ejecución acumulada)
-                    incidencia = float(gc.porcentaje_incidencia)
+                    incidencia = float(gc.incidencia)
                     ejecucion_total = (incidencia / 100) * ejec_acumulada
                     
                     # Acumular totales

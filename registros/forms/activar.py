@@ -96,9 +96,9 @@ def create_activar_registro_form(registro_model, title_default='Registro', descr
             
             # Configurar el campo de estructura si project=True
             if project and 'estructura' in self.fields:
-                from proyectos.models import Grupo
+                from proyectos.models import GrupoComponentes
                 self.fields['estructura'] = forms.ModelChoiceField(
-                    queryset=Grupo.objects.filter(activo=True),
+                    queryset=GrupoComponentes.objects.all(),
                     empty_label="Seleccionar estructura...",
                     label="Estructura",
                     required=False,

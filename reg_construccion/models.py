@@ -9,7 +9,7 @@ from registros.models.validators import validar_latitud, validar_longitud
 from registros.models.completeness_checker import check_model_completeness
 from core.models.sites import Site
 from users.models import User
-from proyectos.models import Grupo, Componente, GrupoComponente
+from proyectos.models import GrupoComponentes, Componente
 from simple_history.models import HistoricalRecords
 from datetime import date
 
@@ -19,7 +19,7 @@ class RegConstruccion(RegistroBase):
     """
     sitio = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Sitio', related_name='reg_construccion')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario', related_name='reg_construccion')
-    estructura = models.ForeignKey(Grupo, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Estructura', related_name='reg_construccion')
+    estructura = models.ForeignKey(GrupoComponentes, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Estructura', related_name='reg_construccion')
     title = models.CharField(max_length=100, verbose_name='Título')
     description = models.TextField(blank=True, null=True, verbose_name='Descripción')
     history = HistoricalRecords()
