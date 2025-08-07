@@ -178,15 +178,16 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
             from datetime import date
             from reg_construccion.models import AvanceComponente
             
-            # Buscar el registro anterior más reciente del mismo sitio y usuario
-            # que tenga estructura asignada
+            # Buscar el registro más reciente del mismo sitio y usuario
+            # que tenga estructura asignada (sin importar la fecha)
             registro_anterior = self.registro_config.registro_model.objects.filter(
                 sitio=sitio,
                 user=user,
-                fecha__lt=nuevo_registro.fecha,  # Fecha anterior a la nueva
                 is_active=True,
                 is_deleted=False,
                 estructura__isnull=False  # Solo registros con estructura
+            ).exclude(
+                id=nuevo_registro.id  # Excluir el registro actual
             ).order_by('-fecha').first()
             
             if not registro_anterior:
@@ -231,22 +232,21 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
                 print(f"⚠️  El nuevo registro no tiene estructura asignada")
                 return
             
-            # Copiar avances
+            # Crear avances para la nueva fecha copiando EJEC ACUMULADA a EJEC ANTERIOR
             for avance_anterior in avances_anteriores:
-                # Crear nuevo avance con la fecha actual
-                # La ejecución acumulada anterior se convierte en ejecución anterior
-                # La ejecución actual se pone en 0
+                # Copiar EJEC ACUMULADA de la fecha anterior a EJEC ANTERIOR de la nueva fecha
+                # La nueva fecha inicia con ejec_actual=0 y ejec_acumulada=ejec_anterior
                 nuevo_avance = AvanceComponente.objects.create(
                     registro=nuevo_registro,
                     componente=avance_anterior.componente,
                     fecha=date.today(),
                     porcentaje_actual=0,  # Ejecución actual en 0
-                    porcentaje_acumulado=avance_anterior.porcentaje_acumulado,  # Mantener acumulado
+                    porcentaje_acumulado=avance_anterior.porcentaje_acumulado,  # Copiar acumulado anterior
                     comentarios=f"Copiado desde {registro_anterior.fecha.strftime('%d/%m/%Y')} - {avance_anterior.comentarios or 'Sin comentarios'}"
                 )
-                print(f"Copiado avance para componente: {avance_anterior.componente.nombre}")
+                print(f"Creado avance para componente: {avance_anterior.componente.nombre}")
                 print(f"  - Ejecución anterior: {avance_anterior.porcentaje_acumulado}% (copiada desde acumulada)")
-                print(f"  - Ejecución actual: 0% (reiniciada)")
+                print(f"  - Ejecución actual: 0% (nueva fecha)")
                 print(f"  - Ejecución acumulada: {avance_anterior.porcentaje_acumulado}% (mantenida)")
             
             print(f"Se copiaron {avances_anteriores.count()} avances del registro anterior")

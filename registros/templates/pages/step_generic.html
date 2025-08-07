@@ -70,11 +70,16 @@
         <!-- Tabla -->
         {% if step.elements.table and step.elements.table.enabled %}
           <div class="flex items-center gap-1 ml-2">
-            <a class="btn btn-{{step.elements.table.color}} btn-circle sombra table-counter" 
+            <a class="btn btn-{{step.elements.table.color}} btn-circle sombra table-counter relative" 
                href="{% url 'reg_construccion:elemento_tabla' step.registro_id step.step_name %}"
-               title="Tabla de {{step.title}}"
+               title="Tabla de {{step.title}} - {{step.elements.table.percentage}}% de avance"
                data-table-count="{{step.elements.table.count}}">
               <i class="fas fa-table"></i>
+              {% if step.elements.table.percentage %}
+                <div class="badge badge-sm badge-base-30 absolute -top-3 -right-4">
+                  {{step.elements.table.percentage}}%
+                </div>
+              {% endif %}
             </a>
           </div>
         {% endif %}

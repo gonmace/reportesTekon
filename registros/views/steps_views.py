@@ -644,8 +644,8 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                         ultimo_avance = avances_componente[0]
                         ejec_actual = ultimo_avance.porcentaje_actual
                         
-                        # La ejecución anterior es el porcentaje acumulado del avance más reciente
-                        # Esto refleja el progreso acumulado hasta la fecha anterior
+                        # Cada fecha es independiente - ejec_anterior es el valor guardado en esta fecha
+                        # No depende de otras fechas
                         ejec_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
                         
                         # Asegurar que no sea negativo
@@ -760,19 +760,38 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         
         print(f"DEBUG: Datos de tabla encontrados: {table_count}")
         
-        # Determinar color basado en la cantidad de datos
-        if table_count == 0:
+        # Calcular porcentaje total de avance
+        total_ejecucion_total = 0.0
+        if table_data:
+            # Extraer el total de ejecución total de los datos de tabla
+            for item in table_data:
+                if 'ejecucion_total' in item:
+                    # Extraer el valor numérico del string "X.X%"
+                    ejecucion_str = item['ejecucion_total']
+                    try:
+                        ejecucion_valor = float(ejecucion_str.replace('%', ''))
+                        total_ejecucion_total += ejecucion_valor
+                    except (ValueError, AttributeError):
+                        pass
+        
+        # Determinar color basado en si hay avances guardados
+        # Verificar si hay avances para este registro
+        from reg_construccion.models import AvanceComponente
+        avances_count = AvanceComponente.objects.filter(registro=registro).count()
+        
+        if avances_count == 0:
+            # No hay avances guardados = nueva fecha = color error
             table_color = 'error'
-        elif table_count < 3:
-            table_color = 'warning'
         else:
+            # Hay avances guardados = color success
             table_color = 'success'
         
         config = {
             'enabled': True,
             'url': f'/{self.registro_config.app_namespace}/{registro.id}/avance/',
             'color': table_color,
-            'count': table_count
+            'count': table_count,
+            'percentage': round(total_ejecucion_total, 1)  # Porcentaje total de avance
         }
         
         print(f"DEBUG: Configuración de tabla: {config}")
@@ -869,8 +888,8 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                         ultimo_avance = avances_componente[0]
                         ejec_actual = ultimo_avance.porcentaje_actual
                         
-                        # La ejecución anterior es el porcentaje acumulado del avance más reciente
-                        # Esto refleja el progreso acumulado hasta la fecha anterior
+                        # Cada fecha es independiente - ejec_anterior es el valor guardado en esta fecha
+                        # No depende de otras fechas
                         ejec_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
                         
                         # Asegurar que no sea negativo

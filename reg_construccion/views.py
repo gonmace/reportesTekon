@@ -59,10 +59,14 @@ def guardar_ejecucion(request, registro_id):
                     fecha=date.today(),
                     defaults={
                         'porcentaje_actual': nuevo_valor,
-                        'porcentaje_acumulado': nuevo_valor,  # Por ahora igual al actual
                         'comentarios': f'Actualización desde tabla - {date.today()}'
                     }
                 )
+                
+                # NO modificar el porcentaje_acumulado al guardar
+                # El porcentaje_acumulado solo se modifica al crear nueva fecha
+                # Aquí solo actualizamos el porcentaje_actual
+                avance.save()
                 
                 cambios_realizados += 1
         
@@ -106,10 +110,14 @@ def actualizar_ejecucion_ajax(request, registro_id):
                     fecha=date.today(),
                     defaults={
                         'porcentaje_actual': nuevo_valor,
-                        'porcentaje_acumulado': nuevo_valor,
                         'comentarios': f'Actualización AJAX - {date.today()}'
                     }
                 )
+                
+                # NO modificar el porcentaje_acumulado al guardar
+                # El porcentaje_acumulado solo se modifica al crear nueva fecha
+                # Aquí solo actualizamos el porcentaje_actual
+                avance.save()
                 
                 cambios_realizados += 1
             
