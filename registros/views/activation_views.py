@@ -126,10 +126,12 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
             if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
-                    'message': f'Registro activado exitosamente para {registro.sitio.name} - {registro.fecha.strftime("%d/%m/%Y")}'
+                    'message': f'Registro activado exitosamente para {registro.sitio.name} - {registro.fecha.strftime("%d/%m/%Y")}',
+                    'redirect_url': f'/{self.registro_config.app_namespace}/{registro.id}/'
                 })
             else:
-                return redirect(f'{self.registro_config.app_namespace}:list')
+                # Redirigir al nuevo registro creado para mostrar los steps
+                return redirect(f'/{self.registro_config.app_namespace}/{registro.id}/')
         except Exception as e:
             import traceback
             error_details = traceback.format_exc()
@@ -177,36 +179,75 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
             from reg_construccion.models import AvanceComponente
             
             # Buscar el registro anterior más reciente del mismo sitio y usuario
+            # que tenga estructura asignada
             registro_anterior = self.registro_config.registro_model.objects.filter(
                 sitio=sitio,
                 user=user,
                 fecha__lt=nuevo_registro.fecha,  # Fecha anterior a la nueva
                 is_active=True,
-                is_deleted=False
+                is_deleted=False,
+                estructura__isnull=False  # Solo registros con estructura
             ).order_by('-fecha').first()
             
             if not registro_anterior:
-                print(f"No se encontró registro anterior para copiar datos")
+                print(f"No se encontró registro anterior con estructura para copiar datos")
                 return
             
             print(f"Copiando datos del registro anterior: {registro_anterior.fecha}")
+            print(f"Estructura anterior: {registro_anterior.estructura.nombre}")
+            print(f"Estructura nueva: {nuevo_registro.estructura.nombre if nuevo_registro.estructura else 'N/A'}")
             
-            # Copiar AvanceComponente del registro anterior
-            avances_anteriores = AvanceComponente.objects.filter(
-                registro=registro_anterior
-            ).select_related('componente')
+            # Si el nuevo registro no tiene estructura, copiar la del registro anterior
+            if not nuevo_registro.estructura and registro_anterior.estructura:
+                print(f"🔄 Copiando estructura del registro anterior: {registro_anterior.estructura.nombre}")
+                nuevo_registro.estructura = registro_anterior.estructura
+                nuevo_registro.save()
+                print(f"✅ Estructura copiada exitosamente")
             
+            # Verificar si las estructuras son compatibles
+            if nuevo_registro.estructura and registro_anterior.estructura:
+                if nuevo_registro.estructura.id != registro_anterior.estructura.id:
+                    print(f"⚠️  Las estructuras son diferentes, copiando solo componentes comunes")
+                    
+                    # Obtener componentes comunes entre las estructuras
+                    componentes_anterior = set(registro_anterior.estructura.componentes.values_list('componente_id', flat=True))
+                    componentes_nueva = set(nuevo_registro.estructura.componentes.values_list('componente_id', flat=True))
+                    componentes_comunes = componentes_anterior.intersection(componentes_nueva)
+                    
+                    print(f"Componentes comunes: {len(componentes_comunes)}")
+                    
+                    # Copiar solo avances de componentes comunes
+                    avances_anteriores = AvanceComponente.objects.filter(
+                        registro=registro_anterior,
+                        componente_id__in=componentes_comunes
+                    ).select_related('componente')
+                else:
+                    # Las estructuras son iguales, copiar todos los avances
+                    avances_anteriores = AvanceComponente.objects.filter(
+                        registro=registro_anterior
+                    ).select_related('componente')
+            else:
+                # Si el nuevo registro no tiene estructura, no copiar nada
+                print(f"⚠️  El nuevo registro no tiene estructura asignada")
+                return
+            
+            # Copiar avances
             for avance_anterior in avances_anteriores:
                 # Crear nuevo avance con la fecha actual
+                # La ejecución acumulada anterior se convierte en ejecución anterior
+                # La ejecución actual se pone en 0
                 nuevo_avance = AvanceComponente.objects.create(
                     registro=nuevo_registro,
                     componente=avance_anterior.componente,
                     fecha=date.today(),
-                    porcentaje_actual=avance_anterior.porcentaje_actual,
-                    porcentaje_acumulado=avance_anterior.porcentaje_acumulado,
+                    porcentaje_actual=0,  # Ejecución actual en 0
+                    porcentaje_acumulado=avance_anterior.porcentaje_acumulado,  # Mantener acumulado
                     comentarios=f"Copiado desde {registro_anterior.fecha.strftime('%d/%m/%Y')} - {avance_anterior.comentarios or 'Sin comentarios'}"
                 )
                 print(f"Copiado avance para componente: {avance_anterior.componente.nombre}")
+                print(f"  - Ejecución anterior: {avance_anterior.porcentaje_acumulado}% (copiada desde acumulada)")
+                print(f"  - Ejecución actual: 0% (reiniciada)")
+                print(f"  - Ejecución acumulada: {avance_anterior.porcentaje_acumulado}% (mantenida)")
             
             print(f"Se copiaron {avances_anteriores.count()} avances del registro anterior")
             

@@ -181,7 +181,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.close();
                     alert(result.message || 'Registro activado exitosamente');
                     setTimeout(() => {
-                        window.location.reload();
+                        // Redirigir al nuevo registro si se proporciona la URL
+                        if (result.redirect_url) {
+                            window.location.href = result.redirect_url;
+                        } else {
+                            window.location.reload();
+                        }
                     }, 1000);
                 } else {
                     const errorMessage = result.message || 'Error al activar el registro';

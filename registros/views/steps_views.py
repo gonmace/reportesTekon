@@ -507,6 +507,9 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             # Procesar configuración de tabla si existe
             table_config = self._process_table_config(registro, elemento_config, instance)
             
+            # Procesar datos de subelementos (incluyendo datos de tabla)
+            sub_elementos_data = self._process_sub_elementos_data(registro, elemento_config, instance)
+            
             # Procesar configuración del mapa
             map_config = self._process_map_config(registro, elemento_config, instance)
             
@@ -565,7 +568,8 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 'completeness': completeness,
                 'instance': instance,
                 'elemento': elemento,
-                'datos_clave_template': datos_clave_template
+                'datos_clave_template': datos_clave_template,
+                'sub_elementos_data': sub_elementos_data  # Agregar datos de subelementos
             }
             
             print(f"DEBUG: Configuración final de tabla para {step_name}: {table_config}")
@@ -640,13 +644,12 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                         ultimo_avance = avances_componente[0]
                         ejec_actual = ultimo_avance.porcentaje_actual
                         
-                        # Buscar avance anterior (si hay más de uno)
-                        if len(avances_componente) > 1:
-                            # El segundo más reciente sería el anterior
-                            avance_anterior = avances_componente[1]
-                            ejec_anterior = avance_anterior.porcentaje_acumulado
-                        else:
-                            # Si solo hay un avance, el anterior sería 0
+                        # La ejecución anterior es el porcentaje acumulado del avance más reciente
+                        # Esto refleja el progreso acumulado hasta la fecha anterior
+                        ejec_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
+                        
+                        # Asegurar que no sea negativo
+                        if ejec_anterior < 0:
                             ejec_anterior = 0
                     else:
                         # Sin avances, todos los valores son 0
@@ -866,13 +869,12 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                         ultimo_avance = avances_componente[0]
                         ejec_actual = ultimo_avance.porcentaje_actual
                         
-                        # Buscar avance anterior (si hay más de uno)
-                        if len(avances_componente) > 1:
-                            # El segundo más reciente sería el anterior
-                            avance_anterior = avances_componente[1]
-                            ejec_anterior = avance_anterior.porcentaje_acumulado
-                        else:
-                            # Si solo hay un avance, el anterior sería 0
+                        # La ejecución anterior es el porcentaje acumulado del avance más reciente
+                        # Esto refleja el progreso acumulado hasta la fecha anterior
+                        ejec_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
+                        
+                        # Asegurar que no sea negativo
+                        if ejec_anterior < 0:
                             ejec_anterior = 0
                     else:
                         # Sin avances, todos los valores son 0

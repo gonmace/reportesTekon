@@ -82,15 +82,11 @@
                                 <tr class="bg-primary border-gray-300 text-white">
                                     <td class="border-r border-gray-300"><strong>TOTAL</strong></td>
                                     <td class="text-center border-r border-gray-300"><strong>100.0%</strong></td>
-                                    <td class="text-center border-r border-gray-300"><strong>{{ total_ejec_anterior|default:"0%" }}</strong></td> 
-                                    <td class="text-center border-r border-gray-300">
-                                        <strong id="total_ejec_actual">{{ total_ejec_actual|default:"0%" }}</strong>
-                                    </td>
-                                    <td class="text-center border-r border-gray-300">
-                                        <strong id="total_ejec_acumulada">{{ total_ejec_acumulada|default:"0%" }}</strong>
-                                    </td>
+                                    <td class="text-center border-r border-gray-300"></td> 
+                                    <td class="text-center border-r border-gray-300"></td>
+                                    <td class="text-center border-r border-gray-300"></td>
                                     <td class="text-center">
-                                        <strong id="total_ejecucion_total">{{ total_ejecucion_total|default:"0.0%" }}</strong>
+                                        <strong id="total_ejecucion_total">0.0%</strong>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -218,8 +214,6 @@ function checkForChanges() {
 // Función para actualizar totales
 function updateTotales() {
     const inputs = document.querySelectorAll('input[name^="ejec_actual_"]');
-    let totalEjecActual = 0;
-    let totalEjecAcumulada = 0;
     let totalEjecucionTotal = 0;
     
     inputs.forEach(input => {
@@ -227,13 +221,30 @@ function updateTotales() {
         const ejecAnterior = parseInt(input.getAttribute('data-ejec-anterior')) || 0;
         const incidencia = parseFloat(input.getAttribute('data-incidencia')) || 0;
         
-        totalEjecActual += ejecActual;
-        totalEjecAcumulada += (ejecAnterior + ejecActual);
+        // Solo calcular el total de ejecución total
         totalEjecucionTotal += ((incidencia / 100) * (ejecAnterior + ejecActual));
     });
     
-    document.getElementById('total_ejec_actual').textContent = `${totalEjecActual}%`;
-    document.getElementById('total_ejec_acumulada').textContent = `${totalEjecAcumulada}%`;
+    // Solo actualizar la columna de ejecución total
+    document.getElementById('total_ejecucion_total').textContent = `${totalEjecucionTotal.toFixed(1)}%`;
+    document.getElementById('info_ejecucion_total').textContent = `${totalEjecucionTotal.toFixed(1)}%`;
+}
+
+// Función para calcular totales iniciales
+function calcularTotalesIniciales() {
+    const inputs = document.querySelectorAll('input[name^="ejec_actual_"]');
+    let totalEjecucionTotal = 0;
+    
+    inputs.forEach(input => {
+        const ejecActual = parseInt(input.value) || 0;
+        const ejecAnterior = parseInt(input.getAttribute('data-ejec-anterior')) || 0;
+        const incidencia = parseFloat(input.getAttribute('data-incidencia')) || 0;
+        
+        // Calcular el total de ejecución total
+        totalEjecucionTotal += ((incidencia / 100) * (ejecAnterior + ejecActual));
+    });
+    
+    // Actualizar el total inicial
     document.getElementById('total_ejecucion_total').textContent = `${totalEjecucionTotal.toFixed(1)}%`;
     document.getElementById('info_ejecucion_total').textContent = `${totalEjecucionTotal.toFixed(1)}%`;
 }
@@ -241,5 +252,6 @@ function updateTotales() {
 // Inicializar al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     checkForChanges();
+    calcularTotalesIniciales();
 });
 </script> 
