@@ -12,7 +12,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.urls import reverse
 from .models import RegConstruccion, AvanceComponente, EjecucionPorcentajes
-from .forms import VisitaForm, AvanceComponenteForm
+from .forms import AvanceComponenteForm
 from proyectos.models import Componente
 from registros.views.steps_views import (
     GenericRegistroStepsView,

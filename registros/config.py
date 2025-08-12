@@ -380,7 +380,9 @@ def create_table_config(
     table_template: str = 'components/sub_elemento_table.html',
     css_classes: str = 'table-container',
     data_source: str = None,
-    fields_to_show: List[str] = None
+    fields_to_show: List[str] = None,
+    table_model_class: Type[models.Model] = None,
+    table_form_class: Type = None
 ) -> SubElementoConfig:
     """
     Crea configuración para sub-elemento de tabla.
@@ -391,6 +393,8 @@ def create_table_config(
         css_classes: Clases CSS para el contenedor
         data_source: Fuente de datos para la tabla (opcional)
         fields_to_show: Lista de campos a mostrar (opcional)
+        table_model_class: Modelo específico para la tabla (opcional, para tablas con datos propios)
+        table_form_class: Formulario específico para la tabla (opcional, para tablas editables)
     
     Template requerido:
         - Ruta: 'components/sub_elemento_table.html'
@@ -400,13 +404,21 @@ def create_table_config(
         SubElementoConfig configurado para tabla
     """
     
+    config = {
+        'title': table_title,
+        'data_source': data_source,
+        'fields_to_show': fields_to_show or []
+    }
+    
+    # Agregar modelo y formulario específicos de la tabla si se proporcionan
+    if table_model_class:
+        config['table_model_class'] = table_model_class
+    if table_form_class:
+        config['table_form_class'] = table_form_class
+    
     return SubElementoConfig(
         tipo='table',
-        config={
-            'title': table_title,
-            'data_source': data_source,
-            'fields_to_show': fields_to_show or []
-        },
+        config=config,
         template_name=table_template,
         css_classes=css_classes
     )

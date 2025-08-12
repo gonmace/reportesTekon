@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from users.models import User
 from core.models.sites import Site
-from reg_construccion.models import RegConstruccion, Visita, Avance
+from reg_construccion.models import RegConstruccion
 from reg_txtss.models import RegTxtss
 from photos.models import Photos
 from registros.models.base import RegistroBase
@@ -272,11 +272,11 @@ class Command(BaseCommand):
                         }
                     )
                     if created:
-                        self.stdout.write(f'  Registro visita creado: {reg.title}')
+                        self.stdout.write(f'  Registro construcción creado: {reg.title}')
                     else:
-                        self.stdout.write(f'  Registro visita existente: {reg.title}')
+                        self.stdout.write(f'  Registro construcción existente: {reg.title}')
                 except Exception as e:
-                    self.stdout.write(f'  Error restaurando registro visita {reg_data["id"]}: {e}')
+                    self.stdout.write(f'  Error restaurando registro construcción {reg_data["id"]}: {e}')
             
             # Restaurar registros TXTSS
             self.stdout.write('Restaurando registros TXTSS...')

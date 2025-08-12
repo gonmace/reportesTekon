@@ -38,63 +38,48 @@ class RegConstruccion(RegistroBase):
         self.full_clean()
         super().save(*args, **kwargs) 
 
+class Objetivo(PasoBase):
+    """
+    Modelo para el paso principal de objetivo.
+    """
+    registro = models.ForeignKey(RegConstruccion, on_delete=models.CASCADE, verbose_name='Registro')
+    objetivo = models.TextField(blank=True, null=True, verbose_name='Objetivo')
+    
+    class Meta:
+        verbose_name = 'Objetivo'
+        verbose_name_plural = 'Objetivos'
+    
+    @staticmethod
+    def get_etapa():
+        return 'objetivo'
+    
+    @staticmethod
+    def check_completeness(objetivo_id):
+        return check_model_completeness(Objetivo, objetivo_id)
 
-class Visita(PasoBase):
-    """Paso Visita para registros Reporte de construcción."""
+class AvanceComponenteComentarios(PasoBase):
+    """
+    Modelo simple para el paso principal de avance por componente.
+    Solo contiene comentarios generales del paso.
+    """
     registro = models.ForeignKey(RegConstruccion, on_delete=models.CASCADE, verbose_name='Registro')
     comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
     
     class Meta:
-        verbose_name = 'Registro Visita'
-        verbose_name_plural = 'Registros Visita'
+        verbose_name = 'Comentarios Avance por Componente'
+        verbose_name_plural = 'Comentarios Avances por Componente'
     
     @staticmethod
     def get_etapa():
-        return 'visita'
+        return 'avance_componente'
     
     @staticmethod
     def get_actives():
-        return Visita.objects.filter(is_deleted=False)
+        return AvanceComponenteComentarios.objects.filter(is_deleted=False)
 
     @staticmethod
-    def check_completeness(visita_id):
-        return check_model_completeness(Visita, visita_id)
-
-
-class Avance(PasoBase):
-    """Paso Avance para registros Reporte de construcción."""
-    registro = models.ForeignKey(RegConstruccion, on_delete=models.CASCADE, verbose_name='Registro')
-    fecha = models.DateField(verbose_name='Fecha del avance', default=date.today)
-    comentarios = models.TextField(blank=True, null=True, verbose_name='Comentarios')
-    porcentaje_avance = models.IntegerField(
-        verbose_name='Porcentaje de avance', 
-        default=0,
-        help_text='Porcentaje de avance del 0 al 100'
-    )
-    
-    class Meta:
-        verbose_name = 'Registro Avance'
-        verbose_name_plural = 'Registros Avance'
-        ordering = ['-fecha', '-created_at']
-    
-    @staticmethod
-    def get_etapa():
-        return 'avance'
-    
-    @staticmethod
-    def get_actives():
-        return Avance.objects.filter(is_deleted=False)
-
-    @staticmethod
-    def check_completeness(avance_id):
-        return check_model_completeness(Avance, avance_id)
-    
-    def clean(self):
-        """Validación personalizada para el porcentaje de avance"""
-        super().clean()
-        if self.porcentaje_avance < 0 or self.porcentaje_avance > 100:
-            from django.core.exceptions import ValidationError
-            raise ValidationError('El porcentaje de avance debe estar entre 0 y 100')
+    def check_completeness(avance_componente_comentarios_id):
+        return check_model_completeness(AvanceComponenteComentarios, avance_componente_comentarios_id)
 
 
 class AvanceComponente(PasoBase):
@@ -224,4 +209,5 @@ class EjecucionPorcentajes(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
 

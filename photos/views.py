@@ -50,6 +50,13 @@ def get_registro_from_id(registro_id):
     except:
         pass
     
+    # Intentar con reg_construccion
+    try:
+        from reg_construccion.models import RegConstruccion
+        return RegConstruccion.objects.get(id=registro_id)
+    except:
+        pass
+    
     # Intentar con registros_test (comentado temporalmente)
     # try:
     #     from registros_test.models import Registros
@@ -73,6 +80,7 @@ def get_app_name_from_registro(registro):
     app_mapping = {
         'reg_txtss': 'txtss',
         'registros_txtss': 'txtss',  # Mantener compatibilidad
+        'reg_construccion': 'construccion',
         'registros_test': 'test',
         # Agregar más mapeos según sea necesario
     }
@@ -155,14 +163,18 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
                 # Usar el app_label real del registro, no el app_name mapeado
                 app_label = registro._meta.app_label
                 model_class = apps.get_model(app_label, f"R{step_name.capitalize()}")
+                etapa = model_class.get_etapa()
+                try:
+                    etapa_obj = model_class.objects.get(registro_id=registro_id)
+                    object_id = etapa_obj.id
+                except model_class.DoesNotExist:
+                    object_id = None
             except LookupError:
-                raise Http404("Modelo de etapa no encontrado")
-            etapa = model_class.get_etapa()
-            try:
-                etapa_obj = model_class.objects.get(registro_id=registro_id)
-                object_id = etapa_obj.id
-            except model_class.DoesNotExist:
-                object_id = None
+                # Si no se encuentra el modelo de la etapa, usar el registro principal
+                # Esto es útil para pasos que solo tienen componentes (como fotos)
+                model_class = type(registro)
+                object_id = registro.id
+                etapa = step_name
 
         content_type = ContentType.objects.get_for_model(model_class)
 

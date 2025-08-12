@@ -505,7 +505,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 )
             
             # Procesar configuración de tabla si existe
-            table_config = self._process_table_config(registro, elemento_config, instance)
+            table_config = self._process_table_config(registro, elemento_config, instance, step_name)
             
             # Procesar datos de subelementos (incluyendo datos de tabla)
             sub_elementos_data = self._process_sub_elementos_data(registro, elemento_config, instance)
@@ -740,7 +740,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
             }
         ]
     
-    def _process_table_config(self, registro, elemento_config, instance):
+    def _process_table_config(self, registro, elemento_config, instance, step_name):
         """Procesa la configuración del subelemento de tabla."""
         has_table = any(sub.tipo == 'table' for sub in elemento_config.sub_elementos)
         
@@ -788,7 +788,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
         
         config = {
             'enabled': True,
-            'url': f'/{self.registro_config.app_namespace}/{registro.id}/avance/',
+            'url': f'/{self.registro_config.app_namespace}/{registro.id}/{step_name}/',
             'color': table_color,
             'count': table_count,
             'percentage': round(total_ejecucion_total, 1)  # Porcentaje total de avance
