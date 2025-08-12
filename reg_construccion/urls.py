@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .views import (
     ListRegistrosView,
     StepsRegistroView,
@@ -22,4 +22,7 @@ urlpatterns = [
     path('actualizar-ejecucion/<int:registro_id>/', actualizar_ejecucion_ajax, name='actualizar_ejecucion_ajax'),
     path('pdf/<int:registro_id>/', RegConstruccionPDFView.as_view(), name='pdf'),
     path('preview/<int:registro_id>/', preview_reg_construccion_individual, name='preview'),
+    
+    # URLs de photos específicas para reg_construccion
+    path('<int:registro_id>/<str:step_name>/photos/', include('photos.urls')),
 ]

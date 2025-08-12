@@ -295,7 +295,7 @@
     });
 
     // Start the upload
-    xhr.open("POST", "{% url 'photos:upload' app_name=app_name registro_id=registro_id step_name=title %}");
+    xhr.open("POST", "upload/");
     xhr.setRequestHeader(
       "X-CSRFToken",
       document.querySelector("[name=csrfmiddlewaretoken]").value
@@ -362,7 +362,7 @@
     );
     const descripcion = input.value;
 
-    fetch("{% url 'photos:update' app_name=app_name registro_id=registro_id step_name=title %}", {
+    fetch("update/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -393,7 +393,7 @@
       return;
     }
 
-    fetch("{% url 'photos:delete' app_name=app_name registro_id=registro_id step_name=title photo_id=0 %}".replace('/0/', `/${photoId}/`), {
+    fetch(`delete/${photoId}/`, {
       method: "POST",
       headers: {
         "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
@@ -465,7 +465,7 @@
 
     // Debounce the save operation
     sortTimeout = setTimeout(() => {
-      fetch("{% url 'photos:reorder' app_name=app_name registro_id=registro_id step_name=title %}", {
+      fetch("reorder/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

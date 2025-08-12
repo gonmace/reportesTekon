@@ -29,4 +29,7 @@ urlpatterns = [
     # PDF
     path('pdf/<int:registro_id>/', RegTxtssPDFView.as_view(), name='pdf'),
     path('preview/<int:registro_id>/', preview_reg_txtss_individual, name='preview'),
+    
+    # URLs de photos específicas para reg_txtss
+    path('<int:registro_id>/<str:step_name>/photos/', include('photos.urls')),
 ] 

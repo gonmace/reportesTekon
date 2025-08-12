@@ -86,7 +86,7 @@ class Command(BaseCommand):
 
     def mostrar_grupo(self, grupo, detallado):
         """Mostrar información de un grupo específico"""
-        componentes = grupo.componentes.all().order_by('componente__nombre')
+        componentes = grupo.componentes.all().order_by('orden', 'id')
         total_incidencia = componentes.aggregate(total=Sum('incidencia'))['total'] or 0
         
         # Estado del balance
@@ -111,9 +111,6 @@ class Command(BaseCommand):
         
         if detallado:
             self.stdout.write(f"\n🔗 ID del grupo: {grupo.id}")
-            self.stdout.write(f"📅 Creado: {grupo.created_at}")
-            if grupo.updated_at != grupo.created_at:
-                self.stdout.write(f"📝 Actualizado: {grupo.updated_at}")
 
     def mostrar_resumen(self):
         """Mostrar resumen general"""

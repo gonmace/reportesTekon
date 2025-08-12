@@ -7,13 +7,27 @@ from django.utils.html import format_html
 from django.db.models import Sum, Avg
 from django.core.exceptions import ValidationError
 from django import forms
+from adminsortable2.admin import SortableInlineAdminMixin, SortableAdminBase
 from .models import Componente, GrupoComponentes, ComponenteGrupo
 
 
-class ComponenteGrupoInline(admin.TabularInline):
+class ComponenteGrupoInline(SortableInlineAdminMixin, admin.TabularInline):
     model = ComponenteGrupo
     extra = 0
-    fields = ['componente', 'incidencia']
+    fields = ['orden_display', 'componente', 'incidencia']
+    readonly_fields = ['orden', 'orden_display']
+    
+    def get_queryset(self, request):
+        """Asegurar que los componentes se muestren en el orden correcto"""
+        qs = super().get_queryset(request)
+        return qs.order_by('orden', 'id')
+    
+    def orden_display(self, obj):
+        """Mostrar el orden de manera visual"""
+        if obj.orden is not None:
+            return f"#{obj.orden + 1}"
+        return "-"
+    orden_display.short_description = "Orden"
     
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
@@ -48,7 +62,7 @@ class ComponenteAdmin(admin.ModelAdmin):
 
 
 @admin.register(GrupoComponentes)
-class GrupoComponentesAdmin(admin.ModelAdmin):
+class GrupoComponentesAdmin(SortableAdminBase, admin.ModelAdmin):
     list_display = ['nombre', 'num_componentes', 'porcentaje_incidencia_total', 'estado_balance']
     search_fields = ['nombre']
     ordering = ['nombre']
@@ -74,8 +88,21 @@ class GrupoComponentesAdmin(admin.ModelAdmin):
     estado_balance.short_description = 'Estado del Balance'
     
     def save_formset(self, request, form, formset, change):
-        """Validar que la suma de incidencias sea 100% al guardar"""
+        """Validar que la suma de incidencias sea 100% al guardar y asignar orden"""
         instances = formset.save(commit=False)
+        
+        # Asignar orden automáticamente a nuevos componentes
+        existing_orders = set()
+        for instance in instances:
+            if instance.id:  # Componente existente
+                existing_orders.add(instance.orden)
+            else:  # Nuevo componente
+                # Encontrar el siguiente orden disponible
+                next_order = 0
+                while next_order in existing_orders:
+                    next_order += 1
+                instance.orden = next_order
+                existing_orders.add(next_order)
         
         # Calcular total de incidencias
         total_incidencia = sum(

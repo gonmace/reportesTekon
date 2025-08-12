@@ -609,7 +609,7 @@ class GenericRegistroStepsView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Bre
                 # Obtener todos los componentes activos de la estructura con su incidencia
                 componentes_estructura = ComponenteGrupo.objects.filter(
                     grupo=registro.estructura
-                ).select_related('componente').order_by('componente__nombre')
+                ).select_related('componente').order_by('orden', 'id')
                 
                 # Obtener avances existentes para esta estructura
                 avances_existentes = AvanceComponente.objects.filter(
@@ -853,7 +853,7 @@ class GenericElementoView(RegistroBreadcrumbsMixin, LoginRequiredMixin, Breadcru
                 # Obtener todos los componentes activos de la estructura con su incidencia
                 componentes_estructura = ComponenteGrupo.objects.filter(
                     grupo=registro.estructura
-                ).select_related('componente').order_by('componente__nombre')
+                ).select_related('componente').order_by('orden', 'id')
                 
                 # Obtener avances existentes para esta estructura
                 avances_existentes = AvanceComponente.objects.filter(

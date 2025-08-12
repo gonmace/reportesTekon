@@ -95,6 +95,79 @@ def get_app_name_from_registro_id(registro_id):
     registro = get_registro_from_id(registro_id)
     return get_app_name_from_registro(registro)
 
+def get_app_name_from_request(request, registro):
+    """Obtiene el app_name desde la request o del registro."""
+    # Intentar obtener app_name desde la URL
+    resolved_url = request.resolver_match
+    if resolved_url and hasattr(resolved_url, 'kwargs'):
+        app_name = resolved_url.kwargs.get('app_name')
+        if app_name:
+            return app_name
+    
+    # Si no se encuentra en la URL, intentar detectarlo desde la URL path
+    if request.path.startswith('/reg_construccion/'):
+        return 'reg_construccion'
+    elif request.path.startswith('/reg_txtss/'):
+        return 'reg_txtss'
+    
+    # Si no se puede detectar desde la URL, obtenerlo del registro
+    return get_app_name_from_registro(registro)
+
+def get_url_params_from_request(request):
+    """Obtiene los parámetros de URL desde la request, incluyendo los de la URL padre."""
+    resolved_url = request.resolver_match
+    if resolved_url and hasattr(resolved_url, 'kwargs'):
+        # Obtener parámetros de la URL actual
+        params = resolved_url.kwargs.copy()
+        
+        # Si no tenemos app_name, intentar obtenerlo de la URL padre
+        if 'app_name' not in params:
+            if request.path.startswith('/reg_construccion/'):
+                params['app_name'] = 'reg_construccion'
+            elif request.path.startswith('/reg_txtss/'):
+                params['app_name'] = 'reg_txtss'
+        
+        return params
+    
+    return {}
+
+def get_params_from_request(request, **kwargs):
+    """Obtiene los parámetros necesarios desde la request o kwargs."""
+    # Obtener parámetros desde la request
+    params = get_url_params_from_request(request)
+    
+    # Combinar con kwargs
+    registro_id = kwargs.get('registro_id') or params.get('registro_id')
+    step_name = kwargs.get('step_name') or params.get('step_name')
+    paso_nombre = kwargs.get('paso_nombre') or params.get('paso_nombre')
+    app_name = kwargs.get('app_name') or params.get('app_name')
+    
+    # Si no tenemos registro_id, intentar obtenerlo de la URL
+    if not registro_id:
+        # Extraer registro_id de la URL
+        path_parts = request.path.split('/')
+        for i, part in enumerate(path_parts):
+            if part.isdigit() and i < len(path_parts) - 1:
+                registro_id = int(part)
+                break
+    
+    # Si no tenemos step_name, usar paso_nombre
+    if not step_name:
+        step_name = paso_nombre
+    
+    # Si no tenemos app_name, detectarlo desde la URL
+    if not app_name:
+        if request.path.startswith('/reg_construccion/'):
+            app_name = 'reg_construccion'
+        elif request.path.startswith('/reg_txtss/'):
+            app_name = 'reg_txtss'
+    
+    return {
+        'registro_id': registro_id,
+        'step_name': step_name,
+        'app_name': app_name
+    }
+
 
 class ListPhotosView(BreadcrumbsMixin, ListView):
     model = Photos
@@ -127,10 +200,12 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
         return [self.template_name]
 
     def get_queryset(self):
-        app_name = self.kwargs.get('app_name')
-        step_name = self.kwargs.get('step_name')
-        paso_nombre = self.kwargs.get('paso_nombre')
-        registro_id = self.kwargs.get('registro_id')
+        # Obtener parámetros desde la request
+        params = get_url_params_from_request(self.request)
+        app_name = params.get('app_name') or self.kwargs.get('app_name')
+        step_name = params.get('step_name') or self.kwargs.get('step_name')
+        paso_nombre = params.get('paso_nombre') or self.kwargs.get('paso_nombre')
+        registro_id = params.get('registro_id') or self.kwargs.get('registro_id')
 
         if not registro_id:
             resolved_url = self.request.resolver_match
@@ -140,9 +215,15 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
 
         # Determinar app_name dinámicamente si no está
         if not app_name:
-            app_name = get_app_name_from_registro_id(registro_id)
-            if not app_name:
-                raise Http404("No se pudo determinar la aplicación")
+            # Intentar detectar desde la URL
+            if self.request.path.startswith('/reg_construccion/'):
+                app_name = 'reg_construccion'
+            elif self.request.path.startswith('/reg_txtss/'):
+                app_name = 'reg_txtss'
+            else:
+                app_name = get_app_name_from_registro_id(registro_id)
+                if not app_name:
+                    raise Http404("No se pudo determinar la aplicación")
 
         # Determinar step_name dinámicamente si no está
         if not step_name:
@@ -242,10 +323,13 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        app_name = self.kwargs.get('app_name')
-        step_name = self.kwargs.get('step_name')
-        paso_nombre = self.kwargs.get('paso_nombre')
-        registro_id = self.kwargs.get('registro_id')
+        # Obtener parámetros desde la request
+        params = get_url_params_from_request(self.request)
+        app_name = params.get('app_name') or self.kwargs.get('app_name')
+        step_name = params.get('step_name') or self.kwargs.get('step_name')
+        paso_nombre = params.get('paso_nombre') or self.kwargs.get('paso_nombre')
+        registro_id = params.get('registro_id') or self.kwargs.get('registro_id')
+        
         if not registro_id:
             resolved_url = self.request.resolver_match
             if resolved_url and hasattr(resolved_url, 'kwargs'):
@@ -253,9 +337,15 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
                 paso_nombre = resolved_url.kwargs.get('paso_nombre')
         context['registro_id'] = registro_id
         if not app_name:
-            app_name = get_app_name_from_registro_id(registro_id)
-            if not app_name:
-                raise Http404("No se pudo determinar la aplicación")
+            # Intentar detectar desde la URL
+            if self.request.path.startswith('/reg_construccion/'):
+                app_name = 'reg_construccion'
+            elif self.request.path.startswith('/reg_txtss/'):
+                app_name = 'reg_txtss'
+            else:
+                app_name = get_app_name_from_registro_id(registro_id)
+                if not app_name:
+                    raise Http404("No se pudo determinar la aplicación")
         if not step_name:
             step_name = paso_nombre
         context['app_name'] = app_name
@@ -314,6 +404,7 @@ class UploadPhotosView(View):
                 content_type = ContentType.objects.get_for_model(model_class)
                 object_id = registro.id
             else:
+                # Intentar buscar un modelo específico para el paso
                 try:
                     app_label = registro._meta.app_label
                     model_class = apps.get_model(app_label, f"R{step_name.capitalize()}")
@@ -327,13 +418,14 @@ class UploadPhotosView(View):
                             'message': f'No existe el registro de la etapa {step_name}. Debes crear primero el registro.'
                         }, status=400)
                 except LookupError:
-                    return JsonResponse({
-                        'success': False,
-                        'message': f'Modelo de etapa {step_name} no encontrado'
-                    }, status=400)
+                    # Si no se encuentra el modelo específico, usar el registro principal
+                    # Esto maneja pasos que solo tienen sub-elementos (como 'imagenes', 'mandato', etc.)
+                    model_class = type(registro)
+                    content_type = ContentType.objects.get_for_model(model_class)
+                    object_id = registro.id
             
             if not app_name:
-                app_name = get_app_name_from_registro(registro)
+                app_name = get_app_name_from_request(request, registro)
             photos_creadas = []
             for file in files:
                 if file.content_type.startswith('image/'):
@@ -388,7 +480,7 @@ class UpdatePhotoView(View):
             if not registro:
                 return JsonResponse({'success': False, 'message': 'Registro no encontrado'}, status=404)
             if not app_name:
-                app_name = get_app_name_from_registro(registro)
+                app_name = get_app_name_from_request(request, registro)
             if step_name == 'sitio':
                 model_class = type(registro)
                 etapa = 'sitio'
@@ -396,14 +488,17 @@ class UpdatePhotoView(View):
             else:
                 try:
                     model_class = apps.get_model(app_name, f"R{step_name.capitalize()}")
+                    etapa = model_class.get_etapa()
+                    try:
+                        etapa_obj = model_class.objects.get(registro_id=registro_id)
+                        object_id = etapa_obj.id
+                    except model_class.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': 'Etapa no encontrada'}, status=404)
                 except LookupError:
-                    return JsonResponse({'success': False, 'message': 'Modelo no encontrado'}, status=404)
-                etapa = model_class.get_etapa()
-                try:
-                    etapa_obj = model_class.objects.get(registro_id=registro_id)
-                    object_id = etapa_obj.id
-                except model_class.DoesNotExist:
-                    return JsonResponse({'success': False, 'message': 'Etapa no encontrada'}, status=404)
+                    # Si no hay modelo específico para este step, usar el registro principal
+                    model_class = type(registro)
+                    etapa = step_name
+                    object_id = registro.id
             from django.contrib.contenttypes.models import ContentType
             content_type = ContentType.objects.get_for_model(model_class)
             try:
@@ -427,13 +522,11 @@ class UpdatePhotoView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class ReorderPhotosView(View):
     def post(self, request, registro_id=None, paso_nombre=None, app_name=None, step_name=None):
-        if not registro_id:
-            resolved_url = request.resolver_match
-            if resolved_url and hasattr(resolved_url, 'kwargs'):
-                registro_id = resolved_url.kwargs.get('registro_id')
-                paso_nombre = resolved_url.kwargs.get('paso_nombre')
-        if not step_name:
-            step_name = paso_nombre
+        # Obtener parámetros desde la request
+        params = get_params_from_request(request, registro_id=registro_id, paso_nombre=paso_nombre, app_name=app_name, step_name=step_name)
+        registro_id = params['registro_id']
+        step_name = params['step_name']
+        app_name = params['app_name']
         try:
             data = json.loads(request.body)
             orden = data.get('orden', [])
@@ -441,7 +534,7 @@ class ReorderPhotosView(View):
             if not registro:
                 return JsonResponse({'success': False, 'message': 'Registro no encontrado'}, status=404)
             if not app_name:
-                app_name = get_app_name_from_registro(registro)
+                app_name = get_app_name_from_request(request, registro)
             if step_name == 'sitio':
                 model_class = type(registro)
                 etapa = 'sitio'
@@ -449,14 +542,17 @@ class ReorderPhotosView(View):
             else:
                 try:
                     model_class = apps.get_model(app_name, f"R{step_name.capitalize()}")
+                    etapa = model_class.get_etapa()
+                    try:
+                        etapa_obj = model_class.objects.get(registro_id=registro_id)
+                        object_id = etapa_obj.id
+                    except model_class.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': 'Etapa no encontrada'}, status=404)
                 except LookupError:
-                    return JsonResponse({'success': False, 'message': 'Modelo no encontrado'}, status=404)
-                etapa = model_class.get_etapa()
-                try:
-                    etapa_obj = model_class.objects.get(registro_id=registro_id)
-                    object_id = etapa_obj.id
-                except model_class.DoesNotExist:
-                    return JsonResponse({'success': False, 'message': 'Etapa no encontrada'}, status=404)
+                    # Si no hay modelo específico para este step, usar el registro principal
+                    model_class = type(registro)
+                    etapa = step_name
+                    object_id = registro.id
             from django.contrib.contenttypes.models import ContentType
             content_type = ContentType.objects.get_for_model(model_class)
             for index, photo_id in enumerate(orden):
@@ -499,14 +595,17 @@ class DeletePhotoView(View):
             else:
                 try:
                     model_class = apps.get_model(app_name, f"R{step_name.capitalize()}")
+                    etapa = model_class.get_etapa()
+                    try:
+                        etapa_obj = model_class.objects.get(registro_id=registro_id)
+                        object_id = etapa_obj.id
+                    except model_class.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': 'Etapa no encontrada'}, status=404)
                 except LookupError:
-                    return JsonResponse({'success': False, 'message': 'Modelo no encontrado'}, status=404)
-                etapa = model_class.get_etapa()
-                try:
-                    etapa_obj = model_class.objects.get(registro_id=registro_id)
-                    object_id = etapa_obj.id
-                except model_class.DoesNotExist:
-                    return JsonResponse({'success': False, 'message': 'Etapa no encontrada'}, status=404)
+                    # Si no hay modelo específico para este step, usar el registro principal
+                    model_class = type(registro)
+                    etapa = step_name
+                    object_id = registro.id
             from django.contrib.contenttypes.models import ContentType
             content_type = ContentType.objects.get_for_model(model_class)
             try:

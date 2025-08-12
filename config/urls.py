@@ -11,7 +11,7 @@ urlpatterns = [
     path('', include('core.urls.sitios')),
     path('reg_txtss/', include('reg_txtss.urls')),
     path('reg_construccion/', include('reg_construccion.urls')),
-    path('', include('photos.urls')),
+    path('photos/', include('photos.urls')),
     path('', include('pdf_reports.urls')),
     path('api/', include('core.urls.api')),
 ]
