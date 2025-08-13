@@ -1,4 +1,5 @@
 {% load static %}
+{% load pdf_filters %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -151,44 +152,67 @@
       </tfoot>
     </table>
   </section>
+  
+  <!-- Gráfico de Avance por Componente -->
+  {% if avance_componente_chart.componentes %}
+  <section class="grafico-avance">
+    <h2>{{ "GRÁFICO DE AVANCE POR COMPONENTE" }}</h2>
+    <div class="grafico-barras">
+      {% for i in avance_componente_chart.componentes %}
+        {% with forloop.counter0 as index %}
+        <div class="barra-componente">
+          <div class="nombre-componente">{{ avance_componente_chart.componentes|get_item:index }}</div>
+          <div class="barra-progreso">
+            <div class="barra-anterior" style="width: {{ avance_componente_chart.ejec_anterior|get_item:index }}%"></div>
+            <div class="barra-actual" style="width: {{ avance_componente_chart.ejec_actual|get_item:index }}%; left: {{ avance_componente_chart.ejec_anterior|get_item:index }}%"></div>
+            <div class="porcentaje-texto">{{ avance_componente_chart.ejecucion_total|get_item:index }}%</div>
+          </div>
+        </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+    
+    <div class="leyenda-grafico">
+      <div class="leyenda-item">
+        <div class="leyenda-color leyenda-anterior"></div>
+        <span>Ejecución Anterior</span>
+      </div>
+      <div class="leyenda-item">
+        <div class="leyenda-color leyenda-actual"></div>
+        <span>Ejecución Actual</span>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+  
+  <!-- Comentarios Generales -->
+  <article id="registro-comentarios">
+    <h2>{{ "COMENTARIOS GENERALES" }}</h2>
+    <section class="content-registro">
+      {% for key, value in registro_avance_componente.items %}
+      {% if value != '' %}
+        <p>{{ value }}</p>
+      {% endif %}
+      {% endfor %}
+    </section>
+  </article>
+  
+  <!-- Fotos del Avance -->
+  {% if registro_imagenes_fotos.fotos %}
+    <h2>{{ "REGISTRO FOTOGRÁFICO" }}</h2>
+    <section class="imagenes">
+      {% for foto in registro_imagenes_fotos.fotos %}
+        <div>
+          <img src="{{ foto.src }}" alt="{{ foto.alt }}">
+          <p style="">{{ foto.descripcion }}</p>
+        </div>
+      {% endfor %}
+    </section>
   {% endif %}
 </article>
 
-<!-- Mapa del avance -->
-{% if google_avance_image.src %}
-<table class="mapa-table">
-  <tr>
-    <td class="mapa-img-cell">
-      <img src="{{ google_avance_image.src }}" alt="{{ google_avance_image.alt }}">
-      <p class="mapa-leyenda-caption">{{ google_avance_image.caption|default:"" }}</p>
-    </td>
-    <td class="mapa-leyenda-cell">
-              {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_avance_image.icon1_color name=google_avance_image.name1 %}
-      {% if google_avance_image.icon2_color %}
-                  {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_avance_image.icon2_color name=google_avance_image.name2 %}
-      {% endif %}
-      {% if google_avance_image.icon3_color %}
-                  {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_avance_image.icon3_color name=google_avance_image.name3 %}
-      {% endif %}
-    </td>
-  </tr>
-</table>
-{% endif %}
 
-<!-- Fotos del Avance -->
-{% if registro_avance_fotos.fotos %}
-  <section class="imagenes">
-    <div class="foto-titulo">
-      <p><strong>Registro Fotográfico de PARTIDAS DEL PROYECTO Y AVANCE:</strong></p>
-    </div>
-    {% for foto in registro_avance_fotos.fotos %}
-      <div>
-        <img src="{{ foto.src }}" alt="{{ foto.alt }}">
-        <p style="">{{ foto.descripcion }}</p>
-      </div>
-    {% endfor %}
-  </section>
-{% endif %}
 
 </body>
 </html>

@@ -227,6 +227,14 @@ class RegConstruccionPDFView(WeasyTemplateView):
                 'total_ejec_acumulada': f"{total_ejec_acumulada:.1f}%",
                 'total_ejecucion_total': f"{total_ejecucion_total:.1f}%"
             }
+            
+            # Agregar datos para gráfico
+            context['avance_componente_chart'] = {
+                'componentes': [row['componente'] for row in table_data],
+                'ejecucion_total': [float(row['ejecucion_total'].replace('%', '')) for row in table_data],
+                'ejec_actual': [float(row['ejec_actual'].replace('%', '')) for row in table_data],
+                'ejec_anterior': [float(row['ejec_anterior'].replace('%', '')) for row in table_data]
+            }
         else:
             # Si no hay estructura seleccionada, mostrar todos los avances
             avances_componente = AvanceComponente.objects.filter(
