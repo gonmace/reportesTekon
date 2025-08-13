@@ -1,0 +1,125 @@
+<form id="contractorForm" class="space-y-6">
+    {% csrf_token %}
+    
+    <!-- Header del formulario -->
+    <div class="flex items-center space-x-3 mb-6">
+        <div class="bg-primary text-primary-content rounded-full w-12 h-12 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+        </div>
+        <div>
+            <h3 class="text-lg font-semibold text-base-content">
+                {% if contractor %}
+                    Editar Contratista
+                {% else %}
+                    Nuevo Contratista
+                {% endif %}
+            </h3>
+            <p class="text-sm text-base-content/70">
+                {% if contractor %}
+                    Modifica la información del contratista
+                {% else %}
+                    Completa la información para crear un nuevo contratista
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Nombre -->
+    <div class="form-control">
+        <label for="{{ form.name.id_for_label }}" class="label">
+            <span class="label-text font-medium">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                {{ form.name.label }}
+            </span>
+            <span class="label-text-alt text-error">*</span>
+        </label>
+        <div class="relative">
+            {{ form.name }}
+            <!-- Los campos tienen las clases: input input-bordered w-full -->
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg class="w-5 h-5 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </div>
+        </div>
+        {% if form.name.errors %}
+            <div class="alert alert-error mt-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <div class="text-sm">
+                    {% for error in form.name.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        <label class="label">
+            <span class="label-text-alt text-base-content/60">
+                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Nombre completo del contratista
+            </span>
+        </label>
+    </div>
+
+    <!-- Código -->
+    <div class="form-control">
+        <label for="{{ form.code.id_for_label }}" class="label">
+            <span class="label-text font-medium">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                {{ form.code.label }}
+            </span>
+            <span class="label-text-alt text-error">*</span>
+        </label>
+        <div class="relative">
+            {{ form.code }}
+            <!-- Los campos tienen las clases: input input-bordered w-full -->
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg class="w-5 h-5 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+            </div>
+        </div>
+        {% if form.code.errors %}
+            <div class="alert alert-error mt-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <div class="text-sm">
+                    {% for error in form.code.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        <label class="label">
+            <span class="label-text-alt text-base-content/60">
+                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Código único para identificar al contratista
+            </span>
+        </label>
+    </div>
+
+    <!-- Estado del formulario -->
+    <div class="form-control">
+        <label class="label cursor-pointer justify-start">
+            <input type="checkbox" class="checkbox checkbox-primary mr-3" checked disabled>
+            <span class="label-text">Contratista activo</span>
+        </label>
+        <label class="label">
+            <span class="label-text-alt text-base-content/60">
+                Los nuevos contratistas se crean automáticamente como activos
+            </span>
+        </label>
+    </div>
+</form>

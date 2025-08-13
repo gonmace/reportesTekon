@@ -6,6 +6,19 @@
 @source "../../../templates/components/maps_form.html"
 @source "../../../static/js/components/alert-component.js";
 @source "../../../registrostxtss/forms/r_sitio_form.py";
+@source "../../../registrostxtss/**/*.*";
+@source "../../../registrostxtss/*.*";
+@source "../../../core/models/contractors.py";
+@source "../../../core/models/sites.py";
+@source "../../../core/models/photos.py";
+@source "../../../core/models/photos_sites.py";
+@source "../../../core/models/photos_sites_photos.py";
+@source "../../../core/models/photos_sites_photos_photos.py";
+@source "../../../core/models/photos_sites_photos_photos_photos.py";
+@source "../../../core/models/photos_sites_photos_photos_photos_photos.py";
+@source "../../../core/models/photos_sites_photos_photos_photos_photos_photos.py";
+@source "../../../core/models/photos_sites_photos_photos_photos_photos_photos_photos.py";
+@source "../../../core/models/photos_sites_photos_photos_photos_photos_photos_photos.py";
 @source "../../../templates/svgs/*.svg";
 @source "../../../templates/components/*.html";
 

@@ -11,8 +11,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.urls import reverse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView, UpdateView, DeleteView
 from .models import RegConstruccion, AvanceComponente, EjecucionPorcentajes
-from .forms import AvanceComponenteForm
+from .forms import AvanceComponenteForm, RegConstruccionForm
 from proyectos.models import Componente
 from registros.views.steps_views import (
     GenericRegistroStepsView,
@@ -24,9 +26,6 @@ from registros.config import RegistroConfig
 from .config import REGISTRO_CONFIG
 from datetime import date
 import json
-
-
-
 
 
 @login_required
@@ -237,3 +236,145 @@ class TableOnlyView(GenericElementoView):
             'data': data,
         }
         return render(request, self.template_name, context)
+
+
+# Nuevas vistas para CRUD completo
+class RegConstruccionCreateView(LoginRequiredMixin, CreateView):
+    """Vista para crear nuevos registros de construcción."""
+    model = RegConstruccion
+    form_class = RegConstruccionForm
+    template_name = 'reg_construccion/registro_form.html'
+    
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, 'Reporte de construcción creado exitosamente.')
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse('reg_construccion:steps', kwargs={'registro_id': self.object.id})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumbs'] = [
+            {'label': 'Inicio', 'url': reverse('dashboard:dashboard')},
+            {'label': 'Reportes de Construcción', 'url': reverse('reg_construccion:list')},
+            {'label': 'Nuevo Reporte'}
+        ]
+        context['header_title'] = 'Nuevo Reporte de Construcción'
+        return context
+
+
+class RegConstruccionUpdateView(LoginRequiredMixin, UpdateView):
+    """Vista para editar registros de construcción existentes."""
+    model = RegConstruccion
+    form_class = RegConstruccionForm
+    template_name = 'reg_construccion/registro_form.html'
+    
+    def get_queryset(self):
+        return RegConstruccion.objects.filter(user=self.request.user)
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Reporte de construcción actualizado exitosamente.')
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse('reg_construccion:steps', kwargs={'registro_id': self.object.id})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumbs'] = [
+            {'label': 'Inicio', 'url': reverse('dashboard:dashboard')},
+            {'label': 'Reportes de Construcción', 'url': reverse('reg_construccion:list')},
+            {'label': 'Editar Reporte'}
+        ]
+        context['header_title'] = f'Editar Reporte: {self.object.title}'
+        return context
+
+
+class RegConstruccionDeleteView(LoginRequiredMixin, DeleteView):
+    """Vista para eliminar registros de construcción."""
+    model = RegConstruccion
+    template_name = 'reg_construccion/registro_confirm_delete.html'
+    
+    def get_queryset(self):
+        return RegConstruccion.objects.filter(user=self.request.user)
+    
+    def get_success_url(self):
+        messages.success(self.request, 'Reporte de construcción eliminado exitosamente.')
+        return reverse('reg_construccion:list')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumbs'] = [
+            {'label': 'Inicio', 'url': reverse('dashboard:dashboard')},
+            {'label': 'Reportes de Construcción', 'url': reverse('reg_construccion:list')},
+            {'label': 'Eliminar Reporte'}
+        ]
+        context['header_title'] = f'Eliminar Reporte: {self.object.title}'
+        return context
+
+
+@login_required
+def dashboard_construccion(request):
+    """Dashboard específico para reportes de construcción."""
+    # Obtener estadísticas
+    total_registros = RegConstruccion.objects.filter(user=request.user).count()
+    registros_hoy = RegConstruccion.objects.filter(
+        user=request.user,
+        created_at__date=date.today()
+    ).count()
+    
+    # Últimos registros
+    ultimos_registros = RegConstruccion.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:5]
+    
+    # Componentes más activos
+    componentes_activos = Componente.objects.filter(
+        avances_componente__registro__user=request.user
+    ).distinct()[:10]
+    
+    context = {
+        'total_registros': total_registros,
+        'registros_hoy': registros_hoy,
+        'ultimos_registros': ultimos_registros,
+        'componentes_activos': componentes_activos,
+        'breadcrumbs': [
+            {'label': 'Inicio', 'url': reverse('dashboard:dashboard')},
+            {'label': 'Dashboard Construcción'}
+        ],
+        'header_title': 'Dashboard de Construcción'
+    }
+    
+    return render(request, 'reg_construccion/dashboard.html', context)
+
+
+@login_required
+@require_POST
+def update_contratista(request, registro_id):
+    """Actualizar el contratista de un registro de construcción."""
+    try:
+        registro = get_object_or_404(RegConstruccion, pk=registro_id, user=request.user)
+        data = json.loads(request.body)
+        contratista_id = data.get('contratista_id')
+        
+        if contratista_id:
+            from core.models.contractors import Contractor
+            contratista = get_object_or_404(Contractor, pk=contratista_id)
+            registro.contratista = contratista
+        else:
+            registro.contratista = None
+        
+        registro.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Contratista actualizado correctamente',
+            'contratista_name': registro.contratista.name if registro.contratista else 'Sin contratista'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al actualizar contratista: {str(e)}'
+        }, status=400)

@@ -104,13 +104,11 @@ def get_app_name_from_request(request, registro):
         if app_name:
             return app_name
     
-    # Si no se encuentra en la URL, intentar detectarlo desde la URL path
-    if request.path.startswith('/reg_construccion/'):
-        return 'reg_construccion'
-    elif request.path.startswith('/reg_txtss/'):
-        return 'reg_txtss'
+    # Si no se encuentra en la URL, usar get_reg_app_name del registro
+    if registro and hasattr(registro, 'get_reg_app_name'):
+        return registro.get_reg_app_name()
     
-    # Si no se puede detectar desde la URL, obtenerlo del registro
+    # Si no se puede detectar desde la URL, obtenerlo del registro como fallback
     return get_app_name_from_registro(registro)
 
 def get_url_params_from_request(request):
@@ -155,7 +153,17 @@ def get_params_from_request(request, **kwargs):
     if not step_name:
         step_name = paso_nombre
     
-    # Si no tenemos app_name, detectarlo desde la URL
+    # Si no tenemos app_name, obtenerlo del registro usando get_reg_app_name
+    if not app_name and registro_id:
+        try:
+            # Intentar obtener el registro y usar get_reg_app_name
+            registro = get_registro_from_id(registro_id)
+            if registro and hasattr(registro, 'get_reg_app_name'):
+                app_name = registro.get_reg_app_name()
+        except Exception:
+            pass
+    
+    # Si aún no tenemos app_name, detectarlo desde la URL como fallback
     if not app_name:
         if request.path.startswith('/reg_construccion/'):
             app_name = 'reg_construccion'
@@ -215,15 +223,18 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
 
         # Determinar app_name dinámicamente si no está
         if not app_name:
-            # Intentar detectar desde la URL
-            if self.request.path.startswith('/reg_construccion/'):
-                app_name = 'reg_construccion'
-            elif self.request.path.startswith('/reg_txtss/'):
-                app_name = 'reg_txtss'
-            else:
+            # Intentar obtener el registro y usar get_reg_app_name
+            try:
+                registro = get_registro_from_id(registro_id)
+                if registro and hasattr(registro, 'get_reg_app_name'):
+                    app_name = registro.get_reg_app_name()
+                else:
+                    app_name = get_app_name_from_registro_id(registro_id)
+            except Exception:
                 app_name = get_app_name_from_registro_id(registro_id)
-                if not app_name:
-                    raise Http404("No se pudo determinar la aplicación")
+            
+            if not app_name:
+                raise Http404("No se pudo determinar la aplicación")
 
         # Determinar step_name dinámicamente si no está
         if not step_name:
@@ -337,15 +348,18 @@ class ListPhotosView(BreadcrumbsMixin, ListView):
                 paso_nombre = resolved_url.kwargs.get('paso_nombre')
         context['registro_id'] = registro_id
         if not app_name:
-            # Intentar detectar desde la URL
-            if self.request.path.startswith('/reg_construccion/'):
-                app_name = 'reg_construccion'
-            elif self.request.path.startswith('/reg_txtss/'):
-                app_name = 'reg_txtss'
-            else:
+            # Intentar obtener el registro y usar get_reg_app_name
+            try:
+                registro = get_registro_from_id(registro_id)
+                if registro and hasattr(registro, 'get_reg_app_name'):
+                    app_name = registro.get_reg_app_name()
+                else:
+                    app_name = get_app_name_from_registro_id(registro_id)
+            except Exception:
                 app_name = get_app_name_from_registro_id(registro_id)
-                if not app_name:
-                    raise Http404("No se pudo determinar la aplicación")
+            
+            if not app_name:
+                raise Http404("No se pudo determinar la aplicación")
         if not step_name:
             step_name = paso_nombre
         context['app_name'] = app_name

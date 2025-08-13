@@ -6,6 +6,7 @@ from .models.sites import Site
 from .models.registros import Registro
 from .models.app_settings import AppSettings
 from .models.google_maps import GoogleMapsImage
+from .models.contractors import Contractor
 from import_export.formats.base_formats import CSV, XLSX
 
 class SiteResource(resources.ModelResource):
@@ -136,3 +137,25 @@ class GoogleMapsImageAdmin(admin.ModelAdmin):
         return False
 
 admin.site.register(GoogleMapsImage, GoogleMapsImageAdmin)
+
+class ContractorAdmin(SimpleHistoryAdmin):
+    list_display = ('name', 'code', 'is_active', 'created_at')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('name', 'code')
+    readonly_fields = ('created_at', 'updated_at')
+    ordering = ('name',)
+    
+    fieldsets = (
+        ('Información del Contratista', {
+            'fields': ('name', 'code')
+        }),
+        ('Estado', {
+            'fields': ('is_active',)
+        }),
+        ('Información del Sistema', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+admin.site.register(Contractor, ContractorAdmin)

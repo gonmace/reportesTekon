@@ -55,6 +55,7 @@ class MenuBuilder:
         menu = [
             MenuItem('Dashboard', 'dashboard:dashboard', 'fas fa-tachometer-alt', module='supervision'),
             MenuItem('Sitios', 'sitios:sitios_list', 'fas fa-map-marker-alt', module='supervision'),
+            MenuItem('Contratistas', 'contractors:contractors_list', 'fas fa-users', module='supervision'),
             # MenuItem('Registros WOM', 'registrosWOM:list', 'fas fa-file-alt', module='registrosWOM'),
             MenuItem('TX/TSS', 'reg_txtss:list', 'fas fa-file-alt', module='registros'),
             MenuItem('Construcción', 'reg_construccion:list', 'fas fa-file-alt', module='registros'),

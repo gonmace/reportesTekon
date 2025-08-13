@@ -35,6 +35,8 @@ class RegTxtss(RegistroBase):
         self.full_clean()
         super().save(*args, **kwargs) 
 
+    def get_reg_app_name(self):
+        return "reg_txtss"
 
 # Pasos específicos
 class RSitio(PasoBase):
