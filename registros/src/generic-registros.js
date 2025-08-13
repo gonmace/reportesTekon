@@ -1,5 +1,4 @@
 import DataTable from 'datatables.net-dt';
-import "./changeIto.js"
 import "./ubicarMap.js"
 import "./convertCoords.js"
 

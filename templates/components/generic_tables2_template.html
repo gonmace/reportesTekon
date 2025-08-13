@@ -48,19 +48,13 @@
 
 
 {% block extra_js %}
-<script>
-// Configuración para el JavaScript genérico
-window.isSuperuser = {{ user.is_superuser|yesno:"true,false" }};
-window.USUARIOS_URL = '{{ usuarios_url|default:"" }}';
-window.ACTIVAR_URL = '{{ activar_url|default:"" }}';
-window.MODAL_ID = '{{ modal_id|default:"#activar-registro-modal" }}';
-window.ACTIVAR_BTN_ID = '{{ activar_btn_id|default:"#activar-registro-btn" }}';
+<!-- Librería de alertas -->
+<script src="{% static 'js/components/alert-component.js' %}"></script>
 
-// Verificar si Alert ya está disponible
-const Alert = window.Alert || console;
+<!-- Scripts para funcionalidad de cambio de ITO, Constructor y Estado -->
+<script src="{% static 'js/changeStatus.js' %}?v=1.4"></script>
+<script src="{% static 'js/changeIto.js' %}?v=1.4"></script>
+<script src="{% static 'js/changeConstructor.js' %}?v=1.4"></script>
 
-// No se necesita JavaScript adicional ya que el botón es un enlace directo
 
-// No se necesita inicialización adicional ya que el botón es un enlace directo
-</script>
 {% endblock extra_js %} 

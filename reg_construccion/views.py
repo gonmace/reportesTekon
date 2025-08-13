@@ -350,13 +350,40 @@ def dashboard_construccion(request):
 
 
 @login_required
+def get_contractors(request):
+    """Obtener lista de contratistas activos."""
+    try:
+        from core.models.contractors import Contractor
+        contractors = Contractor.objects.filter(is_active=True).values('id', 'name', 'code')
+        return JsonResponse(list(contractors), safe=False)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Error al obtener contratistas: {str(e)}'
+        }, status=400)
+
+
+@login_required
+def get_users_ito(request):
+    """Obtener lista de usuarios ITO."""
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        users = User.objects.filter(is_active=True).values('id', 'username', 'first_name', 'last_name')
+        return JsonResponse(list(users), safe=False)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Error al obtener usuarios ITO: {str(e)}'
+        }, status=400)
+
+
+@login_required
 @require_POST
 def update_contratista(request, registro_id):
     """Actualizar el contratista de un registro de construcción."""
     try:
         registro = get_object_or_404(RegConstruccion, pk=registro_id, user=request.user)
         data = json.loads(request.body)
-        contratista_id = data.get('contratista_id')
+        contratista_id = data.get('contractor_id') or data.get('contratista_id')
         
         if contratista_id:
             from core.models.contractors import Contractor
@@ -369,12 +396,89 @@ def update_contratista(request, registro_id):
         
         return JsonResponse({
             'success': True,
-            'message': 'Contratista actualizado correctamente',
-            'contratista_name': registro.contratista.name if registro.contratista else 'Sin contratista'
+            'message': 'Constructor actualizado correctamente',
+            'contratista_name': registro.contratista.name if registro.contratista else 'Sin asignar'
         })
         
     except Exception as e:
         return JsonResponse({
             'success': False,
-            'message': f'Error al actualizar contratista: {str(e)}'
+            'message': f'Error al actualizar constructor: {str(e)}'
+        }, status=400)
+
+
+@login_required
+@require_POST
+def update_ito(request, registro_id):
+    """Actualizar el ITO de un registro de construcción."""
+    try:
+        registro = get_object_or_404(RegConstruccion, pk=registro_id, user=request.user)
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
+        
+        if user_id:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user = get_object_or_404(User, pk=user_id)
+            registro.user = user
+        else:
+            registro.user = None
+        
+        registro.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'ITO actualizado correctamente',
+            'user_name': registro.user.username if registro.user else 'Sin asignar'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al actualizar ITO: {str(e)}'
+        }, status=400)
+
+
+@login_required
+@require_POST
+def update_estado(request, registro_id):
+    """Actualizar el estado de un registro de construcción."""
+    try:
+        registro = get_object_or_404(RegConstruccion, pk=registro_id, user=request.user)
+        data = json.loads(request.body)
+        estado = data.get('estado')
+        
+        if estado:
+            # Validar que el estado sea válido
+            estados_validos = ['construccion', 'paralizado', 'cancelado', 'concluido']
+            if estado not in estados_validos:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Estado no válido: {estado}'
+                }, status=400)
+            
+            registro.estado = estado
+        else:
+            registro.estado = 'construccion'  # Estado por defecto
+        
+        registro.save()
+        
+        # Obtener el texto del estado para la respuesta
+        estado_map = {
+            'construccion': 'Construcción',
+            'paralizado': 'Paralizado',
+            'cancelado': 'Cancelado',
+            'concluido': 'Concluido',
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Estado actualizado correctamente',
+            'estado_name': estado_map.get(registro.estado, registro.estado)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al actualizar estado: {str(e)}'
         }, status=400)

@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Informe Reporte de visita</title>
+  <title>Informe Reporte de construcción</title>
   <link rel="stylesheet" href="{% static 'css/weasyprint.css' %}">
 </head>
 <body>
@@ -16,7 +16,7 @@
         {% include "svgs/phoenix_tower_logo_horizontal.svg" %}
       </td>
       <td class="header-title">
-        <h1>Reporte de visita <br>
+        <h1>Reporte de construcción <br>
         {{ registro.sitio.pti_cell_id|default:registro.sitio.operator_id }}</h1>
       </td>
       <td class="header-logo right">
@@ -54,46 +54,46 @@
   </section>
 </article>
 
-<!-- Visita -->
-<article id="registro-visita">
-  <h2>{{ "Visita" }}</h2>
+<!-- Objetivo -->
+<article id="registro-objetivo">
+  <h2>{{ "Objetivo" }}</h2>
   <section class="content-registro">
-    {% for key, value in registro_visita.items %}
+    {% for key, value in registro_objetivo.items %}
     {% if value != '' %}
-      <p><strong>{{ key }}</strong> {{ value }}</p>
+      <p>{{ value }}</p>
     {% endif %}
     {% endfor %}
   </section>
 </article>
 
-<!-- Mapa del visita -->
-{% if google_visita_image.src %}
+<!-- Mapa del objetivo -->
+{% if google_objetivo_image.src %}
 <table class="mapa-table">
   <tr>
     <td class="mapa-img-cell">
-      <img src="{{ google_visita_image.src }}" alt="{{ google_visita_image.alt }}">
-      <p class="mapa-leyenda-caption">{{ google_visita_image.caption|default:"" }}</p>
+      <img src="{{ google_objetivo_image.src }}" alt="{{ google_objetivo_image.alt }}">
+      <p class="mapa-leyenda-caption">{{ google_objetivo_image.caption|default:"" }}</p>
     </td>
     <td class="mapa-leyenda-cell">
-      {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_visita_image.icon1_color name=google_visita_image.name1 %}
-      {% if google_visita_image.icon2_color %}
-        {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_visita_image.icon2_color name=google_visita_image.name2 %}
+      {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_objetivo_image.icon1_color name=google_objetivo_image.name1 %}
+      {% if google_objetivo_image.icon2_color %}
+        {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_objetivo_image.icon2_color name=google_objetivo_image.name2 %}
       {% endif %}
-      {% if google_visita_image.icon3_color %}
-        {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_visita_image.icon3_color name=google_visita_image.name3 %}
+      {% if google_objetivo_image.icon3_color %}
+        {% include "reportes_reg_construccion/partials/leyenda.html" with icon_color=google_objetivo_image.icon3_color name=google_objetivo_image.name3 %}
       {% endif %}
     </td>
   </tr>
 </table>
 {% endif %}
 
-<!-- Fotos del Visita -->
-{% if registro_visita_fotos.fotos %}
+<!-- Fotos del Objetivo -->
+{% if registro_objetivo_fotos.fotos %}
   <section class="imagenes">
     <div class="foto-titulo">
-      <p><strong>Registro Fotográfico del {{ "Visita" }}:</strong></p>
+      <p><strong>Registro Fotográfico del {{ "Objetivo" }}:</strong></p>
     </div>
-    {% for foto in registro_visita_fotos.fotos %}
+    {% for foto in registro_objetivo_fotos.fotos %}
       <div>
         <img src="{{ foto.src }}" alt="{{ foto.alt }}">
         <p style="">{{ foto.descripcion }}</p>
@@ -104,7 +104,7 @@
 
 <!-- Avance -->
 <article id="registro-avance">
-  <h2>{{ "Avance" }}</h2>
+  <h2>{{ "PARTIDAS DEL PROYECTO Y AVANCE" }}</h2>
   <section class="content-registro">
     {% for key, value in registro_avance.items %}
     {% if value != '' %}
@@ -112,6 +112,46 @@
     {% endif %}
     {% endfor %}
   </section>
+  
+  <!-- Tabla de Avance por Componente -->
+  {% if avance_componente_table.table_data %}
+  <section class="tabla-avance">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>COMPONENTES</th>
+          <th>% <br>INCIDENCIA</th>
+          <th>% EJEC <br>ANTERIOR</th>
+          <th>% EJEC <br>ACTUAL</th>
+          <th>% EJEC <br>ACUMULADA</th>
+          <th>% EJEC <br>TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in avance_componente_table.table_data %}
+        <tr>
+          <td>{{ row.componente }}</td>
+          <td>{{ row.incidencia }}</td>
+          <td>{{ row.ejec_anterior }}</td>
+          <td>{{ row.ejec_actual }}</td>
+          <td>{{ row.ejec_acumulada }}</td>
+          <td>{{ row.ejecucion_total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="table-active">
+          <td><strong>TOTAL</strong></td>
+          <td><strong>100%</strong></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td><strong>{{ avance_componente_table.total_ejecucion_total }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
+  {% endif %}
 </article>
 
 <!-- Mapa del avance -->
@@ -139,7 +179,7 @@
 {% if registro_avance_fotos.fotos %}
   <section class="imagenes">
     <div class="foto-titulo">
-      <p><strong>Registro Fotográfico del {{ "Avance" }}:</strong></p>
+      <p><strong>Registro Fotográfico de PARTIDAS DEL PROYECTO Y AVANCE:</strong></p>
     </div>
     {% for foto in registro_avance_fotos.fotos %}
       <div>

@@ -18,6 +18,24 @@ class RegConstruccion(RegistroBase):
     """
     Modelo para registros Reporte de construcción.
     """
+    # Choices para el estado del proyecto
+    ESTADO_CHOICES = [
+        ('construccion', 'Construcción'),
+        ('paralizado', 'Paralizado'),
+        ('cancelado', 'Cancelado'),
+        ('concluido', 'Concluido'),
+    ]
+    
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADO_CHOICES,
+        default='construccion',
+        verbose_name='Estado del Proyecto',
+        help_text='Estado actual del proyecto de construcción'
+    )
+    """
+    Modelo para registros Reporte de construcción.
+    """
     sitio = models.ForeignKey(Site, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Sitio', related_name='reg_construccion')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario', related_name='reg_construccion')
     contratista = models.ForeignKey(Contractor, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Contratista', related_name='reg_construccion')

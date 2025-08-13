@@ -35,9 +35,9 @@ class GenericRegistrosTable(tables.Table):
         attrs={'td': {'class': 'w-fit max-w-40'}}
     )
     
-    fecha = tables.Column(
-        accessor='fecha',
-        verbose_name='Fecha',
+    estado = tables.Column(
+        accessor='estado',
+        verbose_name='Estado',
         attrs={'td': {'class': 'text-center'}, 'th': {'class': 'text-center'}}
     )
     
@@ -45,6 +45,14 @@ class GenericRegistrosTable(tables.Table):
     ito = tables.Column(
         accessor='user.username',
         verbose_name='ITO',
+        attrs={'td': {'class': 'text-center'}, 'th': {'class': 'text-center'}},
+        empty_values=()
+    )
+    
+    # Columna Constructor (solo para superusuarios)
+    constructor = tables.Column(
+        accessor='contratista.name',
+        verbose_name='Constructor',
         attrs={'td': {'class': 'text-center'}, 'th': {'class': 'text-center'}},
         empty_values=()
     )
@@ -63,8 +71,8 @@ class GenericRegistrosTable(tables.Table):
             'class': 'table table-sm table-zebra w-full',
             'thead': {'class': 'bg-accent text-white uppercase'},
         }
-        fields = ('pti_id', 'operador_id', 'nombre_sitio', 'fecha')
-        sequence = ('pti_id', 'operador_id', 'nombre_sitio', 'fecha')
+        fields = ('pti_id', 'operador_id', 'nombre_sitio', 'estado')
+        sequence = ('pti_id', 'operador_id', 'nombre_sitio', 'estado')
         orderable = True
         
     def __init__(self, *args, **kwargs):
@@ -74,15 +82,57 @@ class GenericRegistrosTable(tables.Table):
         
         # Agregar columnas adicionales para superusuarios
         if self.user and self.user.is_superuser:
-            self.base_columns['ito'] = self.ito
-            self.base_columns['acciones'] = self.acciones
-            self.Meta.sequence = ('pti_id', 'operador_id', 'nombre_sitio', 'fecha', 'ito', 'acciones')
+            # Las columnas ya están definidas en la clase, solo necesitamos actualizar la secuencia
+            self.Meta.sequence = ('pti_id', 'operador_id', 'nombre_sitio', 'estado', 'ito', 'constructor', 'acciones')
     
-    def render_fecha(self, value):
-        """Renderizar la fecha en formato dd/mm/yyyy."""
+    def render_estado(self, value, record):
+        """Renderizar el estado del proyecto con funcionalidad de edición para superusuarios."""
+        # Debug: imprimir el valor que se está recibiendo
+        print(f"DEBUG - Valor de estado recibido: '{value}' (tipo: {type(value)}) para registro {record.id}")
+        
+        # Mapeo de estados unificado - debe coincidir con changeStatus.js
+        estado_map = {
+            'Construcción': ('Construcción', 'badge badge-success'),
+            'Paralizado': ('Paralizado', 'badge badge-warning'),
+            'Cancelado': ('Cancelado', 'badge badge-error'),
+            'Concluido': ('Concluido', 'badge badge-info'),
+        }
+        
+        # Normalizar el valor para la búsqueda
         if value:
-            return value.strftime('%d/%m/%Y')
-        return '-'
+            value_str = str(value).lower().strip()
+            print(f"DEBUG - Valor normalizado: '{value_str}'")
+            
+            # Buscar en el mapeo - primero por valor normalizado, luego por valor original
+            if value_str in estado_map:
+                display_text, badge_class = estado_map[value_str]
+            elif str(value) in estado_map:
+                display_text, badge_class = estado_map[str(value)]
+            else:
+                display_text, badge_class = (str(value), 'badge badge-neutral')
+            
+            print(f"DEBUG - Mapeo encontrado: '{value_str}' -> '{display_text}' con clase '{badge_class}'")
+        else:
+            display_text, badge_class = ('Sin estado', 'badge badge-neutral')
+            print(f"DEBUG - Valor vacío, usando: '{display_text}' con clase '{badge_class}'")
+        
+        if self.user and self.user.is_superuser:
+            return format_html(
+                '<div class="estado-cell-container">'
+                '<span class="estado-text" style="cursor: pointer;" data-registro-id="{}">'
+                '<span class="{}">{}</span></span>'
+                '<select class="estado-select select select-warning select-sm select-bordered w-full max-w-full" '
+                'style="display: none;" data-registro-id="{}">'
+                '<option value="">Seleccionar Estado</option>'
+                '</select></div>',
+                record.id,
+                badge_class,
+                display_text,
+                record.id
+            )
+        
+        # Para usuarios no superusuarios, mostrar solo el badge
+        return format_html('<span class="{}">{}</span>', badge_class, display_text)
     
     def render_ito(self, value, record):
         """Renderizar la columna ITO con funcionalidad de edición para superusuarios."""
@@ -90,10 +140,27 @@ class GenericRegistrosTable(tables.Table):
             return format_html(
                 '<div class="ito-cell-container">'
                 '<span class="ito-text" style="cursor: pointer;" data-registro-id="{}">'
-                '{} <i class="fa-solid fa-pen-to-square text-xs text-warning ml-1"></i></span>'
+                '{}</span>'
                 '<select class="ito-select select select-warning select-sm select-bordered w-full max-w-full" '
                 'style="display: none;" data-registro-id="{}">'
                 '<option value="">Seleccionar ITO</option>'
+                '</select></div>',
+                record.id,
+                value or "Sin asignar",
+                record.id
+            )
+        return value or "Sin asignar"
+    
+    def render_constructor(self, value, record):
+        """Renderizar la columna Constructor con funcionalidad de edición para superusuarios."""
+        if self.user and self.user.is_superuser:
+            return format_html(
+                '<div class="constructor-cell-container">'
+                '<span class="constructor-text" style="cursor: pointer;" data-registro-id="{}">'
+                '{}</span>'
+                '<select class="constructor-select select select-warning select-sm select-bordered w-full max-w-full" '
+                'style="display: none;" data-registro-id="{}">'
+                '<option value="">Seleccionar Constructor</option>'
                 '</select></div>',
                 record.id,
                 value or "Sin asignar",

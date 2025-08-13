@@ -35,7 +35,7 @@ def convert_lon_to_dms(lon):
     return f"{direction} {degrees}° {minutes}' {seconds}''"
 
 class RegConstruccionPDFView(WeasyTemplateView):
-    template_name = 'reportes_reg_construccion/reg_visita.html'
+    template_name = 'reportes_reg_construccion/reg_construccion.html'
     pdf_options = {
         'default-font-family': 'Arial',
         'default-font-size': 12,
@@ -57,13 +57,14 @@ class RegConstruccionPDFView(WeasyTemplateView):
                     f'Código {registro.sitio._meta.get_field("pti_cell_id").verbose_name}:': registro.sitio.pti_cell_id,
                     f'Código {registro.sitio._meta.get_field("operator_id").verbose_name}:': registro.sitio.operator_id,
                     f'{registro.sitio._meta.get_field("name").verbose_name}:': registro.sitio.name,
-                    f'{registro.sitio._meta.get_field("lat_base").verbose_name}:': registro.sitio.lat_base,
-                    f'{registro.sitio._meta.get_field("lon_base").verbose_name}:': registro.sitio.lon_base, 
+                    'Latitud:': registro.sitio.lat_base,
+                    'Longitud:': registro.sitio.lon_base, 
                     f'{registro.sitio._meta.get_field("region").verbose_name}:': registro.sitio.region,
                     f'{registro.sitio._meta.get_field("comuna").verbose_name}:': registro.sitio.comuna,
+                    'Empresa Contratista:': registro.contratista.name if registro.contratista else 'N/A',
                 },
                 'inspeccion_sitio': {
-                    'Responsable Técnico:': registro.user.first_name + ' ' + registro.user.last_name,
+                    'Responsable ITO:': registro.user.first_name + ' ' + registro.user.last_name,
                     'Fecha de Inspección:': registro.created_at.strftime('%d/%m/%Y'),
                 },
             })
@@ -88,6 +89,8 @@ class RegConstruccionPDFView(WeasyTemplateView):
             paso_obj = registro.objetivo_set.first()
         elif paso == 'avance_componente':
             paso_obj = registro.avancecomponentecomentarios_set.first()
+            # Agregar datos de la tabla de avance por componente
+            self._add_avance_componente_table_data(context, registro)
         elif paso == 'imagenes':
             # Para imágenes, no hay un modelo específico, solo fotos
             self._add_imagenes_data(context, registro)
@@ -99,7 +102,7 @@ class RegConstruccionPDFView(WeasyTemplateView):
         # Datos del paso
         paso_data = {}
         for field in paso_obj._meta.fields:
-            if field.name not in ['id', 'created_at', 'updated_at', 'registro']:
+            if field.name not in ['id', 'created_at', 'updated_at', 'registro', 'is_deleted']:
                 value = getattr(paso_obj, field.name)
                 if value is not None and value != '':
                     paso_data[f'{field.verbose_name}:'] = str(value)
@@ -135,6 +138,121 @@ class RegConstruccionPDFView(WeasyTemplateView):
         context['registro_imagenes_fotos'] = {
             'fotos': self._get_photos(registro, 'imagenes')
         }
+
+    def _add_avance_componente_table_data(self, context, registro):
+        """Agrega los datos de la tabla de avance por componente al contexto."""
+        from reg_construccion.models import AvanceComponente
+        from proyectos.models import Componente, ComponenteGrupo
+        
+        # Obtener los componentes de la estructura seleccionada
+        if registro.estructura:
+            # Obtener todos los componentes activos de la estructura con su incidencia
+            componentes_estructura = ComponenteGrupo.objects.filter(
+                grupo=registro.estructura
+            ).select_related('componente').order_by('orden', 'id')
+            
+            # Obtener avances existentes para esta estructura
+            avances_existentes = AvanceComponente.objects.filter(
+                registro=registro,
+                componente__in=[gc.componente for gc in componentes_estructura]
+            ).order_by('componente__nombre', '-fecha', '-created_at')
+            
+            # Crear un diccionario de avances por componente
+            avances_por_componente = {}
+            for avance in avances_existentes:
+                if avance.componente_id not in avances_por_componente:
+                    avances_por_componente[avance.componente_id] = []
+                avances_por_componente[avance.componente_id].append(avance)
+            
+            # Generar datos de tabla
+            table_data = []
+            total_ejec_anterior = 0
+            total_ejec_actual = 0
+            total_ejec_acumulada = 0
+            total_ejecucion_total = 0
+            
+            for gc in componentes_estructura:
+                componente = gc.componente
+                avances_componente = avances_por_componente.get(componente.id, [])
+                
+                # Calcular porcentajes de ejecución
+                ejec_anterior = 0
+                ejec_actual = 0
+                
+                if avances_componente:
+                    # Obtener el avance más reciente
+                    ultimo_avance = avances_componente[0]
+                    ejec_actual = ultimo_avance.porcentaje_actual
+                    
+                    # Cada fecha es independiente - ejec_anterior es el valor guardado en esta fecha
+                    ejec_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
+                    
+                    # Asegurar que no sea negativo
+                    if ejec_anterior < 0:
+                        ejec_anterior = 0
+                else:
+                    # Sin avances, todos los valores son 0
+                    ejec_anterior = 0
+                    ejec_actual = 0
+                
+                # Calcular ejecución acumulada
+                ejec_acumulada = ejec_anterior + ejec_actual
+                
+                # Calcular ejecución total (incidencia × ejecución acumulada)
+                incidencia = float(gc.incidencia)
+                ejecucion_total = (incidencia / 100) * ejec_acumulada
+                
+                # Acumular totales
+                total_ejec_anterior += ejec_anterior
+                total_ejec_actual += ejec_actual
+                total_ejec_acumulada += ejec_acumulada
+                total_ejecucion_total += ejecucion_total
+                
+                row_data = {
+                    'componente': componente.nombre,
+                    'incidencia': f"{incidencia:.1f}%",
+                    'ejec_anterior': f"{ejec_anterior}%",
+                    'ejec_actual': f"{ejec_actual}%",
+                    'ejec_acumulada': f"{ejec_acumulada}%",
+                    'ejecucion_total': f"{ejecucion_total:.1f}%"
+                }
+                
+                table_data.append(row_data)
+            
+            # Agregar totales
+            context['avance_componente_table'] = {
+                'table_data': table_data,
+                'total_ejec_anterior': f"{total_ejec_anterior:.1f}%",
+                'total_ejec_actual': f"{total_ejec_actual:.1f}%",
+                'total_ejec_acumulada': f"{total_ejec_acumulada:.1f}%",
+                'total_ejecucion_total': f"{total_ejecucion_total:.1f}%"
+            }
+        else:
+            # Si no hay estructura seleccionada, mostrar todos los avances
+            avances_componente = AvanceComponente.objects.filter(
+                registro=registro
+            ).order_by('componente__nombre', '-fecha', '-created_at')
+            
+            # Convertir a formato de tabla
+            table_data = []
+            for avance in avances_componente:
+                row_data = {
+                    'componente': avance.componente.nombre,
+                    'incidencia': 'N/A',
+                    'ejec_anterior': f"{avance.porcentaje_actual}%",
+                    'ejec_actual': f"{avance.porcentaje_actual}%",
+                    'ejec_acumulada': f"{avance.porcentaje_acumulado}%",
+                    'ejecucion_total': 'N/A'
+                }
+                table_data.append(row_data)
+            
+            context['avance_componente_table'] = {
+                'table_data': table_data,
+                'total_ejec_anterior': 'N/A',
+                'total_ejec_actual': 'N/A',
+                'total_ejec_acumulada': 'N/A',
+                'total_ejecucion_total': 'N/A'
+            }
 
     def _get_photos(self, registro, etapa):
         """
@@ -172,4 +290,4 @@ def preview_reg_construccion_individual(request, registro_id):
     view = RegConstruccionPDFView()
     view.kwargs = {'registro_id': registro_id}
     context = view.get_context_data()
-    return render(request, 'reportes_reg_construccion/reg_visita.html', context)
+    return render(request, 'reportes_reg_construccion/reg_construccion.html', context)
