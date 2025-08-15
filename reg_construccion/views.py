@@ -28,11 +28,26 @@ from datetime import date
 import json
 
 
-@login_required
 @require_POST
 def guardar_ejecucion(request, registro_id):
     """Guardar los cambios de ejecución actual desde la tabla."""
-    registro = get_object_or_404(RegConstruccion, pk=registro_id, user=request.user)
+    print(f"DEBUG: guardar_ejecucion - registro_id={registro_id}, usuario_actual={request.user.username} (ID: {request.user.id})")
+    
+    try:
+        # Primero intentar obtener el registro sin filtro de usuario
+        registro = RegConstruccion.objects.get(pk=registro_id)
+        print(f"DEBUG: Registro encontrado - ID: {registro.id}, Usuario del registro: {registro.user.username if registro.user else 'None'}")
+        
+        # Verificar permisos
+        if registro.user != request.user and not request.user.is_superuser:
+            print(f"DEBUG: Usuario {request.user.username} no tiene permisos para el registro {registro_id}")
+            messages.error(request, 'No tienes permisos para modificar este registro.')
+            return redirect('reg_construccion:steps', registro_id=registro.pk)
+            
+    except RegConstruccion.DoesNotExist:
+        print(f"DEBUG: Registro con ID {registro_id} no existe")
+        messages.error(request, f'Registro con ID {registro_id} no existe.')
+        return redirect('reg_construccion:list')
     
     try:
         cambios_realizados = 0
@@ -42,6 +57,8 @@ def guardar_ejecucion(request, registro_id):
             if key.startswith('ejec_actual_'):
                 componente_id = key.split('_')[2]
                 nuevo_valor = int(value) if value else 0
+                
+                print(f"DEBUG: Procesando componente {componente_id} con valor {nuevo_valor}")
                 
                 # Validar que el valor esté entre 0 y 100
                 if nuevo_valor < 0 or nuevo_valor > 100:
@@ -68,13 +85,17 @@ def guardar_ejecucion(request, registro_id):
                 avance.save()
                 
                 cambios_realizados += 1
+                print(f"DEBUG: Avance {'creado' if created else 'actualizado'} para componente {componente_id}")
         
         if cambios_realizados > 0:
             messages.success(request, f'Se guardaron {cambios_realizados} cambios de ejecución exitosamente.')
+            print(f"DEBUG: Se guardaron {cambios_realizados} cambios exitosamente")
         else:
             messages.warning(request, 'No se realizaron cambios.')
+            print("DEBUG: No se realizaron cambios")
             
     except Exception as e:
+        print(f"DEBUG: Error en guardar_ejecucion: {str(e)}")
         messages.error(request, f'Error al guardar los cambios: {str(e)}')
     
     return redirect('reg_construccion:steps', registro_id=registro.pk)
@@ -444,14 +465,36 @@ def update_ito(request, registro_id):
 def update_estado(request, registro_id):
     """Actualizar el estado de un registro de construcción."""
     try:
-        registro = get_object_or_404(RegConstruccion, pk=registro_id, user=request.user)
+        print(f"DEBUG: Actualizando estado para registro_id={registro_id}, usuario={request.user.id}")
+        
+        # Verificar si el registro existe
+        try:
+            registro = RegConstruccion.objects.get(pk=registro_id)
+            print(f"DEBUG: Registro encontrado: {registro.id}, usuario del registro: {registro.user.id if registro.user else 'None'}")
+        except RegConstruccion.DoesNotExist:
+            print(f"DEBUG: Registro con ID {registro_id} no existe")
+            return JsonResponse({
+                'success': False,
+                'message': f'Registro con ID {registro_id} no existe'
+            }, status=404)
+        
+        # Verificar si el usuario tiene permisos
+        if registro.user != request.user and not request.user.is_superuser:
+            print(f"DEBUG: Usuario {request.user.id} no tiene permisos para el registro {registro_id}")
+            return JsonResponse({
+                'success': False,
+                'message': 'No tienes permisos para modificar este registro'
+            }, status=403)
+        
         data = json.loads(request.body)
         estado = data.get('estado')
+        print(f"DEBUG: Estado recibido: {estado}")
         
         if estado:
             # Validar que el estado sea válido
             estados_validos = ['construccion', 'paralizado', 'cancelado', 'concluido']
             if estado not in estados_validos:
+                print(f"DEBUG: Estado no válido: {estado}")
                 return JsonResponse({
                     'success': False,
                     'message': f'Estado no válido: {estado}'
@@ -462,6 +505,7 @@ def update_estado(request, registro_id):
             registro.estado = 'construccion'  # Estado por defecto
         
         registro.save()
+        print(f"DEBUG: Estado actualizado exitosamente a: {registro.estado}")
         
         # Obtener el texto del estado para la respuesta
         estado_map = {
@@ -478,6 +522,7 @@ def update_estado(request, registro_id):
         })
         
     except Exception as e:
+        print(f"DEBUG: Error en update_estado: {str(e)}")
         return JsonResponse({
             'success': False,
             'message': f'Error al actualizar estado: {str(e)}'

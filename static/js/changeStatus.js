@@ -146,21 +146,47 @@ class ChangeStatus {
     async updateValue(selectElement, value) {
         try {
             const registroId = selectElement.dataset.registroId;
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            console.log('DEBUG: updateValue called');
+            console.log('DEBUG: selectElement:', selectElement);
+            console.log('DEBUG: registroId from dataset:', registroId);
+            console.log('DEBUG: dataset completo:', selectElement.dataset);
+            console.log('DEBUG: apiUrl template:', this.config.apiUrl);
             
-            const response = await fetch(this.config.apiUrl.replace('{registro_id}', registroId), {
+            if (!registroId) {
+                console.error('DEBUG: No se encontró registroId en el dataset');
+                window.Alert.error('Error: No se pudo identificar el registro', {
+                    autoHide: 0,
+                    dismissible: true
+                });
+                return;
+            }
+            
+            const finalUrl = this.config.apiUrl.replace('{registro_id}', registroId);
+            console.log('DEBUG: URL final:', finalUrl);
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            console.log('DEBUG: CSRF Token encontrado:', !!csrfToken);
+            
+            const requestBody = {
+                [this.config.fieldName]: value
+            };
+            console.log('DEBUG: Request body:', requestBody);
+            
+            const response = await fetch(finalUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
                 },
-                body: JSON.stringify({
-                    [this.config.fieldName]: value
-                })
+                body: JSON.stringify(requestBody)
             });
+            
+            console.log('DEBUG: Response status:', response.status);
+            console.log('DEBUG: Response ok:', response.ok);
             
             if (response.ok) {
                 const result = await response.json();
+                console.log('DEBUG: Response data:', result);
                 
                 // Actualizar el texto mostrado
                 const container = selectElement.closest(`.${this.config.containerClass}`);
@@ -181,6 +207,7 @@ class ChangeStatus {
                 });
             } else {
                 const errorData = await response.json();
+                console.log('DEBUG: Error response:', errorData);
                 let errorMessage = 'Error al actualizar el campo.';
                 
                 if (errorData.message) {
@@ -196,7 +223,7 @@ class ChangeStatus {
                 selectElement.value = '';
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('DEBUG: Error en updateValue:', error);
             window.Alert.error('Error al actualizar el campo. Por favor, inténtalo de nuevo.', {
                 autoHide: 0,
                 dismissible: true

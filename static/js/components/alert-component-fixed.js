@@ -1,9 +1,9 @@
 /**
- * Alert Component - Reutilizable para múltiples aplicaciones
+ * Alert Component - Versión corregida con delegación de eventos
  * Componente para mostrar alertas usando DaisyUI
  */
 
-class Alert {
+class AlertFixed {
     constructor() {
         this.alertContainer = null;
         this.initialized = false;
@@ -30,14 +30,49 @@ class Alert {
             this.alertContainer = document.getElementById('alerts-container');
         }
 
+        // Configurar delegación de eventos para el botón de cerrar
+        this.setupEventDelegation();
+
         this.initialized = true;
-        console.log('Alert component initialized');
+        console.log('Alert component initialized with event delegation');
 
         // Procesar alertas pendientes
         this.pendingAlerts.forEach(alert => {
             this.show(alert.message, alert.type, alert.options);
         });
         this.pendingAlerts = [];
+    }
+
+    /**
+     * Configura la delegación de eventos para el botón de cerrar
+     */
+    setupEventDelegation() {
+        // Usar delegación de eventos en el contenedor
+        this.alertContainer.addEventListener('click', (e) => {
+            const closeBtn = e.target.closest('.alert-close-btn');
+            if (closeBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const alertId = closeBtn.getAttribute('data-alert-id');
+                console.log('Close button clicked via delegation for alert:', alertId);
+                this.hide(alertId);
+            }
+        });
+
+        // También manejar botones de confirmación
+        this.alertContainer.addEventListener('click', (e) => {
+            const confirmBtn = e.target.closest('.confirm-btn');
+            if (confirmBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const confirmId = confirmBtn.getAttribute('data-confirm-id');
+                const confirmed = confirmBtn.getAttribute('data-confirmed') === 'true';
+                console.log('Confirm button clicked via delegation:', { confirmId, confirmed });
+                this.handleConfirm(confirmId, confirmed);
+            }
+        });
     }
 
     /**
@@ -87,35 +122,13 @@ class Alert {
                 </div>
                 ${dismissible ? `
                     <div class="flex-shrink-0 ml-3">
-                        <button type="button" class="alert-close-btn text-gray-400 hover:text-gray-600 transition-colors" data-alert-id="${id}">
+                        <button type="button" class="alert-close-btn text-gray-400 hover:text-gray-600 transition-colors cursor-pointer" data-alert-id="${id}" style="background: none; border: none; padding: 4px;">
                             <i class="fa-solid fa-xmark text-xs"></i>
                         </button>
                     </div>
                 ` : ''}
             </div>
         `;
-
-        // Agregar event listener para el botón de cerrar
-        if (dismissible) {
-            const closeBtn = alertElement.querySelector('.alert-close-btn');
-            if (closeBtn) {
-                console.log('Adding close button listener for alert:', id);
-                closeBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Close button clicked for alert:', id);
-                    this.hide(id);
-                });
-                
-                // También agregar listener para hacer clic en el botón completo
-                closeBtn.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                });
-            } else {
-                console.error('Close button not found for alert:', id);
-            }
-        }
 
         // Agregar animación de entrada
         alertElement.style.opacity = '0';
@@ -267,17 +280,6 @@ class Alert {
             </div>
         `;
 
-        // Agregar event listeners para los botones de confirmación
-        const confirmBtns = confirmElement.querySelectorAll('.confirm-btn');
-        confirmBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const confirmed = btn.getAttribute('data-confirmed') === 'true';
-                this.handleConfirm(id, confirmed);
-            });
-        });
-
         // Guardar callbacks
         this.confirmCallbacks[id] = { onConfirm, onCancel };
 
@@ -317,13 +319,13 @@ class Alert {
 }
 
 // Crear instancia global
-window.Alert = new Alert();
+window.AlertFixed = new AlertFixed();
 
 // Inicializar cuando el DOM esté listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        window.Alert.init();
+        window.AlertFixed.init();
     });
 } else {
-    window.Alert.init();
-} 
+    window.AlertFixed.init();
+}
