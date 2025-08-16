@@ -15,6 +15,7 @@ urlpatterns = [
     path('photos/', include('photos.urls')),
     path('', include('pdf_reports.urls')),
     path('dashboard/', include('dashboard.urls')),
+    path('api/v1/mobile/', include('reg_construccion.mobile_api_urls')),
     path('api/', include('core.urls.api')),
 ]
 
