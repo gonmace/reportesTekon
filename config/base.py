@@ -47,6 +47,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
     'simple_history.middleware.HistoryRequestMiddleware',
+    'users.middleware.JWTAutoAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -142,3 +143,10 @@ REST_FRAMEWORK = {
 # Crispy Forms Configuration
 CRISPY_ALLOWED_TEMPLATE_PACKS = "daisyui"
 CRISPY_TEMPLATE_PACK = "daisyui"
+
+# JWT Configuration
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-secret-key-change-in-production')
+JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS256')
+JWT_EXPIRATION_HOURS = int(os.getenv('JWT_EXPIRATION_HOURS', '1'))
+JWT_ISSUER = os.getenv('JWT_ISSUER', 'tekon-system')
+JWT_AUDIENCE = os.getenv('JWT_AUDIENCE', 'tekon-system')

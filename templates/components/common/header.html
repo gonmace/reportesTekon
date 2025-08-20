@@ -124,7 +124,7 @@
                             <i class="fas fa-user-circle mr-2"></i> Mi Perfil
                         </a>
                         {% if request.user.is_admin %}
-                            <a href="{% url 'dashboard:app_settings' app_settings.pk|default:1 %}"
+                            <a href="#"
                                class="block px-4 py-2 text-sm text-secondary hover:bg-base-200">
                                 <i class="fas fa-cog mr-2"></i> Configuración
                             </a>
