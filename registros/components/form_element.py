@@ -1,9 +1,8 @@
 """
-Configuración declarativa para registros.
-Permite definir registros de forma simple sin duplicar código.
+Componente para manejar formularios de elementos de registro.
 """
 
-from typing import Dict, Any, Type, Optional, List
+from typing import Dict, Any, Optional, Type
 from django import forms
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -11,125 +10,12 @@ from django.db import transaction
 from registros.components.base import ElementoRegistro
 
 
-class SubElementoConfig:
+class FormElement(ElementoRegistro):
     """
-    Configuración de un sub-elemento (mapa, fotos, tabla editable, etc.).
+    Elemento especializado para manejar formularios de registro.
     """
-    def __init__(
-        self,
-        tipo: str,
-        config: Dict[str, Any] = None,
-        template_name: str = None,
-        css_classes: str = "",
-        template_datos_clave: str = None,
-        title: str = "",
-        description: str = "",
-        success_message: str = None,
-        error_message: str = None
-    ):
-        self.tipo = tipo  # 'mapa', 'fotos', 'editable_table', etc.
-        self.config = config or {}
-        self.template_name = template_name
-        self.css_classes = css_classes
-        self.template_datos_clave = template_datos_clave
-        self.title = title
-        self.description = description
-        self.success_message = success_message
-        self.error_message = error_message
-
-
-class ElementoConfig:
-    """
-    Configuración de un elemento dentro de un paso.
-    """
-    def __init__(
-        self,
-        nombre: str,
-        model: Type[models.Model],
-        form_class: Type[forms.Form] = None,
-        fields: list = None,
-        title: str = "",
-        description: str = "",
-        template_name: str = "components/elemento_form.html",
-        success_message: str = "Datos guardados exitosamente.",
-        error_message: str = "Error al guardar los datos.",
-        widgets: Optional[Dict[str, Any]] = None,
-        css_classes: Optional[Dict[str, str]] = None,
-        sub_elementos: List[SubElementoConfig] = None
-    ):
-        self.nombre = nombre
-        self.model = model
-        self.form_class = form_class
-        self.fields = fields or []
-        self.title = title
-        self.description = description
-        self.template_name = template_name
-        self.success_message = success_message
-        self.error_message = error_message
-        self.widgets = widgets or {}
-        self.css_classes = css_classes or {}
-        self.sub_elementos = sub_elementos or []
-        
-        # Validar que se proporcione al menos fields, form_class, o sub_elementos
-        if not self.fields and not self.form_class and not self.sub_elementos:
-            raise ValueError("Debe proporcionar 'fields', 'form_class', o 'sub_elementos'")
-
-
-class PasoConfig:
-    """
-    Configuración de un paso de registro.
-    """
-    def __init__(
-        self,
-        elemento: ElementoConfig,
-        title: str = "",
-        description: str = "",
-        template_name: str = "components/paso_form.html",
-        success_message: str = "Paso completado exitosamente.",
-        error_message: str = "Error al completar el paso."
-    ):
-        self.elemento = elemento
-        self.title = title
-        self.description = description
-        self.template_name = template_name
-        self.success_message = success_message
-        self.error_message = error_message
-
-
-class RegistroConfig:
-    """
-    Configuración completa de un tipo de registro.
-    """
-    def __init__(
-        self,
-        registro_model: Type[models.Model],
-        pasos: Dict[str, PasoConfig],
-        list_template: str = "registros/list.html",
-        steps_template: str = "registros/steps.html",
-        title: str = "Registros",
-        app_namespace: str = None,
-        breadcrumbs: list = None,
-        header_title: str = None,
-        allow_multiple_per_site: bool = False,
-        project: bool = False
-    ):
-        self.registro_model = registro_model
-        self.pasos = pasos
-        self.list_template = list_template
-        self.steps_template = steps_template
-        self.title = title
-        self.app_namespace = app_namespace
-        self.breadcrumbs = breadcrumbs or []
-        self.header_title = header_title
-        self.allow_multiple_per_site = allow_multiple_per_site
-        self.project = project
-
-
-class ElementoGenerico(ElementoRegistro):
-    """
-    Elemento genérico que se configura dinámicamente.
-    """
-    def __init__(self, registro, elemento_config: ElementoConfig, instance=None):
+    
+    def __init__(self, registro, elemento_config, instance=None):
         self.elemento_config = elemento_config
         self.model = elemento_config.model
         self.template_name = elemento_config.template_name
@@ -273,4 +159,72 @@ class ElementoGenerico(ElementoRegistro):
                     self.instance = instance
                     return instance
         except Exception as e:
-            raise ValidationError(f"Error al guardar: {str(e)}") 
+            raise ValidationError(f"Error al guardar: {str(e)}")
+
+    def get_completeness_info(self):
+        """Obtiene información sobre la completitud del formulario."""
+        if not self.instance:
+            return {
+                'color': 'gray',
+                'is_complete': False,
+                'missing_fields': [],
+                'total_fields': 0,
+                'filled_fields': 0
+            }
+        
+        # Si el modelo tiene método de completitud, usarlo
+        if hasattr(self.model, 'check_completeness'):
+            return self.model.check_completeness(self.instance.id)
+        
+        # Calcular completitud básica
+        if self.elemento_config.form_class:
+            form_fields = self.elemento_config.form_class().fields.keys()
+        else:
+            form_fields = self.elemento_config.fields
+        
+        total_fields = len(form_fields)
+        filled_fields = 0
+        missing_fields = []
+        
+        for field_name in form_fields:
+            if hasattr(self.instance, field_name):
+                value = getattr(self.instance, field_name)
+                if value is not None and value != '':
+                    filled_fields += 1
+                else:
+                    missing_fields.append(field_name)
+        
+        is_complete = filled_fields == total_fields and total_fields > 0
+        
+        # Determinar color
+        if total_fields == 0:
+            color = 'gray'
+        elif filled_fields == 0:
+            color = 'error'
+        elif filled_fields < total_fields:
+            color = 'warning'
+        else:
+            color = 'success'
+        
+        return {
+            'color': color,
+            'is_complete': is_complete,
+            'missing_fields': missing_fields,
+            'total_fields': total_fields,
+            'filled_fields': filled_fields
+        }
+
+    def get_context_data(self):
+        """Obtiene el contexto para renderizar el formulario."""
+        form = self.get_form()
+        completeness = self.get_completeness_info()
+        
+        return {
+            'form': form,
+            'instance': self.instance,
+            'completeness': completeness,
+            'title': self.elemento_config.title,
+            'description': self.elemento_config.description,
+            'success_message': self.success_message,
+            'error_message': self.error_message,
+        } 

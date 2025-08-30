@@ -349,7 +349,8 @@ def create_photos_config(
     photo_min: int = 4,
     allowed_types: List[str] = ['image/jpeg', 'image/png'],
     photos_template: str = 'photos/photos_main.html',
-    css_classes: str = 'fotos-container'
+    css_classes: str = 'fotos-container',
+    target_model: str = None
 ) -> SubElementoConfig:
     """
     Crea configuración para sub-elemento de fotos.
@@ -359,17 +360,23 @@ def create_photos_config(
         allowed_types: Tipos de archivo permitidos
         photos_template: Template para las fotos
         css_classes: Clases CSS para el contenedor
+        target_model: Modelo específico al que asociar las fotos (opcional)
     
     Returns:
         SubElementoConfig configurado para fotos
     """
     
+    config = {
+        'min_files': photo_min,
+        'allowed_types': allowed_types
+    }
+    
+    if target_model:
+        config['target_model'] = target_model
+    
     return SubElementoConfig(
         tipo='fotos',
-        config={
-            'min_files': photo_min,
-            'allowed_types': allowed_types
-        },
+        config=config,
         template_name=photos_template,
         css_classes=css_classes
     )
@@ -421,6 +428,147 @@ def create_table_config(
         config=config,
         template_name=table_template,
         css_classes=css_classes
+    )
+
+
+# ============================================================================
+# CONFIGURACIONES DE TABLA EDITABLE
+# ============================================================================
+
+def create_editable_table_config(
+    model_class: Type[models.Model],
+    title: str,
+    description: str,
+    columns: List[Dict[str, Any]],
+    template_name: str = 'components/editable_table.html',
+    success_message: str = None,
+    error_message: str = None,
+    page_length: int = 10,
+    allow_create: bool = True,
+    allow_delete: bool = True,
+    allow_edit: bool = True,
+    api_url: str = None
+) -> SubElementoConfig:
+    """
+    Crea configuración para una tabla editable con AJAX.
+    
+    Args:
+        model_class: Clase del modelo para la tabla
+        title: Título de la tabla
+        description: Descripción de la tabla
+        columns: Lista de columnas con configuración
+        template_name: Template para la tabla
+        success_message: Mensaje de éxito personalizado
+        error_message: Mensaje de error personalizado
+        page_length: Número de registros por página
+        allow_create: Si permite crear nuevos registros
+        allow_delete: Si permite eliminar registros
+        allow_edit: Si permite editar registros
+        api_url: URL de la API para operaciones CRUD
+    
+    Returns:
+        SubElementoConfig configurado para tabla editable
+    """
+    if success_message is None:
+        success_message = f"Datos de {title.lower()} guardados exitosamente."
+    if error_message is None:
+        error_message = f"Error al guardar los datos de {title.lower()}."
+    
+    table_config = {
+        'model_class': model_class,
+        'columns': columns,
+        'page_length': page_length,
+        'allow_create': allow_create,
+        'allow_delete': allow_delete,
+        'allow_edit': allow_edit,
+        'api_url': api_url
+    }
+    
+    return SubElementoConfig(
+        tipo='editable_table',
+        config=table_config,
+        template_name=template_name,
+        css_classes='editable-table-container',
+        title=title,
+        description=description,
+        success_message=success_message,
+        error_message=error_message
+    )
+
+
+def create_table_only_config(
+    title: str,
+    description: str,
+    columns: List[Dict[str, Any]],
+    model_class: Type[models.Model] = None,
+    template_name: str = 'components/editable_table.html',
+    sub_elementos: List[SubElementoConfig] = None,
+    success_message: str = None,
+    error_message: str = None,
+    page_length: int = 10,
+    allow_create: bool = True,
+    allow_delete: bool = True,
+    allow_edit: bool = True,
+    api_url: str = None
+) -> PasoConfig:
+    """
+    Crea una configuración de paso que solo muestra una tabla editable.
+    
+    Args:
+        title: Título del paso
+        description: Descripción del paso
+        columns: Lista de columnas con configuración
+        model_class: Clase del modelo para la tabla (opcional)
+        template_name: Template para la tabla
+        sub_elementos: Lista de sub-elementos adicionales
+        success_message: Mensaje de éxito personalizado
+        error_message: Mensaje de error personalizado
+        page_length: Número de registros por página
+        allow_create: Si permite crear nuevos registros
+        allow_delete: Si permite eliminar registros
+        allow_edit: Si permite editar registros
+        api_url: URL de la API para operaciones CRUD
+    
+    Returns:
+        PasoConfig configurado para tabla editable
+    """
+    table_config = create_editable_table_config(
+        model_class=model_class,
+        title=title,
+        description=description,
+        columns=columns,
+        template_name=template_name,
+        success_message=success_message,
+        error_message=error_message,
+        page_length=page_length,
+        allow_create=allow_create,
+        allow_delete=allow_delete,
+        allow_edit=allow_edit,
+        api_url=api_url
+    )
+    
+    # Agregar la tabla a los sub_elementos
+    all_sub_elementos = [table_config]
+    if sub_elementos:
+        all_sub_elementos.extend(sub_elementos)
+    
+    # Crear un elemento config sin modelo ni formulario
+    elemento = ElementoConfig(
+        nombre='table_only',
+        model=model_class,  # Puede ser None
+        form_class=None,  # Sin formulario
+        title=title,
+        description=description,
+        template_name=template_name,
+        success_message=success_message or "Tabla actualizada correctamente.",
+        error_message=error_message or "Error al actualizar la tabla.",
+        sub_elementos=all_sub_elementos
+    )
+    
+    return PasoConfig(
+        elemento=elemento,
+        title=title,
+        description=description
     )
 
 

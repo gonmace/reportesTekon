@@ -1,0 +1,458 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+<style>
+/* Estilos personalizados que no se pueden lograr con Tailwind */
+.overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--bc) / 0.3) transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--bc) / 0.3);
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--bc) / 0.5);
+}
+
+/* Estilos para inputs con cambios */
+input.has-changes {
+    @apply border-primary bg-primary/10;
+}
+
+/* Estilos para botones pendientes */
+.btn-outline {
+    @apply opacity-70;
+}
+</style>
+
+{% block content %}
+{% csrf_token %}
+<div class="container mx-auto p-4">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="card-title">{{ title }}</h2>
+                    <p class="text-base-content/70">{{ description }}</p>
+                    <div class="mt-2">
+                        <span class="badge badge-primary">{{ sitio.name }}</span>
+                        {% if sitio.comuna %}
+                            <span class="badge badge-outline">{{ sitio.comuna }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            
+            {% if tabla_estructura %}
+                <!-- Resumen del Proyecto -->
+                <div class="stats shadow mb-6">
+                    <div class="stat">
+                        <div class="stat-title">Componentes del Proyecto</div>
+                        <div class="stat-value text-primary">{{ tabla_estructura|length }}</div>
+                        <div class="stat-desc">Total de estructuras</div>
+                    </div>
+                    
+                    <div class="stat">
+                        <div class="stat-title">Avance Total</div>
+                        <div class="stat-value text-secondary">{{ porcentaje_avance_total|floatformat:1 }}%</div>
+                        <div class="stat-desc">{{ total_ejecucion|floatformat:1 }}% de {{ total_incidencia|floatformat:1 }}%</div>
+                    </div>
+                    
+                    <div class="stat">
+                        <div class="stat-title">Componentes con Avance</div>
+                        <div class="stat-value text-accent">
+                            {% with componentes_con_avance=0 %}
+                                {% for item in tabla_estructura %}
+                                    {% if item.tiene_avances %}
+                                        {% with componentes_con_avance=componentes_con_avance|add:1 %}{% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ componentes_con_avance }}
+                            {% endwith %}
+                        </div>
+                        <div class="stat-desc">Con registros de avance</div>
+                    </div>
+                </div>
+                
+                <!-- Tabla de Avance Físico -->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="card-title text-lg">Tabla de Avance Físico</h3>
+                            <div class="flex gap-2">
+                                <button id="new-report-btn" class="btn btn-primary btn-sm">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nuevo Reporte
+                                </button>
+                                <button id="update-all-btn" class="btn btn-success btn-sm" style="display: none;">
+                                    <svg class="h-8 w-8 p-1" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="currentColor"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>save-floppy</title> <desc>Created with Sketch Beta.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage"> <g id="Icon-Set" sketch:type="MSLayerGroup" transform="translate(-152.000000, -515.000000)" fill="currentColor"> <path d="M171,525 C171.552,525 172,524.553 172,524 L172,520 C172,519.447 171.552,519 171,519 C170.448,519 170,519.447 170,520 L170,524 C170,524.553 170.448,525 171,525 L171,525 Z M182,543 C182,544.104 181.104,545 180,545 L156,545 C154.896,545 154,544.104 154,543 L154,519 C154,517.896 154.896,517 156,517 L158,517 L158,527 C158,528.104 158.896,529 160,529 L176,529 C177.104,529 178,528.104 178,527 L178,517 L180,517 C181.104,517 182,517.896 182,519 L182,543 L182,543 Z M160,517 L176,517 L176,526 C176,526.553 175.552,527 175,527 L161,527 C160.448,527 160,526.553 160,526 L160,517 L160,517 Z M180,515 L156,515 C153.791,515 152,516.791 152,519 L152,543 C152,545.209 153.791,547 156,547 L180,547 C182.209,547 184,545.209 184,543 L184,519 C184,516.791 182.209,515 180,515 L180,515 Z" id="save-floppy" sketch:type="MSShapeGroup"> </path> </g> </g> </g></svg>
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="table table-zebra min-w-[800px]">
+                                <thead class="bg-error text-error-content">
+                                    <tr>
+                                        <th class="min-w-48 w-48">Componente</th>
+                                        <th class="min-w-24 w-24 text-center">% Incidencia</th>
+                                        <th class="min-w-32 w-32 text-center">% Ejecución<br>Anterior</th>
+                                        <th class="min-w-32 w-32 text-center">% Ejecución<br>Actual</th>
+                                        <th class="min-w-32 w-32 text-center">% Ejecución<br>Acumulada</th>
+                                        <th class="min-w-32 w-32 text-center">% Ejecución<br>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in tabla_estructura %}
+                                    <tr class="{% if item.tiene_avances %}bg-success/10{% endif %}" data-estructura-id="{{ item.estructura.id }}">
+                                        <td class="min-w-[200px] w-[200px]">
+                                            <div class="font-semibold">{{ item.componente }}</div>
+                                        </td>
+                                        <td class="min-w-[100px] w-[100px] text-center font-bold">{{ item.incidencia|floatformat:0 }}%</td>
+                                        <td class="min-w-[120px] w-[120px] text-center">
+                                            <span class="editable-ejecucion-anterior cursor-pointer hover:bg-base-200 px-2 py-1 rounded text-base-content/70" 
+                                                  data-estructura-id="{{ item.estructura.id }}"
+                                                  data-valor="{{ item.ejecucion_anterior|floatformat:0 }}">
+                                                {{ item.ejecucion_anterior|floatformat:0 }}%
+                                            </span>
+                                        </td>
+                                        <td class="min-w-[120px] w-[120px] text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <input type="number" 
+                                                       class="input input-sm w-20 text-center" 
+                                                       min="0" 
+                                                       max="100" 
+                                                       step="0.1" 
+                                                       value="{{ item.ejecucion_actual|floatformat:0 }}"
+                                                       data-estructura-id="{{ item.estructura.id }}"
+                                                       data-original-value="{{ item.ejecucion_actual|floatformat:0 }}">
+                                                <span class="text-sm">%</span>
+                                            </div>
+                                        </td>
+                                        <td class="min-w-[140px] w-[140px] text-center ejecucion-acumulada">{{ item.ejecucion_acumulada|floatformat:0 }}%</td>
+                                        <td class="min-w-[120px] w-[120px] text-center font-bold ejecucion-total">{{ item.ejecucion_total|floatformat:1 }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="bg-base-200 font-bold">
+                                    <tr>
+                                        <td class="min-w-[200px] w-[200px]">TOTAL</td>
+                                        <td class="min-w-[100px] w-[100px] text-center">{{ total_incidencia|floatformat:0 }}%</td>
+                                        <td class="min-w-[120px] w-[120px]"></td>
+                                        <td class="min-w-[120px] w-[120px]"></td>
+                                        <td class="min-w-[140px] w-[140px]"></td>
+                                        <td class="min-w-[120px] w-[120px] text-center">{{ total_ejecucion|floatformat:1 }}%</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+            {% else %}
+            <div class="text-center py-8">
+                <svg class="w-16 h-16 mx-auto text-base-content/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <h3 class="text-lg font-semibold mb-2">No hay avances físicos</h3>
+                <p class="text-base-content/70 mb-4">Aún no se han registrado avances físicos para este sitio.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sitioId = {{ sitio.id }};
+    const updateUrl = "{% url 'proyectos:avance_fisico_inline_update' sitio.id %}";
+    
+    // Función para crear un input de edición
+    function createEditInput(element, currentValue) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = '100';
+        input.step = '0.1';
+        input.value = currentValue;
+        input.className = 'input input-sm w-20 text-center';
+        
+        element.innerHTML = '';
+        element.appendChild(input);
+        input.focus();
+        input.select();
+        
+        return input;
+    }
+    
+    // Función para actualizar valores en el servidor
+    async function updateValue(estructuraId, valor, campo = 'ejecucion_actual') {
+        try {
+            const requestBody = {
+                estructura_id: estructuraId,
+                campo: campo,
+                valor: valor
+            };
+            
+            const response = await fetch(updateUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                return data.data;
+            } else {
+                throw new Error(data.error || 'Error al actualizar');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    }
+    
+    // Función para actualizar la fila con nuevos valores
+    function updateRowValues(row, newData) {
+        const input = row.querySelector('input[data-estructura-id]');
+        const ejecucionAnteriorCell = row.querySelector('.editable-ejecucion-anterior');
+        const acumuladaCell = row.querySelector('.ejecucion-acumulada');
+        const totalCell = row.querySelector('.ejecucion-total');
+        
+        if (input) {
+            input.value = newData.ejecucion_actual.toFixed(0);
+            input.setAttribute('data-original-value', newData.ejecucion_actual.toFixed(0));
+        }
+        
+        if (ejecucionAnteriorCell) {
+            ejecucionAnteriorCell.textContent = newData.ejecucion_anterior.toFixed(0) + '%';
+            ejecucionAnteriorCell.setAttribute('data-valor', newData.ejecucion_anterior.toFixed(0));
+        }
+        
+        if (acumuladaCell) {
+            acumuladaCell.textContent = newData.ejecucion_acumulada.toFixed(0) + '%';
+        }
+        
+        if (totalCell) {
+            totalCell.textContent = newData.ejecucion_total.toFixed(1) + '%';
+        }
+    }
+    
+    // Función para mostrar/ocultar botón de actualizar
+    function toggleUpdateButton(input) {
+        const originalValue = parseFloat(input.getAttribute('data-original-value'));
+        const currentValue = parseFloat(input.value);
+        
+        if (currentValue !== originalValue && !isNaN(currentValue) && currentValue >= 0 && currentValue <= 100) {
+            input.classList.add('has-changes');
+        } else {
+            input.classList.remove('has-changes');
+        }
+        
+        toggleUpdateAllButton();
+    }
+    
+    // Función para mostrar/ocultar botón "Actualizar Todo"
+    function toggleUpdateAllButton() {
+        const updateAllBtn = document.getElementById('update-all-btn');
+        const changedInputs = document.querySelectorAll('input.has-changes');
+        const changedCells = document.querySelectorAll('.editable-ejecucion-anterior.has-changes');
+        const hasChanges = changedInputs.length > 0 || changedCells.length > 0;
+        
+        updateAllBtn.style.display = hasChanges ? 'inline-flex' : 'none';
+    }
+    
+    // Agregar event listeners a los inputs
+    document.querySelectorAll('input[data-estructura-id]').forEach(input => {
+        input.addEventListener('input', function() {
+            toggleUpdateButton(this);
+        });
+        
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const updateAllBtn = document.getElementById('update-all-btn');
+                if (updateAllBtn.style.display !== 'none') {
+                    updateAllBtn.click();
+                }
+            }
+        });
+    });
+    
+    // Agregar event listeners a las celdas de ejecución anterior
+    document.querySelectorAll('.editable-ejecucion-anterior').forEach(cell => {
+        cell.addEventListener('click', function() {
+            const currentValue = parseFloat(this.getAttribute('data-valor'));
+            const estructuraId = this.getAttribute('data-estructura-id');
+            
+            const input = createEditInput(this, currentValue);
+            
+            input.addEventListener('blur', function() {
+                const newValue = parseFloat(this.value);
+                
+                if (isNaN(newValue) || newValue < 0 || newValue > 100) {
+                    cell.textContent = currentValue.toFixed(0) + '%';
+                    return;
+                }
+                
+                cell.textContent = newValue.toFixed(0) + '%';
+                cell.setAttribute('data-valor', newValue.toFixed(0));
+                cell.classList.add('has-changes');
+                toggleUpdateAllButton();
+                
+                showToast('Valor de ejecución anterior actualizado', 'info');
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    this.blur();
+                } else if (e.key === 'Escape') {
+                    cell.textContent = currentValue.toFixed(0) + '%';
+                }
+            });
+        });
+    });
+    
+    // Agregar event listener al botón "Actualizar Todo"
+    document.getElementById('update-all-btn').addEventListener('click', async function() {
+        const changedInputs = document.querySelectorAll('input.has-changes');
+        const changedCells = document.querySelectorAll('.editable-ejecucion-anterior.has-changes');
+        
+        if (changedInputs.length === 0 && changedCells.length === 0) {
+            showToast('No hay cambios para actualizar', 'warning');
+            return;
+        }
+        
+        try {
+            this.disabled = true;
+            this.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Actualizando...';
+            
+            // Actualizar inputs con cambios
+            for (const input of changedInputs) {
+                const estructuraId = input.getAttribute('data-estructura-id');
+                const newValue = parseFloat(input.value);
+                
+                if (isNaN(newValue) || newValue < 0 || newValue > 100) {
+                    showToast(`Valor inválido en estructura ${estructuraId}: debe estar entre 0 y 100`, 'error');
+                    continue;
+                }
+                
+                try {
+                    const newData = await updateValue(estructuraId, newValue);
+                    const row = input.closest('tr');
+                    updateRowValues(row, newData);
+                    input.classList.remove('has-changes');
+                } catch (error) {
+                    showToast(`Error actualizando estructura ${estructuraId}: ${error.message}`, 'error');
+                }
+            }
+            
+            // Actualizar celdas de ejecución anterior con cambios
+            for (const cell of changedCells) {
+                const estructuraId = cell.getAttribute('data-estructura-id');
+                const newValue = parseFloat(cell.getAttribute('data-valor'));
+                
+                if (isNaN(newValue) || newValue < 0 || newValue > 100) {
+                    showToast(`Valor inválido en estructura ${estructuraId}: debe estar entre 0 y 100`, 'error');
+                    continue;
+                }
+                
+                try {
+                    const newData = await updateValue(estructuraId, newValue, 'ejecucion_anterior');
+                    const row = cell.closest('tr');
+                    updateRowValues(row, newData);
+                    cell.classList.remove('has-changes');
+                } catch (error) {
+                    showToast(`Error actualizando estructura ${estructuraId}: ${error.message}`, 'error');
+                }
+            }
+            
+            this.disabled = false;
+            this.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Actualizar Todo';
+            
+            toggleUpdateAllButton();
+            
+            const totalChanges = changedInputs.length + changedCells.length;
+            showToast(`${totalChanges} valores actualizados exitosamente`, 'success');
+            
+        } catch (error) {
+            this.disabled = false;
+            this.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Actualizar Todo';
+            showToast('Error al actualizar: ' + error.message, 'error');
+        }
+    });
+    
+    // Agregar event listener al botón "Nuevo Reporte"
+    document.getElementById('new-report-btn').addEventListener('click', async function() {
+        try {
+            this.disabled = true;
+            this.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Creando...';
+            
+            const response = await fetch(`/proyectos/sitio/${sitioId}/avance-fisico/nuevo-reporte/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('Nuevo reporte creado exitosamente. Recargando página...', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                throw new Error(data.error || 'Error al crear nuevo reporte');
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error al crear nuevo reporte: ' + error.message, 'error');
+        } finally {
+            this.disabled = false;
+            this.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Nuevo Reporte';
+        }
+    });
+    
+    // Función para mostrar notificaciones
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'error' : 'info'} fixed top-4 right-4 z-50 max-w-sm`;
+        toast.innerHTML = `
+            <span>${message}</span>
+            <button class="btn btn-sm btn-circle" onclick="this.parentElement.remove()">✕</button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 3000);
+    }
+});
+</script>
+
+{% endblock %} 

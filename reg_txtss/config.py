@@ -60,7 +60,9 @@ sitio_fotos_component = create_photos_config(
 # Crear componente de fotos personalizado para el paso 'empalme'
 empalme_fotos_component = create_photos_config(
     photo_min=2,
-    photos_template='photos/photos_main.html'
+    photos_template='photos/photos_main.html',
+    # Especificar que las fotos deben asociarse al modelo REmpalme
+    target_model='REmpalme'
 )
 
 # Crear componente de mapa de 3 puntos para el paso 'empalme'

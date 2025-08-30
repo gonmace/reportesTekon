@@ -25,3 +25,9 @@ requests==2.32.4
 django-tables2==2.7.5
 
 django-admin-sortable2==2.2.8
+django-admin-sort==0.4.1
+
+# JWT y autenticación automática
+PyJWT==2.8.0
+cryptography==41.0.7
+djlint==0.2.1

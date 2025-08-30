@@ -28,7 +28,7 @@ class SiteResource(resources.ModelResource):
 
 class SiteAdmin(ImportExportModelAdmin, SimpleHistoryAdmin):
     resource_class = SiteResource
-    list_display = ('pti_cell_id', 'operator_id', 'name', 'alt', 'region', 'comuna', 'is_deleted')
+    list_display = ('id', 'pti_cell_id', 'operator_id', 'name', 'alt', 'region', 'comuna', 'is_deleted')
     list_editable = ('is_deleted',)
     ordering = ('pti_cell_id',)
     list_display_links = ('name',)
