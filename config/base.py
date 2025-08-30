@@ -1,3 +1,4 @@
+from import_export.formats.base_formats import XLSX, CSV
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -6,7 +7,8 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-hkq1alhihxk%87ka03pu2g!@luwb*7079(6rtxf-_t4aozt_9z')
+SECRET_KEY = os.getenv(
+    'SECRET_KEY', 'django-insecure-hkq1alhihxk%87ka03pu2g!@luwb*7079(6rtxf-_t4aozt_9z')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,7 +28,7 @@ INSTALLED_APPS = [
     'crispy_daisyui',
     'django_tables2',
     'admin_sort',
-    
+
     'users',
     'core',
     'photos',
@@ -34,8 +36,6 @@ INSTALLED_APPS = [
     'reg_txtss',
     'reg_construccion',
     'pdf_reports',
-    'proyectos',
-    
     'registros',
     'dashboard',
 ]
@@ -48,7 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+
     'simple_history.middleware.HistoryRequestMiddleware',
     'users.middleware.JWTAutoAuthMiddleware',
 ]
@@ -70,7 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                
+
                 "core.context_processors.menu_context",
             ],
         },
@@ -134,7 +134,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
-from import_export.formats.base_formats import XLSX, CSV
 EXPORT_FORMATS = [XLSX, CSV]
 
 REST_FRAMEWORK = {
@@ -155,7 +154,8 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "daisyui"
 CRISPY_TEMPLATE_PACK = "daisyui"
 
 # JWT Configuration
-JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-secret-key-change-in-production')
+JWT_SECRET_KEY = os.getenv(
+    'JWT_SECRET_KEY', 'default-secret-key-change-in-production')
 JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS256')
 JWT_EXPIRATION_HOURS = int(os.getenv('JWT_EXPIRATION_HOURS', '1'))
 JWT_ISSUER = os.getenv('JWT_ISSUER', 'tekon-system')
