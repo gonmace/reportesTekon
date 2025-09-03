@@ -14,7 +14,36 @@ document.addEventListener("DOMContentLoaded", function () {
         const tabla = new DataTable('#sitios-table', {
             ajax: {
                 url: '/api/v1/sitios/',
-                dataSrc: ''
+                dataSrc: function(json) {
+                    // Si la respuesta es un error de autenticación, redirigir al login
+                    if (json.detail && json.detail.includes('Authentication')) {
+                        console.error('Error de autenticación:', json.detail);
+                        // Redirigir al login con la página actual como next
+                        window.location.href = `/accounts/login/?next=${encodeURIComponent(window.location.pathname)}`;
+                        return [];
+                    }
+                    // Si hay un error, mostrarlo en la consola
+                    if (json.error) {
+                        console.error('Error en la API:', json.error);
+                        return [];
+                    }
+                    
+                    // Si la respuesta tiene formato de paginación (con 'results'), extraer el array
+                    if (json && json.results && Array.isArray(json.results)) {
+                        console.log(`API devolvió ${json.results.length} sitios de ${json.count} total`);
+                        return json.results;
+                    }
+                    
+                    // Si es un array directo, usarlo tal como está
+                    if (json && Array.isArray(json)) {
+                        console.log(`API devolvió ${json.length} sitios`);
+                        return json;
+                    }
+                    
+                    // Si no hay datos, retornar array vacío
+                    console.warn('Respuesta inesperada de la API:', json);
+                    return [];
+                },
             },
             columns: [
                 { data: 'pti_cell_id', className: 'whitespace-nowrap text-center' },
