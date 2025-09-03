@@ -10,7 +10,8 @@ from .mobile_api_views import (
     llenar_avance,
     llenar_tabla,
     subir_imagenes,
-    obtener_registro_completo
+    obtener_registro_completo,
+    login
 )
 
 app_name = 'mobile_api'
@@ -36,4 +37,6 @@ urlpatterns = [
     
     # API adicional para obtener registro completo
     path('registro-completo/<int:registro_id>/', obtener_registro_completo, name='registro_completo'),
+    # 7. API para loguearse
+    path('login/', login, name='login'),
 ]

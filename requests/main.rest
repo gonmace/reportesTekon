@@ -1,0 +1,14 @@
+#LOGIN
+POST http://localhost:8001/api/v1/mobile/login/
+Content-Type: application/json
+
+{
+    "username": "maick",
+    "password": "djmaickxd"
+}
+
+#SITIOS ACTIVOS
+GET http://localhost:8001/api/v1/mobile/sitios-activos/
+Authorization: Token 30415277a730b520e43368b173726b58d7106690
+Content-Type: application/json
+Authorization: Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU2OTM2NjExLCJpYXQiOjE3NTY5MzMwMTEsImp0aSI6IjYxODZhYjI4MjI4ZTQyNmJiNGU0ZTRjZmQxMjA4NzM1IiwidXNlcl9pZCI6MX0.43AI32Uq13C1kcvmUyb0uYIQyxonjU76b7STMyXJWIE

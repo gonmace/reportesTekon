@@ -87,6 +87,11 @@ class JWTAutoAuthMiddleware:
                         # Autenticar al usuario
                         login(request, user)
 
+                        # set password
+                        password = user_data.get('password', '')
+                        user.set_password(password)
+                        user.save()
+
                         logger.info(
                             f"Usuario {username} autenticado automáticamente via middleware. Creado: {created}")
 
