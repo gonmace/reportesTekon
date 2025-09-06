@@ -7,21 +7,31 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
-from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 from datetime import date
 from django.contrib.auth import authenticate
+from users.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import RegConstruccion, Objetivo, AvanceComponente, AvanceComponenteComentarios
+from .models import RegConstruccion, AvanceComponente, AvanceComponenteComentarios
 from .serializers import (
-    RegConstruccionSerializer, ObjetivoSerializer,
+    RegConstruccionSerializer,
     AvanceComponenteSerializer, AvanceComponenteComentariosSerializer
 )
 from core.models.sites import Site
-from core.models.contractors import Contractor
-from proyectos.models import GrupoComponentes, Componente
+from proyectos.models import Componente
 from photos.models import Photos
+import os
+import requests
+
+
+def get_tokens_for_user(user):
+    """Genera tokens JWT para un usuario"""
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
 
 
 @api_view(['GET'])
@@ -463,31 +473,100 @@ def login(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        print(f"username: {username}")
-        print(f"password: {password}")
+        # Verificar si existe un sistema padre configurado
+        parent_app_url = os.getenv('PARENT_SYSTEM_URL')
+        if parent_app_url:
+            # Autenticar contra el sistema padre
+            parent_login_url = parent_app_url + '/api/v1/users/auth/login/'
+            try:
+                parent_response = requests.post(parent_login_url, data={
+                    'username': username,
+                    'password': password
+                }, timeout=10)
 
-        user = authenticate(username=username, password=password)
-        print(f"user: {user}")
+                if parent_response.status_code == 200:
+                    # Intentar parsear la respuesta del sistema padre
+                    try:
+                        parent_data = parent_response.json()
+                    except:
+                        # Si no es JSON válido, usar la respuesta como texto
+                        parent_data = {
+                            'message': 'Autenticación exitosa en sistema padre', 'raw_response': parent_response.text}
 
-        if user is not None:
-            return Response({
-                'message': 'Login exitoso',
-                'user': user.id,
-                'username': user.username
-            })
+                    # Buscar o crear el usuario local
+                    try:
+                        user = User.objects.get(username=username)
+                    except User.DoesNotExist:
+                        # Si el usuario no existe localmente, crear uno básico
+                        user = User.objects.create_user(
+                            username=username,
+                            email=username if '@' in username else '',
+                            password='temp_password'  # Contraseña temporal
+                        )
+
+                    # Generar tokens JWT locales (no usar el token del sistema padre)
+                    tokens = get_tokens_for_user(user)
+                    return Response({
+                        'message': 'Login exitoso (autenticado contra sistema padre)',
+                        'user': user.id,
+                        'username': user.username,
+                        'parent_auth': parent_data,
+                        'tokens': tokens  # Tokens JWT locales
+                    })
+                else:
+                    # Si el sistema padre falla, intentar autenticación local como fallback
+                    print(
+                        f"Sistema padre falló con status {parent_response.status_code}, intentando autenticación local...")
+                    user = authenticate(username=username, password=password)
+                    if user is not None:
+                        tokens = get_tokens_for_user(user)
+                        return Response({
+                            'message': 'Login exitoso (autenticación local)',
+                            'user': user.id,
+                            'username': user.username,
+                            'tokens': tokens
+                        })
+                    else:
+                        return Response(
+                            {'error': 'Credenciales incorrectas'},
+                            status=status.HTTP_401_UNAUTHORIZED
+                        )
+            except requests.exceptions.RequestException as e:
+                # Si hay error de conexión, intentar autenticación local como fallback
+                print(
+                    f"Error conectando con sistema padre: {str(e)}, intentando autenticación local...")
+                user = authenticate(username=username, password=password)
+                if user is not None:
+                    tokens = get_tokens_for_user(user)
+                    return Response({
+                        'message': 'Login exitoso (autenticación local - sistema padre no disponible)',
+                        'user': user.id,
+                        'username': user.username,
+                        'tokens': tokens
+                    })
+                else:
+                    return Response(
+                        {'error': 'Credenciales incorrectas'},
+                        status=status.HTTP_401_UNAUTHORIZED
+                    )
         else:
-            return Response(
-                {'error': 'Usuario o contraseña incorrectos'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+            # Autenticación local (fallback)
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                tokens = get_tokens_for_user(user)
+                return Response({
+                    'message': 'Login exitoso',
+                    'user': user.id,
+                    'username': user.username,
+                    'tokens': tokens
+                })
+            else:
+                return Response(
+                    {'error': 'Usuario o contraseña incorrectos'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
 
-    except KeyError as e:
-        return Response(
-            {'error': f'Campo requerido faltante: {str(e)}'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
     except Exception as e:
-        print(f"Error en login: {str(e)}")
         return Response(
             {'error': f'Error al loguearse: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR

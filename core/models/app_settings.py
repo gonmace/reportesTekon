@@ -33,6 +33,12 @@ class AppSettings(BaseModel):
         null=True,
         blank=True,
     )
+    parent_app_url = models.CharField(
+        "URL de la aplicación padre",
+        max_length=255,
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         verbose_name = "Configuración"

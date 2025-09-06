@@ -4,7 +4,7 @@ from .base import *
 DEBUG = True
 # DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "192.168.1.60"]
 
 INSTALLED_APPS += [
     'django_browser_reload',
