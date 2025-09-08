@@ -236,12 +236,18 @@ class GenericActivarRegistroView(LoginRequiredMixin, FormView):
             for avance_anterior in avances_anteriores:
                 # Copiar EJEC ACUMULADA de la fecha anterior a EJEC ANTERIOR de la nueva fecha
                 # La nueva fecha inicia con ejec_actual=0 y ejec_acumulada=ejec_anterior
+                print(f"DEBUG: Creando avance para {avance_anterior.componente.nombre}")
+                print(f"DEBUG: - porcentaje_anterior: {avance_anterior.porcentaje_acumulado}")
+                print(f"DEBUG: - porcentaje_actual: 0")
+                print(f"DEBUG: - porcentaje_acumulado: {avance_anterior.porcentaje_acumulado}")
+                
                 nuevo_avance = AvanceComponente.objects.create(
                     registro=nuevo_registro,
                     componente=avance_anterior.componente,
                     fecha=date.today(),
+                    porcentaje_anterior=avance_anterior.porcentaje_acumulado,  # Copiar acumulado anterior como anterior
                     porcentaje_actual=0,  # Ejecución actual en 0
-                    porcentaje_acumulado=avance_anterior.porcentaje_acumulado,  # Copiar acumulado anterior
+                    porcentaje_acumulado=avance_anterior.porcentaje_acumulado,  # Mantener el mismo acumulado
                     comentarios=f"Copiado desde {registro_anterior.fecha.strftime('%d/%m/%Y')} - {avance_anterior.comentarios or 'Sin comentarios'}"
                 )
                 print(f"Creado avance para componente: {avance_anterior.componente.nombre}")
