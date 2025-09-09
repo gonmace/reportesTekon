@@ -118,6 +118,11 @@ class AvanceComponente(PasoBase):
         verbose_name='Componente',
         related_name='avances_componente'
     )
+    porcentaje_anterior = models.IntegerField(
+        verbose_name='Porcentaje anterior', 
+        default=0,
+        help_text='Porcentaje de avance anterior del componente (0-100)'
+    )
     porcentaje_actual = models.IntegerField(
         verbose_name='Porcentaje actual', 
         default=0,

@@ -68,20 +68,40 @@ def guardar_ejecucion(request, registro_id):
                 # Obtener el componente
                 componente = get_object_or_404(Componente, pk=componente_id)
                 
+                # Obtener el último avance para calcular el porcentaje acumulado
+                ultimo_avance = AvanceComponente.objects.filter(
+                    registro=registro,
+                    componente=componente
+                ).order_by('-fecha', '-created_at').first()
+                
+                # Calcular el porcentaje anterior y acumulado
+                if ultimo_avance:
+                    # El porcentaje anterior es: ejec_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
+                    porcentaje_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
+                    if porcentaje_anterior < 0:
+                        porcentaje_anterior = 0
+                    # El porcentaje acumulado es: ejec_anterior + ejec_actual
+                    porcentaje_acumulado = porcentaje_anterior + nuevo_valor
+                    # Asegurar que no exceda 100%
+                    porcentaje_acumulado = min(porcentaje_acumulado, 100)
+                else:
+                    # Si no hay avances previos, el anterior es 0 y el acumulado es igual al actual
+                    porcentaje_anterior = 0
+                    porcentaje_acumulado = nuevo_valor
+                
                 # Crear o actualizar el avance de componente
                 avance, created = AvanceComponente.objects.update_or_create(
                     registro=registro,
                     componente=componente,
                     fecha=date.today(),
                     defaults={
+                        'porcentaje_anterior': porcentaje_anterior,
                         'porcentaje_actual': nuevo_valor,
+                        'porcentaje_acumulado': porcentaje_acumulado,
                         'comentarios': f'Actualización desde tabla - {date.today()}'
                     }
                 )
                 
-                # NO modificar el porcentaje_acumulado al guardar
-                # El porcentaje_acumulado solo se modifica al crear nueva fecha
-                # Aquí solo actualizamos el porcentaje_actual
                 avance.save()
                 
                 cambios_realizados += 1
@@ -124,19 +144,38 @@ def actualizar_ejecucion_ajax(request, registro_id):
                 
                 componente = get_object_or_404(Componente, pk=componente_id)
                 
+                # Obtener el último avance para calcular el porcentaje acumulado
+                ultimo_avance = AvanceComponente.objects.filter(
+                    registro=registro,
+                    componente=componente
+                ).order_by('-fecha', '-created_at').first()
+                
+                # Calcular el porcentaje anterior y acumulado
+                if ultimo_avance:
+                    # El porcentaje anterior es: ejec_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
+                    porcentaje_anterior = ultimo_avance.porcentaje_acumulado - ultimo_avance.porcentaje_actual
+                    if porcentaje_anterior < 0:
+                        porcentaje_anterior = 0
+                    # El porcentaje acumulado es: ejec_anterior + ejec_actual
+                    porcentaje_acumulado = porcentaje_anterior + nuevo_valor
+                    # Asegurar que no exceda 100%
+                    porcentaje_acumulado = min(porcentaje_acumulado, 100)
+                else:
+                    # Si no hay avances previos, el anterior es 0 y el acumulado es igual al actual
+                    porcentaje_anterior = 0
+                    porcentaje_acumulado = nuevo_valor
+                
                 avance, created = AvanceComponente.objects.update_or_create(
                     registro=registro,
                     componente=componente,
                     fecha=date.today(),
                     defaults={
                         'porcentaje_actual': nuevo_valor,
+                        'porcentaje_acumulado': porcentaje_acumulado,
                         'comentarios': f'Actualización AJAX - {date.today()}'
                     }
                 )
                 
-                # NO modificar el porcentaje_acumulado al guardar
-                # El porcentaje_acumulado solo se modifica al crear nueva fecha
-                # Aquí solo actualizamos el porcentaje_actual
                 avance.save()
                 
                 cambios_realizados += 1
