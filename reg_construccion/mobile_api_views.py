@@ -70,6 +70,34 @@ def sitios_activos_por_usuario(request):
     })
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def fechas_por_usuario(request):
+    """
+    2. API para mostrar la lista de las fechas que tiene el usuario
+
+    GET /api/v1/mobile/fechas-por-usuario/?user_id=<id>
+    """
+    user_id = request.query_params.get('user_id')
+    if not user_id:
+        return Response(
+            {'error': 'El parámetro user_id es requerido'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        return Response(
+            {'error': 'user_id debe ser un número entero'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    fechas = RegConstruccion.objects.filter(
+        user_id=user_id, is_active=True).values('fecha')
+    return Response({
+        'fechas': list(fechas)
+    })
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def crear_nueva_fecha(request):
