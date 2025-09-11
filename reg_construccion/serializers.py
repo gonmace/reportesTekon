@@ -67,7 +67,7 @@ class AvanceComponenteSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvanceComponente
         fields = [
-            'id', 'fecha', 'componente', 'componente_id', 
+            'id', 'fecha', 'componente', 'componente_id', "porcentaje_anterior",
             'porcentaje_actual', 'porcentaje_acumulado', 'comentarios',
             'is_deleted', 'created_at', 'updated_at'
         ]

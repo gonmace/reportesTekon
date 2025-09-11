@@ -169,6 +169,7 @@ class AvanceComponente(PasoBase):
             raise ValidationError('El porcentaje acumulado no puede ser menor al porcentaje actual')
     
     def save(self, *args, **kwargs):
+        print("Entrando al Save de AvanceComponente...", self.porcentaje_acumulado)
         """Sobrescribir save para calcular automáticamente el porcentaje acumulado si no se especifica"""
         if not self.porcentaje_acumulado:
             # Obtener el último avance acumulado para este componente
@@ -176,7 +177,8 @@ class AvanceComponente(PasoBase):
                 registro=self.registro,
                 componente=self.componente
             ).exclude(id=self.id).order_by('-fecha', '-created_at').first()
-            
+
+            print("Ultimo avance acumulado para este componente: ", ultimo_avance)
             if ultimo_avance:
                 self.porcentaje_acumulado = max(ultimo_avance.porcentaje_acumulado, self.porcentaje_actual)
             else:

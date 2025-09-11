@@ -12,7 +12,7 @@ from .models import RegConstruccion, AvanceComponente, AvanceComponenteComentari
 @admin.register(RegConstruccion)
 class RegConstruccionAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'title', 'sitio_link', 'estructura_link', 'user_link',
+        'id', 'fecha', 'title', 'sitio_link', 'estructura_link', 'user_link',
         'created_at', 'avance_status', 'actions_links'
     ]
     list_filter = [
@@ -28,7 +28,7 @@ class RegConstruccionAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Información Básica', {
-            'fields': ('title', 'description', 'sitio', 'estructura', 'user')
+            'fields': ('title', 'fecha', 'description', 'sitio', 'estructura', 'user')
         }),
         ('Fechas', {
             'fields': ('created_at', 'updated_at'),
@@ -41,6 +41,7 @@ class RegConstruccionAdmin(admin.ModelAdmin):
             url = reverse('admin:core_site_change', args=[obj.sitio.id])
             return format_html('<a href="{}">{}</a>', url, obj.sitio.name)
         return "Sin sitio"
+
     sitio_link.short_description = 'Sitio'
     sitio_link.admin_order_field = 'sitio__name'
 
@@ -50,6 +51,7 @@ class RegConstruccionAdmin(admin.ModelAdmin):
                           args=[obj.estructura.id])
             return format_html('<a href="{}">{}</a>', url, obj.estructura.nombre)
         return "Sin estructura"
+
     estructura_link.short_description = 'Estructura'
     estructura_link.admin_order_field = 'estructura__name'
 
@@ -58,6 +60,7 @@ class RegConstruccionAdmin(admin.ModelAdmin):
             url = reverse('admin:users_user_change', args=[obj.user.id])
             return format_html('<a href="{}">{}</a>', url, obj.user.username)
         return "Sin usuario"
+
     user_link.short_description = 'Usuario'
     user_link.admin_order_field = 'user__username'
 
@@ -69,6 +72,7 @@ class RegConstruccionAdmin(admin.ModelAdmin):
                 avances
             )
         return format_html('<span style="color: orange;">⚠ Sin avances</span>')
+
     avance_status.short_description = 'Estado'
 
     def actions_links(self, obj):
@@ -80,6 +84,7 @@ class RegConstruccionAdmin(admin.ModelAdmin):
             '<a href="{}" class="button">PDF</a>',
             steps_url, pdf_url
         )
+
     actions_links.short_description = 'Acciones'
 
     def get_queryset(self, request):
@@ -96,8 +101,9 @@ class ObjetivoAdmin(admin.ModelAdmin):
 
     def registro_link(self, obj):
         url = reverse('admin:reg_construccion_regconstruccion_change', args=[
-                      obj.registro.id])
+            obj.registro.id])
         return format_html('<a href="{}">{}</a>', url, obj.registro.title)
+
     registro_link.short_description = 'Registro'
     registro_link.admin_order_field = 'registro__title'
 
@@ -105,6 +111,7 @@ class ObjetivoAdmin(admin.ModelAdmin):
         if obj.objetivo:
             return obj.objetivo[:100] + '...' if len(obj.objetivo) > 100 else obj.objetivo
         return "Sin objetivo"
+
     objetivo_preview.short_description = 'Objetivo'
 
 
@@ -118,8 +125,9 @@ class AvanceComponenteComentariosAdmin(admin.ModelAdmin):
 
     def registro_link(self, obj):
         url = reverse('admin:reg_construccion_regconstruccion_change', args=[
-                      obj.registro.id])
+            obj.registro.id])
         return format_html('<a href="{}">{}</a>', url, obj.registro.title)
+
     registro_link.short_description = 'Registro'
     registro_link.admin_order_field = 'registro__title'
 
@@ -127,13 +135,14 @@ class AvanceComponenteComentariosAdmin(admin.ModelAdmin):
         if obj.comentarios:
             return obj.comentarios[:100] + '...' if len(obj.comentarios) > 100 else obj.comentarios
         return "Sin comentarios"
+
     comentarios_preview.short_description = 'Comentarios'
 
 
 @admin.register(AvanceComponente)
 class AvanceComponenteAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'registro_link', 'componente_link', 'fecha',
+        'id', 'registro_link', 'componente_link', 'fecha', 'porcentaje_anterior',
         'porcentaje_actual', 'porcentaje_acumulado', 'created_at'
     ]
     list_filter = [
@@ -153,7 +162,7 @@ class AvanceComponenteAdmin(admin.ModelAdmin):
             'fields': ('registro', 'componente')
         }),
         ('Avance', {
-            'fields': ('fecha', 'porcentaje_actual', 'porcentaje_acumulado')
+            'fields': ('fecha', 'porcentaje_anterior', 'porcentaje_actual', 'porcentaje_acumulado')
         }),
         ('Comentarios', {
             'fields': ('comentarios',)
@@ -166,8 +175,9 @@ class AvanceComponenteAdmin(admin.ModelAdmin):
 
     def registro_link(self, obj):
         url = reverse('admin:reg_construccion_regconstruccion_change', args=[
-                      obj.registro.id])
+            obj.registro.id])
         return format_html('<a href="{}">{}</a>', url, obj.registro.title)
+
     registro_link.short_description = 'Registro'
     registro_link.admin_order_field = 'registro__title'
 
@@ -175,6 +185,7 @@ class AvanceComponenteAdmin(admin.ModelAdmin):
         url = reverse('admin:proyectos_componente_change',
                       args=[obj.componente.id])
         return format_html('<a href="{}">{}</a>', url, obj.componente.nombre)
+
     componente_link.short_description = 'Componente'
     componente_link.admin_order_field = 'componente__nombre'
 
@@ -215,8 +226,9 @@ class EjecucionPorcentajesAdmin(admin.ModelAdmin):
 
     def registro_link(self, obj):
         url = reverse('admin:reg_construccion_regconstruccion_change', args=[
-                      obj.registro.id])
+            obj.registro.id])
         return format_html('<a href="{}">{}</a>', url, obj.registro.title)
+
     registro_link.short_description = 'Registro'
     registro_link.admin_order_field = 'registro__title'
 
@@ -224,6 +236,7 @@ class EjecucionPorcentajesAdmin(admin.ModelAdmin):
         url = reverse('admin:proyectos_componente_change',
                       args=[obj.componente.id])
         return format_html('<a href="{}">{}</a>', url, obj.componente.nombre)
+
     componente_link.short_description = 'Componente'
     componente_link.admin_order_field = 'componente__nombre'
 
