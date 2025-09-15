@@ -1,43 +1,34 @@
 # docker-compose.yml
 services:
-  pozos-db:
+  construccion-db:
     image: postgres:15-alpine  
-    container_name: postgres_db
+    container_name: construccion_db
     ports:
-      - "5435:5432"
+      - "5434:5432"
     env_file:
       - .env  
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     networks:
-      - pozos_network
+      - construccion_network
 
-  pozos-redis:
-    image: redis:alpine
-    container_name: redis_cache
-    ports:
-      - "6381:6379"
-    networks:
-      - pozos_network
-
-  pozos-dj:
+  construccion-dj:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: django_app
+    container_name: construccion_app
     command: ./entrypoint.sh
     volumes:
       - ./staticfiles:/app/staticfiles  
       - ./media:/app/media    
     ports:
-      - "8003:8000"  
+      - "8004:8000"  
     env_file:
       - .env  
     depends_on:
-      - postgres
-      - redis
+      - construccion-db
     networks:
-      - pozos_network
+      - construccion_network
 
 volumes:
   postgres_data:
@@ -45,4 +36,4 @@ volumes:
   media:
 
 networks:
-  pozos_network:
+  construccion_network:

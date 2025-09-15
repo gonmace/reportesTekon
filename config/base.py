@@ -3,6 +3,7 @@ from import_export.formats.base_formats import XLSX, CSV
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from decouple import config
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
