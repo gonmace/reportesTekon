@@ -17,3 +17,4 @@ tailwind.css
 
 node_modules/
 media/
+*.idea/

@@ -1,8 +1,9 @@
-from django.conf import settings
 from core.menu.menu_builder import MenuBuilder
-from django.contrib.auth.models import AnonymousUser
+import os
+
 
 def menu_context(request):
     return {
-        'menu_items': MenuBuilder.get_menu(request.user, request.path, request)
+        'menu_items': MenuBuilder.get_menu(request.user, request.path, request),
+        'parent_system_url': os.getenv('PARENT_SYSTEM_URL', ''),
     }

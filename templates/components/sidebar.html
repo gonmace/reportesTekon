@@ -43,8 +43,7 @@
         </nav>
 
         <div class="mt-6">
-            {% comment %} <form method="post" action="{% url 'users:logout' %}" class="block"> {% endcomment %}
-            <form method="post" action=# class="block">
+            <form method="post" action="{% url 'users:logout' %}" class="block">
                 {% csrf_token %}
                 <button type="submit"
                         class="w-full text-left px-4 py-2 text-sm text-error hover:bg-base-200">

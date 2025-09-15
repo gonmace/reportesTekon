@@ -1,9 +1,9 @@
-from datetime import timedelta
-from import_export.formats.base_formats import XLSX, CSV
-from pathlib import Path
-from dotenv import load_dotenv
 import os
-from decouple import config
+from datetime import timedelta
+from pathlib import Path
+
+from dotenv import load_dotenv
+from import_export.formats.base_formats import XLSX, CSV
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -136,6 +136,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
+
+# Authentication URLs
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/admin/login/'
 
 EXPORT_FORMATS = [XLSX, CSV]
 

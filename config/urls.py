@@ -17,6 +17,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('api/v1/mobile/', include('reg_construccion.mobile_api_urls')),
     path('api/', include('core.urls.api')),
+    path('', include('users.urls')),
 ]
 
 if settings.DEBUG:
@@ -26,7 +27,7 @@ if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(
         settings.STATIC_URL, document_root=settings.STATIC_ROOT
-        )
+    )
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-        )
+    )
