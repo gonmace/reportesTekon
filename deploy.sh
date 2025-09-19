@@ -92,7 +92,7 @@ print_message "Configurando Nginx..."
 cp $PROJECT_DIR/nginx-reportestekon.conf $NGINX_SITES_AVAILABLE/$PROJECT_NAME
 
 # Actualizar rutas en la configuración
-sed -i "s|/home/pti/reportestekon|$PROJECT_DIR|g" $NGINX_SITES_AVAILABLE/$PROJECT_NAME
+sed -i "s|/home/pti/reportesTekon|$PROJECT_DIR|g" $NGINX_SITES_AVAILABLE/$PROJECT_NAME
 sed -i "s|con.btspti.com|$DOMAIN|g" $NGINX_SITES_AVAILABLE/$PROJECT_NAME
 
 # Verificar que los certificados SSL existan

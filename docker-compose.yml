@@ -60,6 +60,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
 
 volumes:
   postgres_data:
