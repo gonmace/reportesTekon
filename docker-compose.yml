@@ -30,6 +30,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: construccion_app
+    user: "1000:1000"
     command: ./entrypoint.sh
     environment:
       - DJANGO_SETTINGS_MODULE=config.prod
