@@ -68,6 +68,16 @@ CSRF_TRUSTED_ORIGINS = [
     "https://btspti.com"
 ]
 
+# Permitir cookies CSRF
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Configuración de sesiones
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 # Configuración de seguridad adicional
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
