@@ -36,7 +36,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Configuración
-PROJECT_NAME="reportestekon"
+PROJECT_NAME="reportesTekon"
 PROJECT_DIR="/home/pti/$PROJECT_NAME"
 NGINX_SITES_AVAILABLE="/etc/nginx/sites-available"
 NGINX_SITES_ENABLED="/etc/nginx/sites-enabled"
