@@ -47,13 +47,20 @@ CACHES = {
 }
 
 # Configuración CORS
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS', default='http://localhost:3000,https://con.btspti.com').split(',')
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4321",
+    "https://pozosscz.com",
+    "192.168.100.17",
+    "https://con.btspti.com",
+    "https://btspti.com"
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Configuración CSRF
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS', default='https://be.pozosscz.com').split(',')
+CSRF_TRUSTED_ORIGINS = [
+    "https://con.btspti.com",
+    "https://btspti.com"
+]
 
 # Configuración de seguridad adicional
 SECURE_BROWSER_XSS_FILTER = True
