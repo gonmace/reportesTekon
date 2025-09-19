@@ -5,7 +5,8 @@ from decouple import config
 DEBUG = False
 
 # Configuración de hosts permitidos
-ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost').split(',')
+ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS',
+                       default='localhost,con.btspti.com').split(',')
 
 # Configuración de base de datos
 DATABASES = {
