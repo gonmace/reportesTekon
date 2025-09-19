@@ -64,6 +64,7 @@ services:
     volumes:
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
+      - ./logs:/app/logs
 
 volumes:
   postgres_data:
