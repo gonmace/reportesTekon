@@ -48,7 +48,7 @@ CACHES = {
 
 # Configuración CORS
 CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS', default='http://localhost:3000').split(',')
+    'CORS_ALLOWED_ORIGINS', default='http://localhost:3000,https://con.btspti.com').split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 # Configuración CSRF
