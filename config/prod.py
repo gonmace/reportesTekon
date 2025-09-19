@@ -2,11 +2,17 @@ from .base import *
 from decouple import config
 
 # Configuración de seguridad - Forzar False en producción
-DEBUG = False
+DEBUG = True
 
 # Configuración de hosts permitidos
-ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS',
-                       default='localhost,con.btspti.com').split(',')
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "testserver",
+    "192.168.1.60",
+    "con.btspti.com",
+    "btspti.com"
+]
 
 # Configuración de base de datos
 DATABASES = {
